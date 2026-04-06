@@ -1,0 +1,113 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block body %}
+<div style="margin-bottom: 2rem;">
+    <a href="{{ path('admin_equipement_index') }}" class="btn" style="background: var(--bg-panel);">← Retour</a>
+</div>
+
+<div class="card" style="max-width: 800px; margin: 0 auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h1 style="font-size: 1.5rem;">{{ equipement.nom }}</h1>
+        <div>
+            {% if equipement.etat == 'Fonctionnel' %}
+                <span class="badge badge-success">✓ Fonctionnel</span>
+            {% elseif equipement.etat == 'En panne' %}
+                <span class="badge badge-danger">⚠ En panne</span>
+            {% else %}
+                <span class="badge badge-warning">🔧 Maintenance</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div>
+            <div class="form-group">
+                <label>ID</label>
+                <div class="form-control" style="background: var(--bg);">{{ equipement.id }}</div>
+            </div>
+            <div class="form-group">
+                <label>Type</label>
+                <div class="form-control" style="background: var(--bg);">{{ equipement.type }}</div>
+            </div>
+            <div class="form-group">
+                <label>Date d'achat</label>
+                <div class="form-control" style="background: var(--bg);">{{ equipement.dateAchat ? equipement.dateAchat|date('d/m/Y') : '-' }}</div>
+            </div>
+            <div class="form-group">
+                <label>Durée de vie estimée</label>
+                <div class="form-control" style="background: var(--bg);">{{ equipement.dureeVieEstimee ? equipement.dureeVieEstimee ~ ' ans' : '-' }}</div>
+            </div>
+        </div>
+        <div>
+            <div class="form-group">
+                <label>Âge</label>
+                <div class="form-control" style="background: var(--bg);">{{ equipement.age }} an(s)</div>
+            </div>
+            <div class="form-group">
+                <label>Fin de garantie</label>
+                <div class="form-control" style="background: var(--bg);">
+                    {{ equipement.finGarantie ? equipement.finGarantie|date('d/m/Y') : '-' }}
+                    {% if equipement.sousGarantie %}
+                        <span class="badge badge-success" style="margin-left: 0.5rem;">Active</span>
+                    {% elseif equipement.finGarantie %}
+                        <span class="badge badge-danger" style="margin-left: 0.5rem;">Expirée</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Date de création</label>
+                <div class="form-control" style="background: var(--bg);">{{ equipement.createdAt|date('d/m/Y H:i') }}</div>
+            </div>
+            <div class="form-group">
+                <label>Dernière modification</label>
+                <div class="form-control" style="background: var(--bg);">{{ equipement.updatedAt|date('d/m/Y H:i') }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: flex-end;">
+        <a href="{{ path('admin_equipement_edit', {'id': equipement.id}) }}" class="btn btn-warning">✏️ Modifier</a>
+        <form method="post" action="{{ path('admin_equipement_delete', {'id': equipement.id}) }}" onsubmit="return confirm('Supprimer cet équipement ?');" style="display: inline;">
+            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ equipement.id) }}">
+            <button type="submit" class="btn btn-danger">🗑️ Supprimer</button>
+        </form>
+    </div>
+</div>
+
+<!-- Historique des maintenances -->
+<div class="card" style="margin-top: 2rem;">
+    <h2 style="font-size: 1.1rem; margin-bottom: 1rem;">Historique des maintenances</h2>
+    {% if equipement.maintenances|length > 0 %}
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Description</th>
+                <th>Coût</th>
+                <th>Statut</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for maintenance in equipement.maintenances|sort((a, b) => a.dateMaintenance <=> b.dateMaintenance)|reverse %}
+            <tr>
+                <td>{{ maintenance.dateMaintenance|date('d/m/Y') }}</td>
+                <td>{{ maintenance.typeMaintenance }}</td>
+                <td>{{ maintenance.description|slice(0, 50) }}</td>
+                <td>{{ maintenance.cout|number_format(2) }} DT</td>
+                <td>
+                    {% if maintenance.statut == 'Réalisée' %}
+                        <span class="badge badge-success">✓ Réalisée</span>
+                    {% else %}
+                        <span class="badge badge-warning">⏰ Planifiée</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color: var(--text-muted); text-align: center;">Aucune maintenance enregistrée</p>
+    {% endif %}
+</div>
+{% endblock %}

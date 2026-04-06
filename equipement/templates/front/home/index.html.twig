@@ -1,0 +1,81 @@
+{% extends 'front/base.html.twig' %}
+
+{% block body %}
+<!-- Hero Section -->
+<section style="background: linear-gradient(135deg, var(--green-deep) 0%, var(--green-mid) 100%); color: white; padding: 4rem 0;">
+    <div class="container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;">
+        <div>
+            <h1 style="font-family: 'Playfair Display', serif; font-size: 3rem; margin-bottom: 1rem;">L'agriculture <span style="color: var(--green-light);">intelligente</span> à portée de main</h1>
+            <p style="font-size: 1.1rem; opacity: 0.9; margin-bottom: 2rem;">FarmVision connecte vos parcelles, capteurs et données pour vous donner une vision complète de votre exploitation.</p>
+            <div style="display: flex; gap: 1rem;">
+                <a href="{{ path('front_equipement_index') }}" class="btn" style="background: var(--green-light); color: var(--green-deep);">Découvrir nos équipements</a>
+                <a href="{{ path('front_maintenance_index') }}" class="btn" style="background: transparent; border: 1px solid white; color: white;">Voir les maintenances</a>
+            </div>
+        </div>
+        <div style="background: rgba(255,255,255,0.1); border-radius: 20px; padding: 2rem; text-align: center;">
+            <div style="font-size: 3rem;">🌱</div>
+            <div style="font-size: 1.5rem; font-weight: 600;">{{ statsEquipements.total }}</div>
+            <div>Équipements connectés</div>
+            <hr style="margin: 1rem 0; border-color: rgba(255,255,255,0.2);">
+            <div style="font-size: 3rem;">🔧</div>
+            <div style="font-size: 1.5rem; font-weight: 600;">{{ statsEquipements.fonctionnels }}</div>
+            <div>Équipements fonctionnels</div>
+        </div>
+    </div>
+</section>
+
+<!-- Équipements récents -->
+<section class="container" style="padding: 4rem 0;">
+    <h2 style="font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 2rem;">Nos équipements récents</h2>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem;">
+        {% for equipement in equipements %}
+        <div class="card">
+            <div style="font-size: 2rem; margin-bottom: 1rem;">
+                {% if equipement.type == 'Tracteur' %}🚜
+                {% elseif equipement.type == 'Moissonneuse' %}🌾
+                {% elseif equipement.type == 'Pulvérisateur' %}💨
+                {% elseif equipement.type == 'Charrue' %}🌍
+                {% else %}🔧
+                {% endif %}
+            </div>
+            <h3 style="margin-bottom: 0.5rem;">{{ equipement.nom }}</h3>
+            <p style="color: var(--text-muted); margin-bottom: 1rem;">{{ equipement.type }}</p>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="badge 
+                    {% if equipement.etat == 'Fonctionnel' %}badge-success
+                    {% elseif equipement.etat == 'En panne' %}badge-danger
+                    else %}badge-warning{% endif %}">
+                    {{ equipement.etat }}
+                </span>
+                <a href="{{ path('front_equipement_show', {'id': equipement.id}) }}" class="btn-outline btn">Voir détails →</a>
+            </div>
+        </div>
+        {% else %}
+        <div style="grid-column: span 3; text-align: center; padding: 3rem; color: var(--text-muted);">
+            Aucun équipement disponible pour le moment.
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Maintenances à venir -->
+<section class="container" style="padding: 4rem 0; background: var(--green-mist); border-radius: 24px; margin-bottom: 4rem;">
+    <h2 style="font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 2rem; text-align: center;">Maintenances à venir</h2>
+    <div style="max-width: 800px; margin: 0 auto;">
+        {% for maintenance in maintenances %}
+        <div class="card" style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <strong>{{ maintenance.equipement.nom }}</strong>
+                <p style="font-size: 0.9rem; color: var(--text-muted);">{{ maintenance.typeMaintenance }} - {{ maintenance.description|slice(0, 50) }}{% if maintenance.description|length > 50 %}...{% endif %}</p>
+            </div>
+            <div style="text-align: right;">
+                <div style="font-weight: 600;">{{ maintenance.dateMaintenance|date('d/m/Y') }}</div>
+                <div style="font-size: 0.8rem; color: var(--green-mid);">Dans {{ maintenance.joursRestants }} jours</div>
+            </div>
+        </div>
+        {% else %}
+        <p style="text-align: center; padding: 2rem;">Aucune maintenance planifiée.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

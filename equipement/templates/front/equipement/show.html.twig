@@ -1,0 +1,109 @@
+{% extends 'front/base.html.twig' %}
+
+{% block body %}
+<div class="container" style="padding: 3rem 0;">
+    <div style="margin-bottom: 2rem;">
+        <a href="{{ path('front_equipement_index') }}" class="btn-outline btn">← Retour à la liste</a>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem;">
+        <!-- Colonne gauche - Infos principales -->
+        <div>
+            <div style="font-size: 4rem; margin-bottom: 1rem;">
+                {% if equipement.type == 'Tracteur' %}🚜
+                {% elseif equipement.type == 'Moissonneuse' %}🌾
+                {% elseif equipement.type == 'Pulvérisateur' %}💨
+                {% elseif equipement.type == 'Charrue' %}🌍
+                {% else %}🔧
+                {% endif %}
+            </div>
+            <h1 style="font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 0.5rem;">{{ equipement.nom }}</h1>
+            <p style="color: var(--text-muted); margin-bottom: 1rem;">{{ equipement.type }}</p>
+            
+            <div class="card" style="margin-bottom: 1rem;">
+                <h3 style="margin-bottom: 1rem;">Informations générales</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted);">État</div>
+                        <div>
+                            <span class="badge 
+                                {% if equipement.etat == 'Fonctionnel' %}badge-success
+                                {% elseif equipement.etat == 'En panne' %}badge-danger
+                                else %}badge-warning{% endif %}" 
+                                style="font-size: 0.9rem;">
+                                {{ equipement.etat }}
+                            </span>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted);">Âge</div>
+                        <div style="font-weight: 600;">{{ equipement.age }} an(s)</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted);">Date d'achat</div>
+                        <div>{{ equipement.dateAchat ? equipement.dateAchat|date('d/m/Y') : '-' }}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted);">Durée de vie</div>
+                        <div>{{ equipement.dureeVieEstimee ? equipement.dureeVieEstimee ~ ' ans' : '-' }}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted);">Fin de garantie</div>
+                        <div>{{ equipement.finGarantie ? equipement.finGarantie|date('d/m/Y') : '-' }}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted);">Statut garantie</div>
+                        <div>
+                            {% if equipement.sousGarantie %}
+                                <span class="badge badge-success">✓ Active</span>
+                            {% else %}
+                                <span class="badge badge-danger">Expirée</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Colonne droite - Maintenances -->
+        <div>
+            <div class="card">
+                <h3 style="margin-bottom: 1rem;">📋 Historique des maintenances</h3>
+                {% if equipement.maintenances|length > 0 %}
+                    {% for maintenance in equipement.maintenances|sort((a, b) => a.dateMaintenance <=> b.dateMaintenance)|reverse %}
+                    <div style="padding: 0.75rem 0; border-bottom: 1px solid var(--border);">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <span class="badge 
+                                    {% if maintenance.typeMaintenance == 'Préventive' %}badge-success
+                                    else %}badge-danger{% endif %}">
+                                    {{ maintenance.typeMaintenance }}
+                                </span>
+                                <span style="margin-left: 0.5rem;">{{ maintenance.dateMaintenance|date('d/m/Y') }}</span>
+                            </div>
+                            <div>
+                                {% if maintenance.statut == 'Réalisée' %}
+                                    <span class="badge badge-success">✓ Réalisée</span>
+                                {% else %}
+                                    <span class="badge badge-warning">⏰ Planifiée</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <p style="font-size: 0.85rem; margin-top: 0.5rem; color: var(--text-muted);">
+                            {{ maintenance.description|slice(0, 100) }}{% if maintenance.description|length > 100 %}...{% endif %}
+                        </p>
+                        <div style="font-size: 0.8rem; margin-top: 0.25rem;">
+                            💰 {{ maintenance.cout|number_format(2) }} DT
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                        Aucune maintenance enregistrée pour cet équipement.
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
