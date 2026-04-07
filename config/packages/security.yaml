@@ -47,6 +47,10 @@ security:
         # Front - Consultation (tous les utilisateurs connectés)
         - { path: ^/equipements, roles: ROLE_USER }
         - { path: ^/maintenances, roles: ROLE_USER }
+        - { path: ^/admin/stocks, roles: ROLE_ADMIN }
+        - { path: ^/admin/marketplace, roles: ROLE_ADMIN }
+        - { path: ^/stocks, roles: ROLE_USER }
+        - { path: ^/marketplace, roles: PUBLIC_ACCESS }
 
     role_hierarchy:
         ROLE_ADMIN: [ROLE_RESPONSABLE, ROLE_AGRICULTEUR, ROLE_USER]

@@ -1,0 +1,69 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block page_title %}Modifier un produit{% endblock %}
+
+{% block body %}
+<div style="margin-bottom: 2rem;">
+    <a href="{{ path('admin_stock_index') }}" class="btn" style="background: var(--bg-panel);">← Retour</a>
+</div>
+
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <h1 style="font-size: 1.5rem; margin-bottom: 1.5rem;">✏️ Modifier {{ stock.nomProduit }}</h1>
+    
+    <form method="post">
+        <div class="form-group">
+            <label>Nom du produit *</label>
+            <input type="text" name="nom_produit" value="{{ stock.nomProduit }}" class="form-control" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Type de produit</label>
+            <select name="type_produit" class="form-control">
+                <option value="">Sélectionner</option>
+                <option value="Légumes" {% if stock.typeProduit == 'Légumes' %}selected{% endif %}>🥕 Légumes</option>
+                <option value="Fruits" {% if stock.typeProduit == 'Fruits' %}selected{% endif %}>🍎 Fruits</option>
+                <option value="Céréales" {% if stock.typeProduit == 'Céréales' %}selected{% endif %}>🌾 Céréales</option>
+                <option value="Engrais" {% if stock.typeProduit == 'Engrais' %}selected{% endif %}>🧪 Engrais</option>
+                <option value="Semences" {% if stock.typeProduit == 'Semences' %}selected{% endif %}>🌱 Semences</option>
+                <option value="Outils" {% if stock.typeProduit == 'Outils' %}selected{% endif %}>🔧 Outils</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Quantité *</label>
+            <input type="number" step="0.01" name="quantite" value="{{ stock.quantite }}" class="form-control" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Unité</label>
+            <select name="unite" class="form-control">
+                <option value="kg" {% if stock.unite == 'kg' %}selected{% endif %}>kg</option>
+                <option value="g" {% if stock.unite == 'g' %}selected{% endif %}>g</option>
+                <option value="L" {% if stock.unite == 'L' %}selected{% endif %}>L</option>
+                <option value="mL" {% if stock.unite == 'mL' %}selected{% endif %}>mL</option>
+                <option value="unité" {% if stock.unite == 'unité' %}selected{% endif %}>unité</option>
+                <option value="sac" {% if stock.unite == 'sac' %}selected{% endif %}>sac</option>
+                <option value="botte" {% if stock.unite == 'botte' %}selected{% endif %}>botte</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Date d'expiration</label>
+            <input type="date" name="date_expiration" value="{{ stock.dateExpiration ? stock.dateExpiration|date('Y-m-d') : '' }}" class="form-control">
+        </div>
+        
+        <div class="form-group">
+            <label>Statut</label>
+            <select name="statut" class="form-control">
+                <option value="Disponible" {% if stock.statut == 'Disponible' %}selected{% endif %}>Disponible</option>
+                <option value="Épuisé" {% if stock.statut == 'Épuisé' %}selected{% endif %}>Épuisé</option>
+            </select>
+        </div>
+        
+        <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+            <button type="submit" class="btn btn-primary">💾 Enregistrer</button>
+            <a href="{{ path('admin_stock_index') }}" class="btn" style="background: var(--bg-panel);">Annuler</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

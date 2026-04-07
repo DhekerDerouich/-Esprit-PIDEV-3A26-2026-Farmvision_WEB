@@ -1,0 +1,121 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block page_title %}Détail de l'offre{% endblock %}
+
+{% block body %}
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+    .page-header h1 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 0;
+    }
+    .btn-back {
+        background: #6c757d;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        text-decoration: none;
+    }
+    .btn-edit {
+        background: #ffc107;
+        color: #333;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        text-decoration: none;
+        margin-left: 0.5rem;
+    }
+    .detail-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .detail-grid {
+        display: grid;
+        grid-template-columns: 200px 1fr;
+        gap: 1rem;
+    }
+    .detail-label {
+        font-weight: 600;
+        color: #666;
+        padding: 0.5rem 0;
+    }
+    .detail-value {
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #eee;
+    }
+    .badge {
+        padding: 0.25rem 0.5rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    .badge-success {
+        background: #d4edda;
+        color: #155724;
+    }
+    .badge-danger {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    .price-large {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #4CAF50;
+    }
+</style>
+
+<div class="page-header">
+    <h1>📄 Détail de l'offre #{{ marketplace.id }}</h1>
+    <div>
+        <a href="{{ path('admin_marketplace_index') }}" class="btn-back">← Retour</a>
+        <a href="{{ path('admin_marketplace_edit', {'id': marketplace.id}) }}" class="btn-edit">✏️ Modifier</a>
+    </div>
+</div>
+
+<div class="detail-card">
+    <div class="detail-grid">
+        <div class="detail-label">ID</div>
+        <div class="detail-value">{{ marketplace.id }}</div>
+        
+        <div class="detail-label">Produit</div>
+        <div class="detail-value"><strong>{{ marketplace.stock.nomProduit }}</strong></div>
+        
+        <div class="detail-label">Type</div>
+        <div class="detail-value">{{ marketplace.stock.typeProduit ?: '-' }}</div>
+        
+        <div class="detail-label">Prix unitaire</div>
+        <div class="detail-value"><span class="price-large">{{ marketplace.prixUnitaire }} €</span> / {{ marketplace.stock.unite ?: 'unité' }}</div>
+        
+        <div class="detail-label">Quantité en vente</div>
+        <div class="detail-value">{{ marketplace.quantiteEnVente }} {{ marketplace.stock.unite ?: '' }}</div>
+        
+        <div class="detail-label">Valeur totale</div>
+        <div class="detail-value"><strong>{{ marketplace.valeurTotale|number_format(2) }} €</strong></div>
+        
+        <div class="detail-label">Statut</div>
+        <div class="detail-value">
+            {% if marketplace.statut == 'En vente' %}
+                <span class="badge badge-success">📢 En vente</span>
+            {% else %}
+                <span class="badge badge-danger">✅ Vendu</span>
+            {% endif %}
+        </div>
+        
+        <div class="detail-label">Description</div>
+        <div class="detail-value">{{ marketplace.description ?: '-' }}</div>
+        
+        <div class="detail-label">Date de publication</div>
+        <div class="detail-value">{{ marketplace.datePublication ? marketplace.datePublication|date('d/m/Y') : '-' }}</div>
+        
+        <div class="detail-label">Date de création</div>
+        <div class="detail-value">{{ marketplace.createdAt ? marketplace.createdAt|date('d/m/Y H:i') : '-' }}</div>
+    </div>
+</div>
+{% endblock %}

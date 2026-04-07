@@ -419,6 +419,12 @@
             <li class="{{ app.request.get('_route') starts with 'admin_user' ? 'active' : '' }}">
                 <a href="{{ path('admin_user_index') }}"><i class="fas fa-users"></i> Utilisateurs</a>
             </li>
+            <li class="{{ app.request.get('_route') starts with 'admin_stock' ? 'active' : '' }}">
+                <a href="{{ path('admin_stock_index') }}"> Stocks</a>
+            </li>
+            <li class="{{ app.request.get('_route') starts with 'admin_marketplace' ? 'active' : '' }}">
+                <a href="{{ path('admin_marketplace_index') }}"> Marketplace</a>
+            </li>
         </ul>
     </div>
 

@@ -1,10 +1,11 @@
 <?php
+// src/Entity/Marketplace.php
 
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\Common\Collections\Collection;
-use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Validator\Constraints as Assert;
+use App\Repository\MarketplaceRepository;
 
 #[ORM\Entity(repositoryClass: MarketplaceRepository::class)]
 #[ORM\Table(name: 'marketplace')]
@@ -12,125 +13,64 @@ class Marketplace
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(name: 'id_marketplace', type: 'integer')]
     private ?int $id = null;
 
-    #[ORM\Column(name: 'id_marketplace', type: 'integer', length: 11)]
-    private ?int $id_marketplace;
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(name: 'id_stock', referencedColumnName: 'id_stock', nullable: false)]
+    private ?Stock $stock = null;
 
-    #[ORM\Column(name: 'id_stock', type: 'integer', length: 11)]
-    private ?int $id_stock;
+    #[ORM\Column(name: 'prix_unitaire', type: 'float')]
+    #[Assert\NotBlank(message: "Le prix unitaire est obligatoire")]
+    #[Assert\Positive(message: "Le prix doit être positif")]
+    private ?float $prixUnitaire = null;
 
-    #[ORM\Column(name: 'prix_unitaire', type: 'string')]
-    private ?string $prix_unitaire;
+    #[ORM\Column(name: 'quantite_en_vente', type: 'float')]
+    #[Assert\NotBlank(message: "La quantité en vente est obligatoire")]
+    #[Assert\Positive(message: "La quantité doit être positive")]
+    private ?float $quantiteEnVente = null;
 
-    #[ORM\Column(name: 'quantite_en_vente', type: 'string')]
-    private ?string $quantite_en_vente;
-
-    #[ORM\Column(name: 'statut', type: 'string', nullable: true, length: 30)]
-    private ?string $statut;
+    #[ORM\Column(name: 'statut', type: 'string', length: 30, nullable: true)]
+    private ?string $statut = 'En vente';
 
     #[ORM\Column(name: 'date_publication', type: 'date', nullable: true)]
-    private ?\DateTimeInterface $date_publication;
+    private ?\DateTimeInterface $datePublication = null;
 
     #[ORM\Column(name: 'description', type: 'text', nullable: true)]
-    private ?string $description;
+    private ?string $description = null;
 
-    #[ORM\ManyToOne]
-    #[ORM\JoinColumn(name: 'id_stock', nullable: false)]
-    private ?Stock $Stock = null;
+    #[ORM\Column(name: 'created_at', type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $createdAt = null;
 
-    public function getId(): ?int
+    public function __construct()
     {
-        return $this->id;
+        $this->createdAt = new \DateTime();
+        $this->datePublication = new \DateTime();
+        $this->statut = 'En vente';
     }
 
-    public function getIdMarketplace(): ?int
-    {
-        return $this->id_marketplace;
-    }
+    // GETTERS
+    public function getId(): ?int { return $this->id; }
+    public function getStock(): ?Stock { return $this->stock; }
+    public function getPrixUnitaire(): ?float { return $this->prixUnitaire; }
+    public function getQuantiteEnVente(): ?float { return $this->quantiteEnVente; }
+    public function getStatut(): ?string { return $this->statut; }
+    public function getDatePublication(): ?\DateTimeInterface { return $this->datePublication; }
+    public function getDescription(): ?string { return $this->description; }
+    public function getCreatedAt(): ?\DateTimeInterface { return $this->createdAt; }
 
-    public function setIdMarketplace(?int $id_marketplace): self
-    {
-        $this->id_marketplace = $id_marketplace;
-        return $this;
-    }
+    // SETTERS
+    public function setStock(?Stock $stock): self { $this->stock = $stock; return $this; }
+    public function setPrixUnitaire(?float $prixUnitaire): self { $this->prixUnitaire = $prixUnitaire; return $this; }
+    public function setQuantiteEnVente(?float $quantiteEnVente): self { $this->quantiteEnVente = $quantiteEnVente; return $this; }
+    public function setStatut(?string $statut): self { $this->statut = $statut; return $this; }
+    public function setDatePublication(?\DateTimeInterface $datePublication): self { $this->datePublication = $datePublication; return $this; }
+    public function setDescription(?string $description): self { $this->description = $description; return $this; }
+    public function setCreatedAt(?\DateTimeInterface $createdAt): self { $this->createdAt = $createdAt; return $this; }
 
-    public function getIdStock(): ?int
+    // MÉTHODES UTILITAIRES
+    public function getValeurTotale(): float
     {
-        return $this->id_stock;
+        return $this->prixUnitaire * $this->quantiteEnVente;
     }
-
-    public function setIdStock(?int $id_stock): self
-    {
-        $this->id_stock = $id_stock;
-        return $this;
-    }
-
-    public function getPrixUnitaire(): ?string
-    {
-        return $this->prix_unitaire;
-    }
-
-    public function setPrixUnitaire(?string $prix_unitaire): self
-    {
-        $this->prix_unitaire = $prix_unitaire;
-        return $this;
-    }
-
-    public function getQuantiteEnVente(): ?string
-    {
-        return $this->quantite_en_vente;
-    }
-
-    public function setQuantiteEnVente(?string $quantite_en_vente): self
-    {
-        $this->quantite_en_vente = $quantite_en_vente;
-        return $this;
-    }
-
-    public function getStatut(): ?string
-    {
-        return $this->statut;
-    }
-
-    public function setStatut(?string $statut): self
-    {
-        $this->statut = $statut;
-        return $this;
-    }
-
-    public function getDatePublication(): ?\DateTimeInterface
-    {
-        return $this->date_publication;
-    }
-
-    public function setDatePublication(?\DateTimeInterface $date_publication): self
-    {
-        $this->date_publication = $date_publication;
-        return $this;
-    }
-
-    public function getDescription(): ?string
-    {
-        return $this->description;
-    }
-
-    public function setDescription(?string $description): self
-    {
-        $this->description = $description;
-        return $this;
-    }
-
-    public function getStock(): ?Stock
-    {
-        return $this->stock;
-    }
-
-    public function setStock(?Stock $stock): self
-    {
-        $this->stock = $stock;
-        return $this;
-    }
-
 }

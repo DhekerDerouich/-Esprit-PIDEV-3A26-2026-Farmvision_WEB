@@ -1,0 +1,69 @@
+{% extends 'front/base.html.twig' %}
+
+{% block body %}
+<div class="container" style="padding: 3rem 0;">
+    <h1 style="font-family: 'Playfair Display', serif; font-size: 2.5rem; margin-bottom: 0.5rem;">🛒 Marketplace</h1>
+    <p style="color: var(--text-muted); margin-bottom: 2rem;">Achetez et vendez des produits agricoles</p>
+
+    <!-- Formulaire de recherche -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <form method="get" action="{{ path('front_marketplace_index') }}">
+            <div style="display: grid; grid-template-columns: 1fr auto auto; gap: 1rem; align-items: end;">
+                <div>
+                    <label>🔍 Rechercher</label>
+                    <input type="text" name="search" value="{{ search }}" placeholder="Produit..." class="form-control">
+                </div>
+                <div>
+                    <label>📌 Statut</label>
+                    <select name="statut" class="form-control">
+                        <option value="all" {% if selectedStatut == 'all' %}selected{% endif %}>Tous</option>
+                        <option value="En vente" {% if selectedStatut == 'En vente' %}selected{% endif %}>En vente</option>
+                        <option value="Vendu" {% if selectedStatut == 'Vendu' %}selected{% endif %}>Vendu</option>
+                    </select>
+                </div>
+                <div>
+                    <button type="submit" class="btn btn-primary">Rechercher</button>
+                    <a href="{{ path('front_marketplace_index') }}" class="btn btn-outline">Réinitialiser</a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Liste des annonces -->
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem;">
+        {% for item in marketplaces %}
+        <div class="card">
+            <div style="font-size: 2.5rem; margin-bottom: 1rem;">
+                {% if item.stock.typeProduit == 'Légumes' %}🥕
+                {% elseif item.stock.typeProduit == 'Fruits' %}🍎
+                {% elseif item.stock.typeProduit == 'Céréales' %}🌾
+                {% else %}🛒
+                {% endif %}
+            </div>
+            <h3 style="margin-bottom: 0.5rem;">{{ item.stock.nomProduit }}</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">{{ item.stock.typeProduit ?: 'Produit' }}</p>
+            <div style="margin: 1rem 0;">
+                <div style="font-size: 1.5rem; font-weight: 700; color: var(--green-mid);">
+                    {{ item.prixUnitaire|number_format(2) }} DT
+                </div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">
+                    Quantité: {{ item.quantiteEnVente }} {{ item.stock.unite ?: 'unité' }}
+                </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="badge 
+                    {% if item.statut == 'En vente' %}badge-success
+                    else %}badge-warning{% endif %}">
+                    {{ item.statut }}
+                </span>
+                <a href="{{ path('front_marketplace_show', {'id': item.id}) }}" class="btn-outline btn">Voir →</a>
+            </div>
+        </div>
+        {% else %}
+        <div style="grid-column: span 3; text-align: center; padding: 3rem;">
+            Aucune annonce disponible pour le moment.
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
