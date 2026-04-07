@@ -1,0 +1,43 @@
+{% extends 'front/base.html.twig' %}
+
+{% block body %}
+<div class="container" style="padding: 3rem 0;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h1 style="font-family: 'Playfair Display', serif; font-size: 2rem;">📊 Dashboard Responsable</h1>
+        <div style="background: var(--green-mist); padding: 0.5rem 1rem; border-radius: 8px;">
+            {{ app.user.prenom }} {{ app.user.nom }}
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem;">
+        <!-- Visualisation Équipements -->
+        <div class="card">
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                <div style="font-size: 2rem;">🚜</div>
+                <h3 style="margin: 0;">Équipements</h3>
+            </div>
+            <p style="color: var(--text-muted); margin-bottom: 1rem;">Consulter la liste des équipements agricoles</p>
+            <a href="{{ path('front_equipement_index') }}" class="btn btn-primary">Voir les équipements →</a>
+        </div>
+
+        <!-- Visualisation Maintenances -->
+        <div class="card">
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                <div style="font-size: 2rem;">🛠️</div>
+                <h3 style="margin: 0;">Maintenances</h3>
+            </div>
+            <p style="color: var(--text-muted); margin-bottom: 1rem;">Consulter l'historique des maintenances</p>
+            <a href="{{ path('front_maintenance_index') }}" class="btn btn-primary">Voir les maintenances →</a>
+        </div>
+    </div>
+
+    <div class="card" style="margin-top: 2rem;">
+        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+            <div style="font-size: 2rem;">ℹ️</div>
+            <h3>Informations</h3>
+        </div>
+        <p style="color: var(--text-muted);">En tant que responsable d'exploitation, vous avez un accès en <strong>consultation seule</strong> aux équipements et maintenances.</p>
+        <p style="color: var(--text-muted); margin-top: 0.5rem;">Pour les modifications, veuillez contacter un administrateur.</p>
+    </div>
+</div>
+{% endblock %}

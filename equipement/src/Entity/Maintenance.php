@@ -136,8 +136,9 @@ class Maintenance
         return $now->diff($this->dateMaintenance)->days;
     }
 
-    public function getCoutFloat(): float
+    // Une seule déclaration de getCoutFloat() suffit
+    public function getCoutFloat(): ?float
     {
-        return (float) $this->cout;
+        return $this->cout ? (float) $this->cout : null;
     }
 }

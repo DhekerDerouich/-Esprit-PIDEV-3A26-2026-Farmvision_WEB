@@ -1,0 +1,42 @@
+{% extends 'front/base.html.twig' %}
+
+{% block body %}
+<div class="container" style="min-height: 80vh; display: flex; align-items: center; justify-content: center; padding: 4rem 0;">
+    <div class="card" style="max-width: 450px; width: 100%; margin: 0 auto;">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <div style="font-size: 3rem;">🔐</div>
+            <h1 style="font-size: 1.8rem;">Connexion</h1>
+        </div>
+
+        <form method="post">
+            {% if error %}
+                <div style="background: var(--red-dim); color: var(--red); padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem;">
+                    {{ error.messageKey|trans(error.messageData, 'security') }}
+                </div>
+            {% endif %}
+
+            <div style="margin-bottom: 1rem;">
+                <input type="email" name="_username" value="{{ last_username }}" placeholder="Email" class="form-control" style="width: 100%; padding: 0.75rem;" required>
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+                <input type="password" name="_password" placeholder="Mot de passe" class="form-control" style="width: 100%; padding: 0.75rem;" required>
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+                <label>
+                    <input type="checkbox" name="_remember_me"> Se souvenir de moi
+                </label>
+            </div>
+
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+            <button type="submit" class="btn-primary" style="width: 100%; padding: 0.75rem;">Se connecter</button>
+
+            <div style="text-align: center; margin-top: 1rem;">
+                <a href="{{ path('app_register') }}" style="color: var(--green-mid);">Créer un compte</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

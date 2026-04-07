@@ -16,7 +16,7 @@ class Revenu
     #[ORM\Column(name: 'idRevenu', type: 'integer', length: 11)]
     private ?int $idRevenu;
 
-    #[ORM\Column(name: 'montant', type: 'decimal')]
+    #[ORM\Column(name: 'montant', type: 'decimal', precision: 10, scale: 2)]
     private ?float $montant;
 
     #[ORM\Column(name: 'source', type: 'string', length: 100)]

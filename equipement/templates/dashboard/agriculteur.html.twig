@@ -1,0 +1,40 @@
+{% extends 'front/base.html.twig' %}
+
+{% block body %}
+<div class="container" style="padding: 3rem 0;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h1 style="font-family: 'Playfair Display', serif; font-size: 2rem;">👨‍🌾 Mon espace agriculteur</h1>
+        <div style="background: var(--green-mist); padding: 0.5rem 1rem; border-radius: 8px;">
+            {{ app.user.prenom }} {{ app.user.nom }}
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem;">
+        <!-- Gestion Équipements (CRUD) -->
+        <div class="card">
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                <div style="font-size: 2rem;">🚜</div>
+                <h3 style="margin: 0;">Mes équipements</h3>
+            </div>
+            <p style="color: var(--text-muted); margin-bottom: 1rem;">Gérer vos équipements agricoles (ajout, modification, suppression)</p>
+            <div style="display: flex; gap: 1rem;">
+                <a href="{{ path('front_equipement_index') }}" class="btn btn-primary">Voir mes équipements →</a>
+                <a href="{{ path('front_equipement_new') }}" class="btn btn-outline">➕ Ajouter</a>
+            </div>
+        </div>
+
+        <!-- Gestion Maintenances (CRUD) -->
+        <div class="card">
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                <div style="font-size: 2rem;">🛠️</div>
+                <h3 style="margin: 0;">Mes maintenances</h3>
+            </div>
+            <p style="color: var(--text-muted); margin-bottom: 1rem;">Planifier et suivre les maintenances de vos équipements</p>
+            <div style="display: flex; gap: 1rem;">
+                <a href="{{ path('front_maintenance_index') }}" class="btn btn-primary">Voir mes maintenances →</a>
+                <a href="{{ path('front_maintenance_new') }}" class="btn btn-outline">➕ Planifier</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

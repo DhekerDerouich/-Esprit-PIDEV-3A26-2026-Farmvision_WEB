@@ -1,0 +1,122 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block page_title %}Ajouter un utilisateur{% endblock %}
+
+{% block body %}
+<div style="margin-bottom: 2rem;">
+    <a href="{{ path('admin_user_index') }}" class="btn btn-outline">
+        <i class="fas fa-arrow-left"></i> Retour
+    </a>
+</div>
+
+<div class="card" style="max-width: 700px; margin: 0 auto;">
+    <h1 style="font-size: 1.5rem; margin-bottom: 1.5rem;">
+        <i class="fas fa-user-plus"></i> Ajouter un utilisateur
+    </h1>
+    
+    <form method="post" id="userForm">
+        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+                <label>Nom <span style="color: var(--danger);">*</span></label>
+                <input type="text" name="nom" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label>Prénom <span style="color: var(--danger);">*</span></label>
+                <input type="text" name="prenom" class="form-control" required>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label>Email <span style="color: var(--danger);">*</span></label>
+            <input type="email" name="email" class="form-control" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Rôle <span style="color: var(--danger);">*</span></label>
+            <select name="type_role" id="roleSelect" class="form-control" required>
+                <option value="AGRICULTEUR">🌾 Agriculteur</option>
+                <option value="RESPONSABLE_EXPLOITATION">📋 Responsable d'exploitation</option>
+                <option value="ADMINISTRATEUR">👑 Administrateur</option>
+            </select>
+        </div>
+        
+        <!-- Champs pour Agriculteur -->
+        <div id="agriculteurFields" class="role-fields">
+            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label><i class="fas fa-phone"></i> Téléphone</label>
+                    <input type="tel" name="telephone" class="form-control" placeholder="+216 XX XXX XXX">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-map-marker-alt"></i> Adresse</label>
+                    <input type="text" name="adresse" class="form-control" placeholder="Adresse complète">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Champs pour Responsable et Admin -->
+        <div id="responsableAdminFields" class="role-fields" style="display: none;">
+            <div class="form-group">
+                <label><i class="fas fa-id-card"></i> Matricule <span style="color: var(--danger);">*</span></label>
+                <input type="text" name="matricule" class="form-control" placeholder="Ex: ADM-001, RES-002">
+                <small style="color: var(--gray); font-size: 0.75rem;">Format: XXX-000 (ex: ADM-001)</small>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label>Mot de passe</label>
+            <input type="password" name="password" id="password" class="form-control" placeholder="Laisser vide pour générer automatiquement">
+            <button type="button" id="generatePassword" class="btn btn-outline" style="margin-top: 0.5rem;">
+                <i class="fas fa-key"></i> Générer mot de passe
+            </button>
+        </div>
+        
+        <div class="form-group">
+            <label>
+                <input type="checkbox" name="activated" value="1" checked> Activer le compte immédiatement
+            </label>
+        </div>
+        
+        <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Créer l'utilisateur
+            </button>
+            <a href="{{ path('admin_user_index') }}" class="btn btn-outline">Annuler</a>
+        </div>
+    </form>
+</div>
+
+<script>
+    const roleSelect = document.getElementById('roleSelect');
+    const agriculteurFields = document.getElementById('agriculteurFields');
+    const responsableAdminFields = document.getElementById('responsableAdminFields');
+    
+    function toggleFields() {
+        const role = roleSelect.value;
+        if (role === 'AGRICULTEUR') {
+            agriculteurFields.style.display = 'block';
+            responsableAdminFields.style.display = 'none';
+            // Désactiver matricule
+            document.querySelector('input[name="matricule"]').removeAttribute('required');
+        } else {
+            agriculteurFields.style.display = 'none';
+            responsableAdminFields.style.display = 'block';
+            // Activer matricule comme requis
+            document.querySelector('input[name="matricule"]').setAttribute('required', 'required');
+        }
+    }
+    
+    roleSelect.addEventListener('change', toggleFields);
+    toggleFields();
+    
+    // Générer mot de passe aléatoire
+    document.getElementById('generatePassword').addEventListener('click', function() {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%';
+        let password = '';
+        for (let i = 0; i < 12; i++) {
+            password += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        document.getElementById('password').value = password;
+    });
+</script>
+{% endblock %}

@@ -1,404 +1,390 @@
+{# templates/admin/base.html.twig - Version moderne #}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FarmVision - Administration</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root {
-            --bg: #0e1312;
-            --bg-panel: #141c1a;
-            --bg-card: #1b2522;
-            --bg-hover: #202e2a;
-            --border: rgba(82, 183, 136, 0.12);
-            --border-strong: rgba(82, 183, 136, 0.25);
-            --green: #52b788;
-            --green-dim: #2d6a4f;
-            --green-bright: #74d0a0;
-            --green-glow: rgba(82,183,136,0.15);
-            --gold: #c8a84b;
-            --gold-dim: rgba(200,168,75,0.15);
-            --red: #e05c5c;
-            --red-dim: rgba(224,92,92,0.12);
-            --text: #e8f5ed;
-            --text-muted: rgba(232,245,237,0.5);
-            --text-dim: rgba(232,245,237,0.3);
-            --mono: 'Courier New', monospace;
-            --sans: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            --sidebar-w: 260px;
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --primary-light: #34d399;
+            --secondary: #6366f1;
+            --secondary-dark: #4f46e5;
+            --dark: #1e293b;
+            --darker: #0f172a;
+            --gray: #64748b;
+            --gray-light: #94a3b8;
+            --gray-lighter: #e2e8f0;
+            --light: #f8fafc;
+            --white: #ffffff;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --success: #10b981;
+            --info: #3b82f6;
+            --sidebar-w: 280px;
+            --header-h: 70px;
+            --radius: 12px;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: var(--sans);
-            background: var(--bg);
-            color: var(--text);
-            display: flex;
-            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+            background: var(--light);
+            color: var(--dark);
             overflow-x: hidden;
         }
 
-        /* SIDEBAR */
+        /* Sidebar moderne */
         .sidebar {
             width: var(--sidebar-w);
-            background: var(--bg-panel);
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
+            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
             position: fixed;
-            top: 0;
             left: 0;
-            bottom: 0;
-            z-index: 50;
+            top: 0;
+            height: 100%;
+            z-index: 100;
+            transition: all 0.3s ease;
             overflow-y: auto;
         }
 
         .sidebar-header {
-            padding: 1.5rem 1.25rem;
-            border-bottom: 1px solid var(--border);
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 1.5rem;
         }
 
-        .sidebar-header h2 {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: var(--text);
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
         }
 
-        .sidebar-header span {
-            color: var(--green);
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
         }
 
-        .sidebar-header p {
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            margin-top: 5px;
+        .logo-text {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--white);
+        }
+
+        .logo-text span {
+            color: var(--primary);
         }
 
         .sidebar-menu {
             list-style: none;
-            padding: 1rem 0.75rem;
+            padding: 0 1rem;
         }
 
         .sidebar-menu li {
-            margin-bottom: 4px;
+            margin-bottom: 0.5rem;
         }
 
         .sidebar-menu li a {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 0.6rem 0.75rem;
-            border-radius: 8px;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius);
+            color: var(--gray-light);
             text-decoration: none;
-            color: var(--text-muted);
-            font-size: 0.875rem;
             font-weight: 500;
-            transition: all 0.15s;
+            transition: all 0.2s;
+        }
+
+        .sidebar-menu li a i {
+            width: 20px;
+            font-size: 1.1rem;
         }
 
         .sidebar-menu li a:hover {
-            background: var(--bg-hover);
-            color: var(--text);
+            background: rgba(255,255,255,0.05);
+            color: var(--white);
         }
 
         .sidebar-menu li.active a {
-            background: var(--green-glow);
-            color: var(--green);
-            border: 1px solid var(--border);
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--white);
+            box-shadow: var(--shadow-md);
         }
 
-        /* MAIN CONTENT */
+        /* Main content */
         .main-content {
             margin-left: var(--sidebar-w);
-            flex: 1;
-            display: flex;
-            flex-direction: column;
             min-height: 100vh;
         }
 
-        /* TOP BAR */
+        /* Top bar */
         .top-bar {
-            background: var(--bg-panel);
-            border-bottom: 1px solid var(--border);
-            padding: 0.75rem 2rem;
+            background: var(--white);
+            padding: 0 2rem;
+            height: var(--header-h);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-bottom: 1px solid var(--gray-lighter);
             position: sticky;
             top: 0;
-            z-index: 40;
+            z-index: 99;
         }
 
         .page-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--text);
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--dark), var(--gray));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        /* CARDS */
-        .card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1.25rem;
-            margin-bottom: 1.25rem;
-        }
-
-        .card-header {
+        .user-menu {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 1rem;
-            padding-bottom: 0.75rem;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .card-header h3 {
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text);
-        }
-
-        /* STATS GRID */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-weight: 600;
+        }
+
+        /* Content */
+        .content {
+            padding: 2rem;
+        }
+
+        /* Cards modernes */
+        .card {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 1.5rem;
             margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s;
+            border: 1px solid var(--gray-lighter);
         }
 
-        .stat-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1.25rem;
-            transition: transform 0.2s, border-color 0.2s;
-        }
-
-        .stat-card:hover {
-            border-color: var(--border-strong);
+        .card:hover {
+            box-shadow: var(--shadow-lg);
             transform: translateY(-2px);
         }
 
+        /* Statistiques cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--gray-lighter);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
         .stat-icon {
-            font-size: 1.8rem;
-            margin-bottom: 0.75rem;
+            font-size: 2rem;
+            margin-bottom: 1rem;
         }
 
         .stat-value {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--green);
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--dark);
             line-height: 1;
         }
 
         .stat-label {
-            font-size: 0.75rem;
-            color: var(--text-muted);
+            color: var(--gray);
+            font-size: 0.875rem;
             margin-top: 0.5rem;
         }
 
-        /* TABLES */
-        table {
+        /* Tableaux modernes */
+        .data-table {
             width: 100%;
             border-collapse: collapse;
         }
 
-        th {
+        .data-table th {
             text-align: left;
-            padding: 0.75rem 1rem;
-            background: rgba(82, 183, 136, 0.05);
-            color: var(--text-muted);
-            font-size: 0.7rem;
+            padding: 1rem;
+            background: var(--gray-lighter);
+            color: var(--dark);
             font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            border-bottom: 1px solid var(--border);
+            font-size: 0.875rem;
         }
 
-        td {
-            padding: 0.75rem 1rem;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            border-bottom: 1px solid rgba(82, 183, 136, 0.06);
+        .data-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--gray-lighter);
+            color: var(--gray);
         }
 
-        tr:hover td {
-            background: var(--bg-hover);
-            color: var(--text);
+        .data-table tr:hover td {
+            background: var(--light);
         }
 
-        /* BADGES */
+        /* Badges */
         .badge {
             display: inline-flex;
             align-items: center;
+            gap: 0.25rem;
             padding: 0.25rem 0.75rem;
-            border-radius: 100px;
-            font-size: 0.7rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
             font-weight: 600;
         }
 
-        .badge-success {
-            background: var(--green-glow);
-            color: var(--green);
-        }
+        .badge-success { background: #d1fae5; color: #065f46; }
+        .badge-warning { background: #fed7aa; color: #92400e; }
+        .badge-danger { background: #fee2e2; color: #991b1b; }
+        .badge-info { background: #dbeafe; color: #1e40af; }
 
-        .badge-warning {
-            background: var(--gold-dim);
-            color: var(--gold);
-        }
-
-        .badge-danger {
-            background: var(--red-dim);
-            color: var(--red);
-        }
-
-        /* BUTTONS */
+        /* Boutons */
         .btn {
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
             padding: 0.5rem 1rem;
-            border-radius: 8px;
-            text-decoration: none;
-            font-size: 0.8rem;
+            border-radius: var(--radius);
             font-weight: 500;
-            transition: all 0.15s;
+            text-decoration: none;
+            transition: all 0.2s;
             cursor: pointer;
             border: none;
-            background: none;
+            font-size: 0.875rem;
         }
 
         .btn-primary {
-            background: var(--green-dim);
-            color: var(--green-bright);
-            border: 1px solid var(--green-dim);
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--white);
         }
 
         .btn-primary:hover {
-            background: var(--green);
-            color: var(--bg);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
         }
 
-        .btn-sm {
-            padding: 0.25rem 0.75rem;
-            font-size: 0.7rem;
+        .btn-secondary {
+            background: var(--secondary);
+            color: var(--white);
         }
 
-        .btn-danger {
-            background: var(--red-dim);
-            color: var(--red);
-            border: 1px solid transparent;
+        .btn-outline {
+            border: 1px solid var(--gray-lighter);
+            background: var(--white);
+            color: var(--gray);
         }
 
-        .btn-danger:hover {
-            background: var(--red);
-            color: white;
+        .btn-outline:hover {
+            border-color: var(--primary);
+            color: var(--primary);
         }
 
-        /* FORM GROUPS */
+        /* Formulaires */
         .form-group {
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
         }
 
         .form-group label {
             display: block;
             margin-bottom: 0.5rem;
-            font-size: 0.8rem;
             font-weight: 500;
-            color: var(--text-muted);
+            color: var(--dark);
         }
 
         .form-control {
             width: 100%;
-            padding: 0.6rem 0.75rem;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: var(--text);
-            font-size: 0.85rem;
-            transition: border-color 0.15s;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--gray-lighter);
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+            transition: all 0.2s;
         }
 
         .form-control:focus {
             outline: none;
-            border-color: var(--green);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
         }
 
-        .form-control.error {
-            border-color: var(--red);
-        }
-
-        select.form-control {
-            cursor: pointer;
-        }
-
-        textarea.form-control {
-            resize: vertical;
-            font-family: inherit;
-        }
-
-        /* FLASH MESSAGES */
-        .flash-message {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 12px 20px;
-            border-radius: 8px;
-            color: white;
-            z-index: 1000;
-            animation: slideIn 0.3s ease, fadeOut 0.5s ease 4.5s forwards;
+        /* Search bar */
+        .search-bar {
             display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 0.85rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
         }
 
-        .flash-success {
-            background: var(--green-dim);
-            border-left: 4px solid var(--green-bright);
+        .search-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--gray-lighter);
+            border-radius: var(--radius);
+            font-size: 0.875rem;
         }
 
-        .flash-error {
-            background: var(--red-dim);
-            border-left: 4px solid var(--red);
-            color: var(--red);
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+        .fade-in {
+            animation: fadeIn 0.3s ease;
         }
 
-        @keyframes fadeOut {
-            to {
-                opacity: 0;
-                visibility: hidden;
-            }
-        }
-
-        /* TEXT COLORS */
-        .text-success { color: var(--green); }
-        .text-danger { color: var(--red); }
-        .text-warning { color: var(--gold); }
-
-        /* RESPONSIVE */
+        /* Responsive */
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
-                transition: transform 0.3s;
             }
             .sidebar.open {
                 transform: translateX(0);
@@ -413,222 +399,52 @@
     </style>
 </head>
 <body>
-    <!-- SIDEBAR -->
     <div class="sidebar">
         <div class="sidebar-header">
-            <h2>Farm<span>Vision</span></h2>
-            <p>Administration</p>
+            <div class="logo">
+                <div class="logo-icon">🌱</div>
+                <div class="logo-text">Farm<span>Vision</span></div>
+            </div>
         </div>
         <ul class="sidebar-menu">
             <li class="{{ app.request.get('_route') == 'admin_dashboard' ? 'active' : '' }}">
-                <a href="{{ path('admin_dashboard') }}">📊 Dashboard</a>
+                <a href="{{ path('admin_dashboard') }}"><i class="fas fa-chart-line"></i> Dashboard</a>
             </li>
             <li class="{{ app.request.get('_route') starts with 'admin_equipement' ? 'active' : '' }}">
-                <a href="{{ path('admin_equipement_index') }}">🔧 Équipements</a>
+                <a href="{{ path('admin_equipement_index') }}"><i class="fas fa-tractor"></i> Équipements</a>
             </li>
             <li class="{{ app.request.get('_route') starts with 'admin_maintenance' ? 'active' : '' }}">
-                <a href="{{ path('admin_maintenance_index') }}">🛠️ Maintenances</a>
+                <a href="{{ path('admin_maintenance_index') }}"><i class="fas fa-wrench"></i> Maintenances</a>
+            </li>
+            <li class="{{ app.request.get('_route') starts with 'admin_user' ? 'active' : '' }}">
+                <a href="{{ path('admin_user_index') }}"><i class="fas fa-users"></i> Utilisateurs</a>
             </li>
         </ul>
     </div>
 
-    <!-- MAIN CONTENT -->
     <div class="main-content">
-        <!-- TOP BAR -->
         <div class="top-bar">
-            <div class="page-title">
-                {% block page_title %}Tableau de bord{% endblock %}
-            </div>
-            <div>
-                <span style="color: var(--text-muted);">👤 Administrateur</span>
+            <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
+            <div class="user-menu">
+                {% if app.user %}
+                    <span style="color: var(--gray);">{{ app.user.prenom }} {{ app.user.nom }}</span>
+                    <div class="user-avatar">{{ app.user.prenom|first }}{{ app.user.nom|first }}</div>
+                    <a href="{{ path('app_logout') }}" style="color: var(--danger); text-decoration: none;">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                {% endif %}
             </div>
         </div>
-
-        <!-- CONTENT -->
-        <div style="padding: 1.5rem;">
+        <div class="content">
             {% block body %}{% endblock %}
         </div>
     </div>
 
-    <!-- FLASH MESSAGES -->
-    {% for message in app.flashes('success') %}
-        <div class="flash-message flash-success">
-            <span>✅</span> {{ message }}
-        </div>
-    {% endfor %}
-
-    {% for message in app.flashes('error') %}
-        <div class="flash-message flash-error">
-            <span>❌</span> {{ message }}
-        </div>
-    {% endfor %}
-
-    <!-- VALIDATION JAVASCRIPT -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Fonction pour marquer les champs en erreur
-            function markErrors(errors) {
-                for (const [field, message] of Object.entries(errors)) {
-                    const input = document.querySelector(`[name="${field}"]`);
-                    if (input) {
-                        input.classList.add('error');
-                        // Ajouter un message d'erreur sous le champ
-                        let errorSpan = input.parentElement.querySelector('.field-error');
-                        if (!errorSpan) {
-                            errorSpan = document.createElement('span');
-                            errorSpan.className = 'field-error';
-                            errorSpan.style.color = 'var(--red)';
-                            errorSpan.style.fontSize = '0.7rem';
-                            errorSpan.style.marginTop = '4px';
-                            errorSpan.style.display = 'block';
-                            input.parentElement.appendChild(errorSpan);
-                        }
-                        errorSpan.textContent = message;
-                    }
-                }
-            }
-
-            // Fonction pour nettoyer les erreurs
-            function clearErrors(form) {
-                form.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
-                form.querySelectorAll('.field-error').forEach(el => el.remove());
-            }
-
-            // Validation formulaire équipement
-            const equipementForm = document.querySelector('form[action*="equipement"][method="post"]');
-            if (equipementForm) {
-                equipementForm.addEventListener('submit', function(e) {
-                    clearErrors(this);
-                    let errors = {};
-                    
-                    // Nom
-                    const nom = this.querySelector('input[name="nom"]');
-                    if (!nom || !nom.value.trim()) {
-                        errors.nom = 'Le nom est obligatoire';
-                    } else if (nom.value.trim().length < 2) {
-                        errors.nom = 'Le nom doit contenir au moins 2 caractères';
-                    } else if (nom.value.trim().length > 100) {
-                        errors.nom = 'Le nom ne doit pas dépasser 100 caractères';
-                    }
-                    
-                    // Type
-                    const type = this.querySelector('select[name="type"]');
-                    if (!type || !type.value) {
-                        errors.type = 'Veuillez sélectionner un type';
-                    }
-                    
-                    // État
-                    const etat = this.querySelector('select[name="etat"]');
-                    if (!etat || !etat.value) {
-                        errors.etat = 'Veuillez sélectionner un état';
-                    }
-                    
-                    // Date d'achat
-                    const dateAchat = this.querySelector('input[name="date_achat"]');
-                    if (dateAchat && dateAchat.value) {
-                        const date = new Date(dateAchat.value);
-                        if (isNaN(date.getTime())) {
-                            errors.date_achat = 'Date invalide';
-                        } else if (date > new Date()) {
-                            errors.date_achat = 'La date d\'achat ne peut pas être dans le futur';
-                        }
-                    }
-                    
-                    // Durée de vie
-                    const dureeVie = this.querySelector('input[name="duree_vie_estimee"]');
-                    if (dureeVie && dureeVie.value) {
-                        const value = parseInt(dureeVie.value);
-                        if (isNaN(value)) {
-                            errors.duree_vie_estimee = 'Doit être un nombre';
-                        } else if (value < 1) {
-                            errors.duree_vie_estimee = 'La durée doit être au moins 1 an';
-                        } else if (value > 50) {
-                            errors.duree_vie_estimee = 'La durée ne peut pas dépasser 50 ans';
-                        }
-                    }
-                    
-                    if (Object.keys(errors).length > 0) {
-                        e.preventDefault();
-                        markErrors(errors);
-                    }
-                });
-            }
-            
-            // Validation formulaire maintenance
-            const maintenanceForm = document.querySelector('form[action*="maintenance"][method="post"]');
-            if (maintenanceForm) {
-                maintenanceForm.addEventListener('submit', function(e) {
-                    clearErrors(this);
-                    let errors = {};
-                    
-                    // Équipement
-                    const equipement = this.querySelector('select[name="equipement_id"]');
-                    if (!equipement || !equipement.value) {
-                        errors.equipement_id = 'Veuillez sélectionner un équipement';
-                    }
-                    
-                    // Type maintenance
-                    const typeMaint = this.querySelector('select[name="type_maintenance"]');
-                    if (!typeMaint || !typeMaint.value) {
-                        errors.type_maintenance = 'Veuillez sélectionner un type';
-                    }
-                    
-                    // Date
-                    const dateMaint = this.querySelector('input[name="date_maintenance"]');
-                    if (!dateMaint || !dateMaint.value) {
-                        errors.date_maintenance = 'La date est obligatoire';
-                    } else {
-                        const date = new Date(dateMaint.value);
-                        if (isNaN(date.getTime())) {
-                            errors.date_maintenance = 'Date invalide';
-                        }
-                    }
-                    
-                    // Coût
-                    const cout = this.querySelector('input[name="cout"]');
-                    if (cout && cout.value) {
-                        const value = parseFloat(cout.value);
-                        if (isNaN(value)) {
-                            errors.cout = 'Doit être un nombre';
-                        } else if (value < 0) {
-                            errors.cout = 'Le coût ne peut pas être négatif';
-                        } else if (value > 100000) {
-                            errors.cout = 'Le coût ne peut pas dépasser 100 000 DT';
-                        }
-                    }
-                    
-                    if (Object.keys(errors).length > 0) {
-                        e.preventDefault();
-                        markErrors(errors);
-                    }
-                });
-            }
-            
-            // Confirmation suppression
-            const deleteForms = document.querySelectorAll('form[action*="delete"]');
-            deleteForms.forEach(form => {
-                form.addEventListener('submit', function(e) {
-                    if (!confirm('⚠️ Êtes-vous sûr de vouloir supprimer cet élément ? Cette action est irréversible.')) {
-                        e.preventDefault();
-                    }
-                });
-            });
-            
-            // Confirmation complétion maintenance
-            const completeForms = document.querySelectorAll('form[action*="complete"]');
-            completeForms.forEach(form => {
-                form.addEventListener('submit', function(e) {
-                    if (!confirm('✓ Marquer cette maintenance comme réalisée ?')) {
-                        e.preventDefault();
-                    }
-                });
-            });
-            
-            // Supprimer les messages flash automatiquement
-            setTimeout(() => {
-                document.querySelectorAll('.flash-message').forEach(msg => msg.remove());
-            }, 5000);
-        });
+        // Supprimer les messages flash après 5 secondes
+        setTimeout(() => {
+            document.querySelectorAll('.flash-message').forEach(msg => msg.remove());
+        }, 5000);
     </script>
 </body>
 </html>
