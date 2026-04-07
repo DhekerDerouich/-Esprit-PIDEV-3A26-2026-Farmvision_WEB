@@ -1,0 +1,85 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block body %}
+<div style="margin-bottom: 2rem;">
+    <a href="{{ path('admin_maintenance_index') }}" class="btn" style="background: var(--bg-panel);">← Retour</a>
+</div>
+
+<div class="card" style="max-width: 800px; margin: 0 auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h1 style="font-size: 1.5rem;">Maintenance #{{ maintenance.id }}</h1>
+        <div>
+            {% if maintenance.statut == 'Réalisée' %}
+                <span class="badge badge-success">✓ Réalisée</span>
+            {% else %}
+                <span class="badge badge-warning">⏰ Planifiée</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div>
+            <div class="form-group">
+                <label>Équipement</label>
+                <div class="form-control" style="background: var(--bg);">
+                    <a href="{{ path('admin_equipement_show', {'id': maintenance.equipement.id}) }}" style="color: var(--green); text-decoration: none;">
+                        {{ maintenance.equipement.nom }}
+                    </a>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Type de maintenance</label>
+                <div class="form-control" style="background: var(--bg);">
+                    {% if maintenance.typeMaintenance == 'Préventive' %}
+                        🛡️ Préventive
+                    {% else %}
+                        🔧 Corrective
+                    {% endif %}
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Date de maintenance</label>
+                <div class="form-control" style="background: var(--bg);">
+                    {{ maintenance.dateMaintenance|date('d/m/Y') }}
+                    {% if maintenance.statut == 'Planifiée' and maintenance.dateMaintenance < date() %}
+                        <span class="badge badge-danger" style="margin-left: 0.5rem;">Dépassée</span>
+                    {% elseif maintenance.statut == 'Planifiée' %}
+                        <span class="badge badge-success" style="margin-left: 0.5rem;">Dans {{ maintenance.joursRestants }} jours</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div>
+            <div class="form-group">
+                <label>Coût</label>
+                <div class="form-control" style="background: var(--bg);">{{ maintenance.cout|number_format(2) }} DT</div>
+            </div>
+            <div class="form-group">
+                <label>Date de création</label>
+                <div class="form-control" style="background: var(--bg);">{{ maintenance.createdAt|date('d/m/Y H:i') }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Description</label>
+        <div class="form-control" style="background: var(--bg); min-height: 100px;">
+            {{ maintenance.description ?: 'Aucune description' }}
+        </div>
+    </div>
+
+    <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: flex-end;">
+        <a href="{{ path('admin_maintenance_edit', {'id': maintenance.id}) }}" class="btn btn-warning">✏️ Modifier</a>
+        {% if maintenance.statut == 'Planifiée' %}
+            <form method="post" action="{{ path('admin_maintenance_complete', {'id': maintenance.id}) }}" onsubmit="return confirm('Marquer cette maintenance comme réalisée ?');" style="display: inline;">
+                <input type="hidden" name="_token" value="{{ csrf_token('complete' ~ maintenance.id) }}">
+                <button type="submit" class="btn btn-primary">✓ Marquer comme réalisée</button>
+            </form>
+        {% endif %}
+        <form method="post" action="{{ path('admin_maintenance_delete', {'id': maintenance.id}) }}" onsubmit="return confirm('Supprimer cette maintenance ?');" style="display: inline;">
+            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ maintenance.id) }}">
+            <button type="submit" class="btn btn-danger">🗑️ Supprimer</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

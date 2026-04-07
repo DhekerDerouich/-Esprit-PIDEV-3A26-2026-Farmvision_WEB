@@ -1,0 +1,60 @@
+{# templates/admin/maintenance/new.html.twig #}
+{% extends 'admin/base.html.twig' %}
+
+{% block body %}
+<div style="margin-bottom: 2rem;">
+    <a href="{{ path('admin_maintenance_index') }}" class="btn" style="background: var(--bg-panel);">← Retour</a>
+</div>
+
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <h1 style="font-size: 1.5rem; margin-bottom: 1.5rem;">Planifier une maintenance</h1>
+    
+    <form method="post">
+        <div class="form-group" style="margin-bottom: 1rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Équipement</label>
+            <select name="equipement_id" class="form-control" required style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);">
+                <option value="">Sélectionner un équipement</option>
+                {% for equipement in equipements %}
+                    <option value="{{ equipement.id }}">{{ equipement.nom }} ({{ equipement.type }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 1rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Type de maintenance</label>
+            <select name="type_maintenance" class="form-control" required style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);">
+                <option value="Préventive">Préventive</option>
+                <option value="Corrective">Corrective</option>
+            </select>
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 1rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Description</label>
+            <textarea name="description" class="form-control" rows="4" style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);"></textarea>
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 1rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Date de maintenance</label>
+            <input type="date" name="date_maintenance" class="form-control" required style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);">
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 1rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Coût (DT)</label>
+            <input type="number" step="0.01" name="cout" class="form-control" style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);">
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 1rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Statut</label>
+            <select name="statut" class="form-control" required style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);">
+                <option value="Planifiée">Planifiée</option>
+                <option value="Réalisée">Réalisée</option>
+            </select>
+        </div>
+        
+        <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+            <button type="submit" class="btn btn-primary">💾 Planifier</button>
+            <a href="{{ path('admin_maintenance_index') }}" class="btn" style="background: var(--bg-panel);">Annuler</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

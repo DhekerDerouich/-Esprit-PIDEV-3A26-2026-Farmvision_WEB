@@ -1,0 +1,61 @@
+{# templates/admin/maintenance/edit.html.twig #}
+{% extends 'admin/base.html.twig' %}
+
+{% block body %}
+<div style="margin-bottom: 2rem;">
+    <a href="{{ path('admin_maintenance_index') }}" class="btn" style="background: var(--bg-panel);">← Retour</a>
+</div>
+
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <h1 style="font-size: 1.5rem; margin-bottom: 1.5rem;">Modifier la maintenance</h1>
+    
+    <form method="post">
+        <div class="form-group" style="margin-bottom: 1rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Équipement</label>
+            <select name="equipement_id" class="form-control" required style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);">
+                {% for equipement in equipements %}
+                    <option value="{{ equipement.id }}" {% if maintenance.equipement and maintenance.equipement.id == equipement.id %}selected{% endif %}>
+                        {{ equipement.nom }} ({{ equipement.type }})
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 1rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Type de maintenance</label>
+            <select name="type_maintenance" class="form-control" required style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);">
+                <option value="Préventive" {% if maintenance.typeMaintenance == 'Préventive' %}selected{% endif %}>Préventive</option>
+                <option value="Corrective" {% if maintenance.typeMaintenance == 'Corrective' %}selected{% endif %}>Corrective</option>
+            </select>
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 1rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Description</label>
+            <textarea name="description" class="form-control" rows="4" style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);">{{ maintenance.description }}</textarea>
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 1rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Date de maintenance</label>
+            <input type="date" name="date_maintenance" value="{{ maintenance.dateMaintenance ? maintenance.dateMaintenance|date('Y-m-d') : '' }}" class="form-control" required style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);">
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 1rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Coût (DT)</label>
+            <input type="number" step="0.01" name="cout" value="{{ maintenance.cout }}" class="form-control" style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);">
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 1rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Statut</label>
+            <select name="statut" class="form-control" required style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);">
+                <option value="Planifiée" {% if maintenance.statut == 'Planifiée' %}selected{% endif %}>Planifiée</option>
+                <option value="Réalisée" {% if maintenance.statut == 'Réalisée' %}selected{% endif %}>Réalisée</option>
+            </select>
+        </div>
+        
+        <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+            <button type="submit" class="btn btn-primary">💾 Enregistrer</button>
+            <a href="{{ path('admin_maintenance_index') }}" class="btn" style="background: var(--bg-panel);">Annuler</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

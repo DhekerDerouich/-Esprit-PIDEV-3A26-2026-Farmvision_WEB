@@ -1,0 +1,135 @@
+{# templates/admin/equipement/index.html.twig #}
+{% extends 'admin/base.html.twig' %}
+
+{% block body %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h1 style="font-size: 1.5rem;">Gestion des équipements</h1>
+    <a href="{{ path('admin_equipement_new') }}" class="btn btn-primary">+ Ajouter un équipement</a>
+</div>
+
+<!-- FORMULAIRE DE RECHERCHE -->
+<div class="card">
+    <form method="get" action="{{ path('admin_equipement_index') }}">
+        <div style="display: grid; grid-template-columns: 1fr auto auto auto; gap: 1rem; align-items: end;">
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">🔍 Rechercher</label>
+                <input type="text" name="search" value="{{ search }}" placeholder="Nom ou type..." class="form-control">
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">📂 Type</label>
+                <select name="type" class="form-control">
+                    <option value="all" {% if selectedType == 'all' %}selected{% endif %}>Tous</option>
+                    {% for type in types %}
+                        <option value="{{ type }}" {% if selectedType == type %}selected{% endif %}>{{ type }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">📊 État</label>
+                <select name="etat" class="form-control">
+                    <option value="all" {% if selectedEtat == 'all' %}selected{% endif %}>Tous</option>
+                    <option value="Fonctionnel" {% if selectedEtat == 'Fonctionnel' %}selected{% endif %}>Fonctionnel</option>
+                    <option value="En panne" {% if selectedEtat == 'En panne' %}selected{% endif %}>En panne</option>
+                    <option value="Maintenance" {% if selectedEtat == 'Maintenance' %}selected{% endif %}>Maintenance</option>
+                </select>
+            </div>
+            <div>
+                <button type="submit" class="btn btn-primary">Rechercher</button>
+                <a href="{{ path('admin_equipement_index') }}" class="btn" style="background: var(--bg-panel);">Réinitialiser</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Statistiques -->
+<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; margin-bottom: 2rem;">
+    <div class="card">
+        <div style="font-size: 0.7rem; color: var(--text-muted);">Total</div>
+        <div style="font-size: 1.75rem; font-weight: 600;">{{ stats.total }}</div>
+    </div>
+    <div class="card">
+        <div style="font-size: 0.7rem; color: var(--text-muted);">Fonctionnels</div>
+        <div style="font-size: 1.75rem; font-weight: 600; color: var(--green);">{{ stats.fonctionnels }}</div>
+    </div>
+    <div class="card">
+        <div style="font-size: 0.7rem; color: var(--text-muted);">En panne</div>
+        <div style="font-size: 1.75rem; font-weight: 600; color: var(--red);">{{ stats.enPanne }}</div>
+    </div>
+    <div class="card">
+        <div style="font-size: 0.7rem; color: var(--text-muted);">En maintenance</div>
+        <div style="font-size: 1.75rem; font-weight: 600; color: var(--gold);">{{ stats.enMaintenance }}</div>
+    </div>
+    <div class="card">
+        <div style="font-size: 0.7rem; color: var(--text-muted);">Sous garantie</div>
+        <div style="font-size: 1.75rem; font-weight: 600;">{{ stats.sousGarantie }}</div>
+    </div>
+</div>
+
+<!-- Résultats de recherche -->
+{% if search or selectedType != 'all' or selectedEtat != 'all' %}
+    <div style="margin-bottom: 1rem; padding: 0.5rem 1rem; background: var(--green-glow); border-radius: 8px;">
+        🔍 Résultats pour : 
+        {% if search %} "{{ search }}" {% endif %}
+        {% if selectedType != 'all' %} | Type: {{ selectedType }} {% endif %}
+        {% if selectedEtat != 'all' %} | État: {{ selectedEtat }} {% endif %}
+        ({{ equipements|length }} équipement(s) trouvé(s))
+    </div>
+{% endif %}
+
+<!-- Tableau des équipements -->
+<div class="card" style="overflow-x: auto;">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nom</th>
+                <th>Type</th>
+                <th>État</th>
+                <th>Date d'achat</th>
+                <th>Âge</th>
+                <th>Garantie</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for equipement in equipements %}
+            <tr>
+                <td>{{ equipement.id }}</td>
+                <td><strong>{{ equipement.nom }}</strong></td>
+                <td>{{ equipement.type }}</td>
+                <td>
+                    {% if equipement.etat == 'Fonctionnel' %}
+                        <span class="badge badge-success">✓ Fonctionnel</span>
+                    {% elseif equipement.etat == 'En panne' %}
+                        <span class="badge badge-danger">⚠ En panne</span>
+                    {% else %}
+                        <span class="badge badge-warning">🔧 Maintenance</span>
+                    {% endif %}
+                </td>
+                <td>{{ equipement.dateAchat ? equipement.dateAchat|date('d/m/Y') : '-' }}</td>
+                <td>{{ equipement.age }} an(s)</td>
+                <td>
+                    {% if equipement.sousGarantie %}
+                        <span class="badge badge-success">✓ Active</span>
+                    {% else %}
+                        <span class="badge badge-danger">Expirée</span>
+                    {% endif %}
+                </td>
+                <td style="display: flex; gap: 0.5rem;">
+                    <a href="{{ path('admin_equipement_show', {'id': equipement.id}) }}" class="btn" style="background: var(--green-dim); color: var(--green); padding: 0.25rem 0.75rem;">👁️</a>
+                    <a href="{{ path('admin_equipement_edit', {'id': equipement.id}) }}" class="btn" style="background: var(--gold-dim); color: var(--gold); padding: 0.25rem 0.75rem;">✏️</a>
+                    <form method="post" action="{{ path('admin_equipement_delete', {'id': equipement.id}) }}" onsubmit="return confirm('Supprimer cet équipement ?');" style="display: inline;">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ equipement.id) }}">
+                        <button type="submit" class="btn" style="background: var(--red-dim); color: var(--red); padding: 0.25rem 0.75rem;">🗑️</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+                <tr>
+                    <td colspan="8" style="text-align: center;">Aucun équipement trouvé</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

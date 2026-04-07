@@ -1,0 +1,36 @@
+controllers:
+    resource:
+        path: ../src/Controller/
+        namespace: App\Controller
+    type: attribute
+
+culture_parcelle_controllers:
+    resource:
+        path: ../src/CultureParcelle/Controller/
+        namespace: App\CultureParcelle\Controller
+    type: attribute
+# Back-office routes
+admin_dashboard:
+    path: /admin
+    controller: App\Controller\Admin\DashboardController::index
+
+admin_equipement_index:
+    path: /admin/equipements
+    controller: App\Controller\Admin\EquipementController::index
+
+admin_maintenance_index:
+    path: /admin/maintenances
+    controller: App\Controller\Admin\MaintenanceController::index
+
+# Front-office routes
+front_home:
+    path: /
+    controller: App\Controller\Front\HomeController::index
+
+front_equipement_index:
+    path: /equipements
+    controller: App\Controller\Front\EquipementController::index
+
+front_maintenance_index:
+    path: /maintenances
+    controller: App\Controller\Front\MaintenanceController::index

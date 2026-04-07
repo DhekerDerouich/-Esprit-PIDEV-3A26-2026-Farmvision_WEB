@@ -1,0 +1,149 @@
+{% extends 'front/base.html.twig' %}
+
+{% block body %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+    .pf-wrap { max-width: 900px; margin: 0 auto; padding: 2.5rem 2rem; }
+    .pf-back { display: inline-flex; align-items: center; gap: 0.4rem; color: var(--green-mid); text-decoration: none; font-size: 0.9rem; font-weight: 600; margin-bottom: 1.5rem; }
+    .pf-back:hover { text-decoration: underline; }
+    .pf-title { font-family: 'Playfair Display', serif; font-size: 1.9rem; color: var(--green-deep); margin-bottom: 2rem; }
+    .pf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start; }
+    .pf-card { background: #fff; border-radius: 16px; border: 1px solid #e8f0eb; box-shadow: 0 2px 16px rgba(45,106,79,0.06); padding: 1.75rem; }
+    .pf-field { margin-bottom: 1.25rem; }
+    .pf-label { display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.45rem; }
+    .pf-input { width: 100%; padding: 0.65rem 0.9rem; border-radius: 10px; border: 1.5px solid #e0e7e3; background: #f8faf9; color: var(--text); font-size: 0.95rem; outline: none; transition: border-color 0.2s; }
+    .pf-input:focus { border-color: var(--green-light); background: #fff; }
+    .pf-input.error { border-color: #e74c3c; background: #fff8f8; }
+    .pf-error { color: #e74c3c; font-size: 0.8rem; margin-top: 0.3rem; }
+    .pf-hint { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.3rem; }
+    .pf-submit { width: 100%; background: var(--green-mid); color: #fff; padding: 0.8rem; border: none; border-radius: 10px; cursor: pointer; font-size: 1rem; font-weight: 600; margin-top: 0.5rem; transition: background 0.2s; }
+    .pf-submit:hover { background: var(--green-deep); }
+    .pf-map-label { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.6rem; display: block; }
+    #map { height: 380px; border-radius: 12px; border: 1.5px solid #e0e7e3; overflow: hidden; }
+    .pf-map-tip { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem; display: flex; align-items: center; gap: 0.4rem; }
+    .pf-coords { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.75rem; }
+    .pf-coord-box { background: #f0f7f3; border: 1px solid #d0e8d8; border-radius: 8px; padding: 0.5rem 0.75rem; font-size: 0.82rem; color: var(--green-mid); font-weight: 600; }
+    .pf-coord-box span { display: block; font-size: 0.7rem; color: var(--text-muted); font-weight: 400; margin-bottom: 0.1rem; }
+    .pf-errors-box { background: #fdecea; border: 1px solid #e74c3c; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; }
+    .pf-errors-box p { color: #e74c3c; font-weight: 600; margin-bottom: 0.4rem; font-size: 0.9rem; }
+    .pf-errors-box ul { margin: 0; padding-left: 1.2rem; color: #e74c3c; font-size: 0.85rem; }
+</style>
+
+<div class="pf-wrap">
+    <a href="{{ path('front_parcelle_index') }}" class="pf-back">← Retour aux parcelles</a>
+    <h1 class="pf-title">🗺️ Ajouter une parcelle</h1>
+
+    {% if errors is not empty %}
+    <div class="pf-errors-box">
+        <p>⚠️ Veuillez corriger les erreurs :</p>
+        <ul>{% for error in errors %}<li>{{ error }}</li>{% endfor %}</ul>
+    </div>
+    {% endif %}
+
+    <form method="post" action="{{ path('front_parcelle_new') }}" id="parcelleForm">
+        <input type="hidden" name="latitude"  id="lat" value="{{ parcelle.latitude ?? '' }}">
+        <input type="hidden" name="longitude" id="lng" value="{{ parcelle.longitude ?? '' }}">
+
+        <div class="pf-grid">
+            {# Left: form fields #}
+            <div class="pf-card">
+                <div class="pf-field">
+                    <label class="pf-label">Localisation *</label>
+                    <input type="text" name="localisation" id="localisationInput"
+                        value="{{ parcelle.localisation ?? '' }}"
+                        placeholder="Ex: Champ Nord, Sfax..."
+                        class="pf-input {{ errors.localisation is defined ? 'error' : '' }}">
+                    {% if errors.localisation is defined %}
+                        <p class="pf-error">{{ errors.localisation }}</p>
+                    {% endif %}
+                    <p class="pf-hint">Ou cliquez sur la carte pour placer le marqueur automatiquement</p>
+                </div>
+
+                <div class="pf-field">
+                    <label class="pf-label">Surface (ha) *</label>
+                    <input type="number" name="surface"
+                        value="{{ parcelle.surface ?? '' }}"
+                        min="0.01" step="0.01" placeholder="Ex: 2.5"
+                        class="pf-input {{ errors.surface is defined ? 'error' : '' }}">
+                    {% if errors.surface is defined %}
+                        <p class="pf-error">{{ errors.surface }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="pf-coords">
+                    <div class="pf-coord-box"><span>Latitude</span><span id="displayLat">—</span></div>
+                    <div class="pf-coord-box"><span>Longitude</span><span id="displayLng">—</span></div>
+                </div>
+
+                <button type="submit" class="pf-submit" style="margin-top:1.5rem;">✅ Enregistrer la parcelle</button>
+            </div>
+
+            {# Right: map #}
+            <div class="pf-card" style="padding:1.25rem;">
+                <span class="pf-map-label">📍 Localiser sur la carte</span>
+                <div id="map"></div>
+                <p class="pf-map-tip">🖱️ Cliquez sur la carte pour placer le marqueur</p>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    var initLat = {{ parcelle.latitude ?? 36.8065 }};
+    var initLng = {{ parcelle.longitude ?? 10.1815 }};
+    var hasCoords = {{ (parcelle.latitude is not null) ? 'true' : 'false' }};
+
+    var map = L.map('map').setView([initLat, initLng], hasCoords ? 13 : 6);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    var marker = null;
+
+    var greenIcon = L.divIcon({
+        html: '<div style="background:#2d6a4f;width:16px;height:16px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.3);"></div>',
+        iconSize: [16, 16], iconAnchor: [8, 8], className: ''
+    });
+
+    function placeMarker(lat, lng) {
+        if (marker) map.removeLayer(marker);
+        marker = L.marker([lat, lng], { icon: greenIcon, draggable: true }).addTo(map);
+        updateCoords(lat, lng);
+
+        marker.on('dragend', function(e) {
+            var pos = e.target.getLatLng();
+            updateCoords(pos.lat, pos.lng);
+            reverseGeocode(pos.lat, pos.lng);
+        });
+    }
+
+    function updateCoords(lat, lng) {
+        document.getElementById('lat').value = lat.toFixed(6);
+        document.getElementById('lng').value = lng.toFixed(6);
+        document.getElementById('displayLat').textContent = lat.toFixed(5);
+        document.getElementById('displayLng').textContent = lng.toFixed(5);
+    }
+
+    function reverseGeocode(lat, lng) {
+        fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng)
+            .then(r => r.json())
+            .then(data => {
+                if (data && data.display_name) {
+                    var short = data.address.city || data.address.town || data.address.village || data.address.county || '';
+                    var input = document.getElementById('localisationInput');
+                    if (input.value === '') input.value = short || data.display_name.split(',')[0];
+                }
+            }).catch(() => {});
+    }
+
+    if (hasCoords) placeMarker(initLat, initLng);
+
+    map.on('click', function(e) {
+        placeMarker(e.latlng.lat, e.latlng.lng);
+        reverseGeocode(e.latlng.lat, e.latlng.lng);
+    });
+</script>
+{% endblock %}
