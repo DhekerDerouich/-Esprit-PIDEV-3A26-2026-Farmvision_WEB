@@ -1,0 +1,46 @@
+{% extends 'front/base.html.twig' %}
+
+{% block body %}
+<div class="container" style="padding: 3rem 0; max-width: 800px; margin: 0 auto; padding: 3rem 2rem;">
+    <div style="margin-bottom: 2rem;">
+        <a href="{{ path('front_finance_depenses') }}" class="btn-outline btn" style="text-decoration: none;">← Retour</a>
+    </div>
+
+    <div class="card">
+        <h1 style="font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 1.5rem;">✏️ Modifier la dépense</h1>
+        
+        <form method="post">
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Type de dépense *</label>
+                <select name="type_depense" class="form-control" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px;" required>
+                    <option value="Carburant" {% if depense.typeDepense == 'Carburant' %}selected{% endif %}>⛽ Carburant</option>
+                    <option value="Réparation" {% if depense.typeDepense == 'Réparation' %}selected{% endif %}>🔧 Réparation</option>
+                    <option value="Semences" {% if depense.typeDepense == 'Semences' %}selected{% endif %}>🌱 Semences</option>
+                    <option value="Engrais" {% if depense.typeDepense == 'Engrais' %}selected{% endif %}>🌾 Engrais</option>
+                    <option value="Main d'œuvre" {% if depense.typeDepense == "Main d'œuvre" %}selected{% endif %}>👨‍🌾 Main d'œuvre</option>
+                    <option value="Équipement" {% if depense.typeDepense == 'Équipement' %}selected{% endif %}>🚜 Équipement</option>
+                    <option value="Vétérinaire" {% if depense.typeDepense == 'Vétérinaire' %}selected{% endif %}>💊 Vétérinaire</option>
+                    <option value="Autre" {% if depense.typeDepense == 'Autre' %}selected{% endif %}>📋 Autre</option>
+                </select>
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Montant (DT) *</label>
+                <input type="number" name="montant" class="form-control" step="0.01" min="0.01" value="{{ depense.montant }}" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px;" required>
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Date de dépense *</label>
+                <input type="date" name="date_depense" class="form-control" value="{{ depense.dateDepense|date('Y-m-d') }}" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px;" required>
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Description</label>
+                <textarea name="description" class="form-control" rows="3" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px;">{{ depense.description }}</textarea>
+            </div>
+            
+            <button type="submit" class="btn-primary" style="padding: 0.75rem 2rem; border: none; border-radius: 8px; cursor: pointer;">💾 Mettre à jour</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

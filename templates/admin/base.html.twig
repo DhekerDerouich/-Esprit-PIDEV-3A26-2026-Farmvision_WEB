@@ -194,6 +194,21 @@
             transform: translateY(-2px);
         }
 
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .card-header h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
         /* Statistiques cards */
         .stats-grid {
             display: grid;
@@ -328,6 +343,11 @@
             color: var(--primary);
         }
 
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+
         /* Formulaires */
         .form-group {
             margin-bottom: 1.5rem;
@@ -355,6 +375,10 @@
             box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
         }
 
+        textarea.form-control {
+            resize: vertical;
+        }
+
         /* Search bar */
         .search-bar {
             display: flex;
@@ -370,6 +394,52 @@
             border-radius: var(--radius);
             font-size: 0.875rem;
         }
+
+        /* Flash messages */
+        .flash-message {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 1000;
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius);
+            font-weight: 500;
+            animation: slideIn 0.3s ease;
+        }
+
+        .flash-success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid var(--success);
+        }
+
+        .flash-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border-left: 4px solid var(--danger);
+        }
+
+        .flash-warning {
+            background: #fed7aa;
+            color: #92400e;
+            border-left: 4px solid var(--warning);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Text colors */
+        .text-success { color: var(--success); }
+        .text-danger { color: var(--danger); }
+        .text-warning { color: var(--warning); }
 
         /* Animations */
         @keyframes fadeIn {
@@ -416,14 +486,29 @@
             <li class="{{ app.request.get('_route') starts with 'admin_maintenance' ? 'active' : '' }}">
                 <a href="{{ path('admin_maintenance_index') }}"><i class="fas fa-wrench"></i> Maintenances</a>
             </li>
+            
+            <!-- SECTION FINANCES - Added for Dépenses & Revenus -->
+            <li style="margin-top: 1rem; margin-bottom: 0.5rem;">
+                <span style="padding: 0.5rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--gray); display: block;">💰 Finances</span>
+            </li>
+            <li class="{{ app.request.get('_route') starts with 'admin_depense' ? 'active' : '' }}">
+                <a href="{{ path('admin_depense_index') }}"><i class="fas fa-money-bill-wave"></i> Dépenses</a>
+            </li>
+            <li class="{{ app.request.get('_route') starts with 'admin_revenu' ? 'active' : '' }}">
+                <a href="{{ path('admin_revenu_index') }}"><i class="fas fa-chart-line"></i> Revenus</a>
+            </li>
+            
+            <li style="margin-top: 1rem; margin-bottom: 0.5rem;">
+                <span style="padding: 0.5rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--gray); display: block;">👥 Gestion</span>
+            </li>
             <li class="{{ app.request.get('_route') starts with 'admin_user' ? 'active' : '' }}">
                 <a href="{{ path('admin_user_index') }}"><i class="fas fa-users"></i> Utilisateurs</a>
             </li>
             <li class="{{ app.request.get('_route') starts with 'admin_stock' ? 'active' : '' }}">
-                <a href="{{ path('admin_stock_index') }}"> Stocks</a>
+                <a href="{{ path('admin_stock_index') }}"><i class="fas fa-boxes"></i> Stocks</a>
             </li>
             <li class="{{ app.request.get('_route') starts with 'admin_marketplace' ? 'active' : '' }}">
-                <a href="{{ path('admin_marketplace_index') }}"> Marketplace</a>
+                <a href="{{ path('admin_marketplace_index') }}"><i class="fas fa-store"></i> Marketplace</a>
             </li>
         </ul>
     </div>
@@ -442,6 +527,16 @@
             </div>
         </div>
         <div class="content">
+            <!-- Flash messages -->
+            {% for label, messages in app.flashes %}
+                {% for message in messages %}
+                    <div class="flash-message flash-{{ label }}">
+                        {% if label == 'success' %}✅ {% elseif label == 'error' %}❌ {% elseif label == 'warning' %}⚠️ {% endif %}
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endfor %}
+            
             {% block body %}{% endblock %}
         </div>
     </div>
@@ -449,8 +544,19 @@
     <script>
         // Supprimer les messages flash après 5 secondes
         setTimeout(() => {
-            document.querySelectorAll('.flash-message').forEach(msg => msg.remove());
+            document.querySelectorAll('.flash-message').forEach(msg => {
+                msg.style.opacity = '0';
+                msg.style.transform = 'translateX(100%)';
+                setTimeout(() => msg.remove(), 300);
+            });
         }, 5000);
+        
+        // Active link detection
+        document.querySelectorAll('.sidebar-menu li a').forEach(link => {
+            if (link.getAttribute('href') === window.location.pathname) {
+                link.closest('li').classList.add('active');
+            }
+        });
     </script>
 </body>
 </html>

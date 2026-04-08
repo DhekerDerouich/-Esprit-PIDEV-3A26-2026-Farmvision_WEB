@@ -1,0 +1,46 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block page_title %}Ajouter une dépense{% endblock %}
+
+{% block body %}
+<div class="card fade-in">
+    <div class="card-header">
+        <h3>➕ Ajouter une dépense</h3>
+        <a href="{{ path('admin_depense_index') }}" class="btn btn-outline">← Retour</a>
+    </div>
+    
+    <form method="post">
+        <div class="form-group">
+            <label>Type de dépense *</label>
+            <select name="type_depense" class="form-control" required>
+                <option value="">-- Choisir un type --</option>
+                <option value="Carburant">⛽ Carburant</option>
+                <option value="Réparation">🔧 Réparation</option>
+                <option value="Semences">🌱 Semences</option>
+                <option value="Engrais">🌾 Engrais</option>
+                <option value="Main d'œuvre">👨‍🌾 Main d'œuvre</option>
+                <option value="Équipement">🚜 Équipement</option>
+                <option value="Vétérinaire">💊 Vétérinaire</option>
+                <option value="Autre">📋 Autre</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Montant (DT) *</label>
+            <input type="number" name="montant" class="form-control" step="0.01" min="0.01" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Date de dépense *</label>
+            <input type="date" name="date_depense" class="form-control" value="{{ 'now'|date('Y-m-d') }}" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Description</label>
+            <textarea name="description" class="form-control" rows="3"></textarea>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">💾 Enregistrer</button>
+    </form>
+</div>
+{% endblock %}

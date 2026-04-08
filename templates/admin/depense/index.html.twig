@@ -1,0 +1,116 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block page_title %}Gestion des Dépenses{% endblock %}
+
+{% block body %}
+<div class="fade-in">
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">💰</div>
+            <div class="stat-value">{{ stats.total|number_format(2) }} DT</div>
+            <div class="stat-label">Total des dépenses</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">📅</div>
+            <div class="stat-value">{{ stats.ceMois|number_format(2) }} DT</div>
+            <div class="stat-label">Ce mois-ci</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">📋</div>
+            <div class="stat-value">{{ depenses|length }}</div>
+            <div class="stat-label">Nombre de transactions</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3>🔍 Filtres</h3>
+            <a href="{{ path('admin_depense_new') }}" class="btn btn-primary">+ Nouvelle dépense</a>
+        </div>
+        <form method="get" class="search-bar">
+            <input type="text" name="search" class="search-input" value="{{ search }}" placeholder="Rechercher par type ou description...">
+            
+            <select name="type" class="search-input">
+                <option value="all">Tous les types</option>
+                {% for type in typeOptions %}
+                    <option value="{{ type }}" {% if selectedType == type %}selected{% endif %}>{{ type }}</option>
+                {% endfor %}
+            </select>
+            
+            <!-- DATE RANGE FILTERS -->
+            <input type="date" name="start_date" class="search-input" value="{{ startDate }}" placeholder="Date début">
+            <input type="date" name="end_date" class="search-input" value="{{ endDate }}" placeholder="Date fin">
+            
+            <button type="submit" class="btn btn-primary">🔍 Filtrer</button>
+            <a href="{{ path('admin_depense_index') }}" class="btn btn-outline">🔄 Réinitialiser</a>
+        </form>
+    </div>
+
+    {% if stats.parType|length > 0 %}
+    <div class="card">
+        <h3>📈 Répartition par type de dépense</h3>
+        <table class="data-table">
+            <thead>
+                <tr><th>Type</th><th>Montant total</th><th>Pourcentage</th></tr>
+            </thead>
+            <tbody>
+                {% for type in stats.parType %}
+                <tr>
+                    <td><span class="badge badge-warning">{{ type.type }}</span></td>
+                    <td class="text-danger">{{ type.total|number_format(2) }} DT</td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span>{{ stats.total > 0 ? ((type.total / stats.total) * 100)|round(1) : 0 }}%</span>
+                            <div style="flex: 1; height: 8px; background: var(--gray-lighter); border-radius: 4px; overflow: hidden;">
+                                <div style="width: {{ stats.total > 0 ? ((type.total / stats.total) * 100) : 0 }}%; height: 100%; background: linear-gradient(90deg, var(--danger), var(--warning));"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <h3>📋 Liste des dépenses</h3>
+        
+        {% if depenses|length > 0 %}
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Type</th>
+                    <th>Montant</th>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for depense in depenses %}
+                <tr>
+                    <td>#{{ depense.idDepense }}</td>
+                    <td><span class="badge badge-warning">{{ depense.typeDepense }}</span></td>
+                    <td class="text-danger">{{ depense.montant|number_format(2) }} DT</td>
+                    <td>{{ depense.dateDepense|date('d/m/Y') }}</td>
+                    <td>{{ depense.description|slice(0, 50) }}{% if depense.description|length > 50 %}...{% endif %}</td>
+                    <td>
+                        <a href="{{ path('admin_depense_show', {'idDepense': depense.idDepense}) }}" class="btn btn-sm btn-outline">👁️</a>
+                        <a href="{{ path('admin_depense_edit', {'idDepense': depense.idDepense}) }}" class="btn btn-sm btn-outline">✏️</a>
+                        <form method="post" action="{{ path('admin_depense_delete', {'idDepense': depense.idDepense}) }}" style="display:inline" onsubmit="return confirm('Supprimer cette dépense ?')">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ depense.idDepense) }}">
+                            <button type="submit" class="btn btn-sm btn-outline">🗑️</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p style="text-align: center; color: var(--gray); padding: 2rem;">Aucune dépense trouvée.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
