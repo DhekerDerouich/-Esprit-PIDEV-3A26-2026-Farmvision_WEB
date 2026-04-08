@@ -1,0 +1,44 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block page_title %}Ajouter un revenu{% endblock %}
+
+{% block body %}
+<div class="card fade-in">
+    <div class="card-header">
+        <h3>➕ Ajouter un revenu</h3>
+        <a href="{{ path('admin_revenu_index') }}" class="btn btn-outline">← Retour</a>
+    </div>
+    
+    <form method="post">
+        <div class="form-group">
+            <label>Source du revenu *</label>
+            <select name="source" class="form-control" required>
+                <option value="">-- Choisir une source --</option>
+                <option value="Vente récoltes">🌾 Vente de récoltes</option>
+                <option value="Vente animaux">🐄 Vente d'animaux</option>
+                <option value="Subventions">💰 Subventions</option>
+                <option value="Prestations">🚜 Prestations de services</option>
+                <option value="Location matériel">📦 Location de matériel</option>
+                <option value="Autre">📋 Autre</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Montant (DT) *</label>
+            <input type="number" name="montant" class="form-control" step="0.01" min="0.01" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Date de revenu *</label>
+            <input type="date" name="date_revenu" class="form-control" value="{{ 'now'|date('Y-m-d') }}" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Description</label>
+            <textarea name="description" class="form-control" rows="3"></textarea>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">💾 Enregistrer</button>
+    </form>
+</div>
+{% endblock %}

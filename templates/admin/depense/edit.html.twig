@@ -1,0 +1,57 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block page_title %}Modifier la dépense{% endblock %}
+
+{% block body %}
+<div class="card fade-in">
+    <div class="card-header">
+        <h3>✏️ Modifier la dépense #{{ depense.idDepense }}</h3>
+        <a href="{{ path('admin_depense_index') }}" class="btn btn-outline">← Retour</a>
+    </div>
+    
+    <form method="post">
+        <div class="form-group">
+            <label>Type de dépense *</label>
+            <select name="type_depense" class="form-control" required>
+                <option value="Carburant" {% if depense.typeDepense == 'Carburant' %}selected{% endif %}>⛽ Carburant</option>
+                <option value="Réparation" {% if depense.typeDepense == 'Réparation' %}selected{% endif %}>🔧 Réparation</option>
+                <option value="Semences" {% if depense.typeDepense == 'Semences' %}selected{% endif %}>🌱 Semences</option>
+                <option value="Engrais" {% if depense.typeDepense == 'Engrais' %}selected{% endif %}>🌾 Engrais</option>
+                <option value="Main d'œuvre" {% if depense.typeDepense == "Main d'œuvre" %}selected{% endif %}>👨‍🌾 Main d'œuvre</option>
+                <option value="Équipement" {% if depense.typeDepense == 'Équipement' %}selected{% endif %}>🚜 Équipement</option>
+                <option value="Vétérinaire" {% if depense.typeDepense == 'Vétérinaire' %}selected{% endif %}>💊 Vétérinaire</option>
+                <option value="Autre" {% if depense.typeDepense == 'Autre' %}selected{% endif %}>📋 Autre</option>
+            </select>
+            {% if errors.type_depense is defined %}
+                <small class="text-danger">{{ errors.type_depense }}</small>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label>Montant (DT) *</label>
+            <input type="number" name="montant" class="form-control" step="0.01" min="0.01" value="{{ depense.montant }}" required>
+            {% if errors.montant is defined %}
+                <small class="text-danger">{{ errors.montant }}</small>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label>Date de dépense *</label>
+            <input type="date" name="date_depense" class="form-control" value="{{ depense.dateDepense|date('Y-m-d') }}" required>
+            {% if errors.date_depense is defined %}
+                <small class="text-danger">{{ errors.date_depense }}</small>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label>Description</label>
+            <textarea name="description" class="form-control" rows="3">{{ depense.description }}</textarea>
+            {% if errors.description is defined %}
+                <small class="text-danger">{{ errors.description }}</small>
+            {% endif %}
+        </div>
+        
+        <button type="submit" class="btn btn-primary">💾 Mettre à jour</button>
+    </form>
+</div>
+{% endblock %}

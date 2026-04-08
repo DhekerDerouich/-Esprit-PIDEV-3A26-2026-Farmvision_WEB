@@ -1,0 +1,116 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block page_title %}Gestion des Revenus{% endblock %}
+
+{% block body %}
+<div class="fade-in">
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">💰</div>
+            <div class="stat-value">{{ stats.total|number_format(2) }} DT</div>
+            <div class="stat-label">Total des revenus</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">📅</div>
+            <div class="stat-value">{{ stats.ceMois|number_format(2) }} DT</div>
+            <div class="stat-label">Ce mois-ci</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">📋</div>
+            <div class="stat-value">{{ revenus|length }}</div>
+            <div class="stat-label">Nombre de transactions</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3>🔍 Filtres</h3>
+            <a href="{{ path('admin_revenu_new') }}" class="btn btn-primary">+ Nouveau revenu</a>
+        </div>
+        <form method="get" class="search-bar">
+            <input type="text" name="search" class="search-input" value="{{ search }}" placeholder="Rechercher par source ou description...">
+            
+            <select name="source" class="search-input">
+                <option value="all">Toutes les sources</option>
+                {% for source in sourceOptions %}
+                    <option value="{{ source }}" {% if selectedSource == source %}selected{% endif %}>{{ source }}</option>
+                {% endfor %}
+            </select>
+            
+            <!-- DATE RANGE FILTERS -->
+            <input type="date" name="start_date" class="search-input" value="{{ startDate }}" placeholder="Date début">
+            <input type="date" name="end_date" class="search-input" value="{{ endDate }}" placeholder="Date fin">
+            
+            <button type="submit" class="btn btn-primary">🔍 Filtrer</button>
+            <a href="{{ path('admin_revenu_index') }}" class="btn btn-outline">🔄 Réinitialiser</a>
+        </form>
+    </div>
+
+    {% if stats.parSource|length > 0 %}
+    <div class="card">
+        <h3>📈 Répartition par source de revenu</h3>
+        <table class="data-table">
+            <thead>
+                <tr><th>Source</th><th>Montant total</th><th>Pourcentage</th></tr>
+            </thead>
+            <tbody>
+                {% for source in stats.parSource %}
+                <tr>
+                    <td><span class="badge badge-success">{{ source.source }}</span></td>
+                    <td class="text-success">{{ source.total|number_format(2) }} DT</td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span>{{ stats.total > 0 ? ((source.total / stats.total) * 100)|round(1) : 0 }}%</span>
+                            <div style="flex: 1; height: 8px; background: var(--gray-lighter); border-radius: 4px; overflow: hidden;">
+                                <div style="width: {{ stats.total > 0 ? ((source.total / stats.total) * 100) : 0 }}%; height: 100%; background: linear-gradient(90deg, var(--success), var(--primary));"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <h3>📋 Liste des revenus</h3>
+        
+        {% if revenus|length > 0 %}
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Source</th>
+                    <th>Montant</th>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for revenu in revenus %}
+                <tr>
+                    <td>#{{ revenu.idRevenu }}</td>
+                    <td><span class="badge badge-success">{{ revenu.source }}</span></td>
+                    <td class="text-success">{{ revenu.montant|number_format(2) }} DT</td>
+                    <td>{{ revenu.dateRevenu|date('d/m/Y') }}</td>
+                    <td>{{ revenu.description|slice(0, 50) }}{% if revenu.description|length > 50 %}...{% endif %}</td>
+                    <td>
+                        <a href="{{ path('admin_revenu_show', {'idRevenu': revenu.idRevenu}) }}" class="btn btn-sm btn-outline">👁️</a>
+                        <a href="{{ path('admin_revenu_edit', {'idRevenu': revenu.idRevenu}) }}" class="btn btn-sm btn-outline">✏️</a>
+                        <form method="post" action="{{ path('admin_revenu_delete', {'idRevenu': revenu.idRevenu}) }}" style="display:inline" onsubmit="return confirm('Supprimer ce revenu ?')">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ revenu.idRevenu) }}">
+                            <button type="submit" class="btn btn-sm btn-outline">🗑️</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p style="text-align: center; color: var(--gray); padding: 2rem;">Aucun revenu trouvé.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

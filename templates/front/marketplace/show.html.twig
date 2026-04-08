@@ -1,0 +1,56 @@
+{% extends 'front/base.html.twig' %}
+
+{% block body %}
+<div class="container" style="padding: 3rem 0;">
+    <div style="margin-bottom: 2rem;">
+        <a href="{{ path('front_marketplace_index') }}" class="btn-outline btn">← Retour</a>
+    </div>
+
+    <div class="card" style="max-width: 600px; margin: 0 auto;">
+        <div style="text-align: center; margin-bottom: 1rem;">
+            <div style="font-size: 4rem;">
+                {% if marketplace.stock.typeProduit == 'Légumes' %}🥕
+                {% elseif marketplace.stock.typeProduit == 'Fruits' %}🍎
+                {% elseif marketplace.stock.typeProduit == 'Céréales' %}🌾
+                {% else %}🛒
+                {% endif %}
+            </div>
+            <h1 style="font-family: 'Playfair Display', serif;">{{ marketplace.stock.nomProduit }}</h1>
+            <p class="badge {% if marketplace.statut == 'En vente' %}badge-success{% else %}badge-warning{% endif %}">
+                {{ marketplace.statut }}
+            </p>
+        </div>
+
+        <div style="margin-top: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border);">
+                <strong>Prix unitaire</strong>
+                <span style="font-size: 1.2rem; font-weight: 700; color: var(--green-mid);">
+                    {{ marketplace.prixUnitaire|number_format(2) }} DT
+                </span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border);">
+                <strong>Quantité disponible</strong>
+                <span>{{ marketplace.quantiteEnVente }} {{ marketplace.stock.unite ?: 'unité' }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border);">
+                <strong>Valeur totale</strong>
+                <span>{{ marketplace.valeurTotale|number_format(2) }} DT</span>
+            </div>
+            <div style="padding: 0.75rem 0;">
+                <strong>Description</strong>
+                <p style="margin-top: 0.5rem; color: var(--text-muted);">
+                    {{ marketplace.description ?: 'Aucune description' }}
+                </p>
+            </div>
+        </div>
+
+        {% if marketplace.statut == 'En vente' %}
+        <div style="margin-top: 1.5rem; text-align: center;">
+            <button class="btn btn-primary" style="width: 100%;" onclick="alert('Fonctionnalité d\'achat à venir')">
+                🛒 Acheter maintenant
+            </button>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

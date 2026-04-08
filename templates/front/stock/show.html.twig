@@ -1,0 +1,44 @@
+{% extends 'front/base.html.twig' %}
+
+{% block body %}
+<div class="container" style="padding: 3rem 0;">
+    <div style="margin-bottom: 2rem;">
+        <a href="{{ path('front_stock_index') }}" class="btn-outline btn">← Retour</a>
+    </div>
+
+    <div class="card" style="max-width: 600px; margin: 0 auto;">
+        <div style="text-align: center; margin-bottom: 1rem;">
+            <div style="font-size: 4rem;">
+                {% if stock.typeProduit == 'Légumes' %}🥕
+                {% elseif stock.typeProduit == 'Fruits' %}🍎
+                {% elseif stock.typeProduit == 'Céréales' %}🌾
+                {% elseif stock.typeProduit == 'Engrais' %}🧪
+                {% elseif stock.typeProduit == 'Semences' %}🌱
+                {% else %}📦
+                {% endif %}
+            </div>
+            <h1 style="font-family: 'Playfair Display', serif;">{{ stock.nomProduit }}</h1>
+            <p class="badge badge-success">{{ stock.statut }}</p>
+        </div>
+
+        <div style="margin-top: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border);">
+                <strong>Type</strong>
+                <span>{{ stock.typeProduit ?: '-' }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border);">
+                <strong>Quantité</strong>
+                <span>{{ stock.quantite }} {{ stock.unite ?: 'unité' }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border);">
+                <strong>Date d'entrée</strong>
+                <span>{{ stock.dateEntree ? stock.dateEntree|date('d/m/Y') : '-' }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 0.75rem 0;">
+                <strong>Date d'expiration</strong>
+                <span>{{ stock.dateExpiration ? stock.dateExpiration|date('d/m/Y') : '-' }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
