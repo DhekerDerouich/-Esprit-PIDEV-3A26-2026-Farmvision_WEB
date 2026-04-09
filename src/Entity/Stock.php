@@ -12,7 +12,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 class Stock
 {
     #[ORM\Id]
-    #[ORM\GeneratedValue]
+    #[ORM\GeneratedValue]    
     #[ORM\Column(name: 'id_stock', type: 'integer')]
     private ?int $id = null;
 

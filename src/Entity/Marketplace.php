@@ -11,7 +11,7 @@ use App\Repository\MarketplaceRepository;
 #[ORM\Table(name: 'marketplace')]
 class Marketplace
 {
-    #[ORM\Id]
+    #[ORM\Id]    
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'id_marketplace', type: 'integer')]
     private ?int $id = null;
