@@ -1,0 +1,158 @@
+{% extends 'front/base.html.twig' %}
+
+{% block body %}
+<div class="container" style="padding: 3rem 0; max-width: 1200px; margin: 0 auto; padding: 3rem 2rem;">
+    <h1 style="font-family: 'Playfair Display', serif; font-size: 2.5rem; margin-bottom: 0.5rem;">Maintenances</h1>
+    <p style="color: var(--text-muted); margin-bottom: 2rem;">Suivez toutes les maintenances planifiées et réalisées</p>
+
+    <!-- FORMULAIRE DE RECHERCHE -->
+    <div class="card" style="margin-bottom: 2rem; background: white; border-radius: 12px; padding: 1.5rem;">
+        <form method="get" action="{{ path('front_maintenance_index') }}">
+            <div style="display: grid; grid-template-columns: 1fr auto auto auto; gap: 1rem; align-items: end;">
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">🔍 Rechercher</label>
+                    <input type="text" name="search" value="{{ search|default('') }}" placeholder="Description ou équipement..." style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text);">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">🛠️ Type</label>
+                    <select name="type" style="padding: 0.6rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text);">
+                        <option value="all" {% if selectedType|default('all') == 'all' %}selected{% endif %}>Tous</option>
+                        <option value="Préventive" {% if selectedType|default('all') == 'Préventive' %}selected{% endif %}>Préventive</option>
+                        <option value="Corrective" {% if selectedType|default('all') == 'Corrective' %}selected{% endif %}>Corrective</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">📌 Statut</label>
+                    <select name="statut" style="padding: 0.6rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text);">
+                        <option value="all" {% if selectedStatut|default('all') == 'all' %}selected{% endif %}>Tous</option>
+                        <option value="Planifiée" {% if selectedStatut|default('all') == 'Planifiée' %}selected{% endif %}>Planifiée</option>
+                        <option value="Réalisée" {% if selectedStatut|default('all') == 'Réalisée' %}selected{% endif %}>Réalisée</option>
+                    </select>
+                </div>
+                <div>
+                    <button type="submit" style="background: var(--green-mid); color: white; padding: 0.6rem 1.5rem; border: none; border-radius: 8px; cursor: pointer;">Rechercher</button>
+                    <a href="{{ path('front_maintenance_index') }}" style="margin-left: 0.5rem; padding: 0.6rem 1rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; text-decoration: none; color: var(--text-muted);">Réinitialiser</a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Statistiques -->
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 3rem;">
+        <div class="card" style="text-align: center; background: white; border-radius: 12px; padding: 1.5rem;">
+            <div style="font-size: 2rem;">📊</div>
+            <div style="font-size: 1.5rem; font-weight: 600;">{{ stats.total|default(0) }}</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">Total maintenances</div>
+        </div>
+        <div class="card" style="text-align: center; background: white; border-radius: 12px; padding: 1.5rem;">
+            <div style="font-size: 2rem;">⏰</div>
+            <div style="font-size: 1.5rem; font-weight: 600; color: var(--gold);">{{ stats.planifiees|default(0) }}</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">Planifiées</div>
+        </div>
+        <div class="card" style="text-align: center; background: white; border-radius: 12px; padding: 1.5rem;">
+            <div style="font-size: 2rem;">✅</div>
+            <div style="font-size: 1.5rem; font-weight: 600; color: var(--green-mid);">{{ stats.realisees|default(0) }}</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">Réalisées</div>
+        </div>
+        <div class="card" style="text-align: center; background: white; border-radius: 12px; padding: 1.5rem;">
+            <div style="font-size: 2rem;">💰</div>
+            <div style="font-size: 1.5rem; font-weight: 600;">{{ stats.coutTotal|default(0)|number_format(0) }} DT</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">Coût total</div>
+        </div>
+    </div>
+
+    <!-- Résultats de recherche -->
+    {% if search|default('') != '' or selectedType|default('all') != 'all' or selectedStatut|default('all') != 'all' %}
+        <div style="margin-bottom: 1rem; padding: 0.5rem 1rem; background: var(--green-glow); border-radius: 8px;">
+            🔍 Résultats pour : 
+            {% if search|default('') != '' %} "{{ search }}" {% endif %}
+            {% if selectedType|default('all') != 'all' %} | Type: {{ selectedType }} {% endif %}
+            {% if selectedStatut|default('all') != 'all' %} | Statut: {{ selectedStatut }} {% endif %}
+            ({{ maintenances|length }} maintenance(s) trouvée(s))
+        </div>
+    {% endif %}
+
+    <!-- Liste des maintenances -->
+    <div class="card" style="background: white; border-radius: 12px; padding: 1.5rem;">
+        <h3 style="margin-bottom: 1rem;">📅 Liste des maintenances</h3>
+        <div>
+            {% for maintenance in maintenances %}
+            <div style="padding: 1rem 0; border-bottom: 1px solid var(--border);">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+                    <div style="flex: 2;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.5rem;">
+                            <strong style="font-size: 1rem;">{{ maintenance.equipement.nom }}</strong>
+                            <span class="badge 
+                                {% if maintenance.typeMaintenance == 'Préventive' %}badge-success
+                                {% else %}badge-danger{% endif %}">
+                                {{ maintenance.typeMaintenance }}
+                            </span>
+                            <span class="badge 
+                                {% if maintenance.statut == 'Réalisée' %}badge-success
+                                {% else %}badge-warning{% endif %}">
+                                {{ maintenance.statut }}
+                            </span>
+                            {% if maintenance.statut == 'Planifiée' and maintenance.joursRestants <= 3 %}
+                                <span class="badge badge-danger">⚠️ Urgent</span>
+                            {% endif %}
+                        </div>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.5rem;">
+                            {{ maintenance.description ?: 'Aucune description' }}
+                        </p>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-weight: 600;">{{ maintenance.dateMaintenance|date('d/m/Y') }}</div>
+                        {% if maintenance.statut == 'Planifiée' %}
+                            <div style="font-size: 0.8rem; color: var(--green-mid);">Dans {{ maintenance.joursRestants }} jours</div>
+                        {% endif %}
+                        <div style="font-size: 0.85rem; margin-top: 0.5rem;">💰 {{ maintenance.cout|number_format(2) }} DT</div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div style="text-align: center; padding: 3rem; color: var(--text-muted);">
+                📭 Aucune maintenance trouvée pour votre recherche.
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 100px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+    .badge-success {
+        background: var(--green-mist);
+        color: var(--green-mid);
+    }
+    .badge-warning {
+        background: var(--gold-dim);
+        color: var(--gold);
+    }
+    .badge-danger {
+        background: var(--red-dim);
+        color: var(--red);
+    }
+    .card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+    }
+    :root {
+        --green-mid: #2d6a4f;
+        --green-mist: #d8f3dc;
+        --gold: #c8a84b;
+        --gold-dim: rgba(200,168,75,0.15);
+        --red: #e05c5c;
+        --red-dim: rgba(224,92,92,0.12);
+        --text-muted: #5a6b5e;
+        --border: rgba(45, 106, 79, 0.15);
+        --bg-card: #f8f9fa;
+    }
+</style>
+{% endblock %}

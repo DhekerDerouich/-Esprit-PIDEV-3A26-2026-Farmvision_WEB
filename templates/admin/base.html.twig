@@ -1,0 +1,562 @@
+{# templates/admin/base.html.twig - Version moderne #}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmVision - Administration</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --primary-light: #34d399;
+            --secondary: #6366f1;
+            --secondary-dark: #4f46e5;
+            --dark: #1e293b;
+            --darker: #0f172a;
+            --gray: #64748b;
+            --gray-light: #94a3b8;
+            --gray-lighter: #e2e8f0;
+            --light: #f8fafc;
+            --white: #ffffff;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --success: #10b981;
+            --info: #3b82f6;
+            --sidebar-w: 280px;
+            --header-h: 70px;
+            --radius: 12px;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--light);
+            color: var(--dark);
+            overflow-x: hidden;
+        }
+
+        /* Sidebar moderne */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100%;
+            z-index: 100;
+            transition: all 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .logo-text {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--white);
+        }
+
+        .logo-text span {
+            color: var(--primary);
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0 1rem;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius);
+            color: var(--gray-light);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .sidebar-menu li a i {
+            width: 20px;
+            font-size: 1.1rem;
+        }
+
+        .sidebar-menu li a:hover {
+            background: rgba(255,255,255,0.05);
+            color: var(--white);
+        }
+
+        .sidebar-menu li.active a {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--white);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Main content */
+        .main-content {
+            margin-left: var(--sidebar-w);
+            min-height: 100vh;
+        }
+
+        /* Top bar */
+        .top-bar {
+            background: var(--white);
+            padding: 0 2rem;
+            height: var(--header-h);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--gray-lighter);
+            position: sticky;
+            top: 0;
+            z-index: 99;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--dark), var(--gray));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            font-weight: 600;
+        }
+
+        /* Content */
+        .content {
+            padding: 2rem;
+        }
+
+        /* Cards modernes */
+        .card {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: all 0.3s;
+            border: 1px solid var(--gray-lighter);
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .card-header h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        /* Statistiques cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--gray-lighter);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--dark);
+            line-height: 1;
+        }
+
+        .stat-label {
+            color: var(--gray);
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Tableaux modernes */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            text-align: left;
+            padding: 1rem;
+            background: var(--gray-lighter);
+            color: var(--dark);
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .data-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--gray-lighter);
+            color: var(--gray);
+        }
+
+        .data-table tr:hover td {
+            background: var(--light);
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-success { background: #d1fae5; color: #065f46; }
+        .badge-warning { background: #fed7aa; color: #92400e; }
+        .badge-danger { background: #fee2e2; color: #991b1b; }
+        .badge-info { background: #dbeafe; color: #1e40af; }
+
+        /* Boutons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius);
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+            font-size: 0.875rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: var(--white);
+        }
+
+        .btn-outline {
+            border: 1px solid var(--gray-lighter);
+            background: var(--white);
+            color: var(--gray);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        /* Formulaires */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--gray-lighter);
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+        }
+
+        /* Search bar */
+        .search-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--gray-lighter);
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+        }
+
+        /* Flash messages */
+        .flash-message {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 1000;
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius);
+            font-weight: 500;
+            animation: slideIn 0.3s ease;
+        }
+
+        .flash-success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid var(--success);
+        }
+
+        .flash-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border-left: 4px solid var(--danger);
+        }
+
+        .flash-warning {
+            background: #fed7aa;
+            color: #92400e;
+            border-left: 4px solid var(--warning);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Text colors */
+        .text-success { color: var(--success); }
+        .text-danger { color: var(--danger); }
+        .text-warning { color: var(--warning); }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <div class="logo-icon">🌱</div>
+                <div class="logo-text">Farm<span>Vision</span></div>
+            </div>
+        </div>
+        <ul class="sidebar-menu">
+            <li class="{{ app.request.get('_route') == 'admin_dashboard' ? 'active' : '' }}">
+                <a href="{{ path('admin_dashboard') }}"><i class="fas fa-chart-line"></i> Dashboard</a>
+            </li>
+            <li class="{{ app.request.get('_route') starts with 'admin_equipement' ? 'active' : '' }}">
+                <a href="{{ path('admin_equipement_index') }}"><i class="fas fa-tractor"></i> Équipements</a>
+            </li>
+            <li class="{{ app.request.get('_route') starts with 'admin_maintenance' ? 'active' : '' }}">
+                <a href="{{ path('admin_maintenance_index') }}"><i class="fas fa-wrench"></i> Maintenances</a>
+            </li>
+            
+            <!-- SECTION FINANCES - Added for Dépenses & Revenus -->
+            <li style="margin-top: 1rem; margin-bottom: 0.5rem;">
+                <span style="padding: 0.5rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--gray); display: block;">💰 Finances</span>
+            </li>
+            <li class="{{ app.request.get('_route') starts with 'admin_depense' ? 'active' : '' }}">
+                <a href="{{ path('admin_depense_index') }}"><i class="fas fa-money-bill-wave"></i> Dépenses</a>
+            </li>
+            <li class="{{ app.request.get('_route') starts with 'admin_revenu' ? 'active' : '' }}">
+                <a href="{{ path('admin_revenu_index') }}"><i class="fas fa-chart-line"></i> Revenus</a>
+            </li>
+            
+            <li style="margin-top: 1rem; margin-bottom: 0.5rem;">
+                <span style="padding: 0.5rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--gray); display: block;">👥 Gestion</span>
+            </li>
+            <li class="{{ app.request.get('_route') starts with 'admin_user' ? 'active' : '' }}">
+                <a href="{{ path('admin_user_index') }}"><i class="fas fa-users"></i> Utilisateurs</a>
+            </li>
+            <li class="{{ app.request.get('_route') starts with 'admin_stock' ? 'active' : '' }}">
+                <a href="{{ path('admin_stock_index') }}"><i class="fas fa-boxes"></i> Stocks</a>
+            </li>
+            <li class="{{ app.request.get('_route') starts with 'admin_marketplace' ? 'active' : '' }}">
+                <a href="{{ path('admin_marketplace_index') }}"><i class="fas fa-store"></i> Marketplace</a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <div class="top-bar">
+            <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
+            <div class="user-menu">
+                {% if app.user %}
+                    <span style="color: var(--gray);">{{ app.user.prenom }} {{ app.user.nom }}</span>
+                    <div class="user-avatar">{{ app.user.prenom|first }}{{ app.user.nom|first }}</div>
+                    <a href="{{ path('app_logout') }}" style="color: var(--danger); text-decoration: none;">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="content">
+            <!-- Flash messages -->
+            {% for label, messages in app.flashes %}
+                {% for message in messages %}
+                    <div class="flash-message flash-{{ label }}">
+                        {% if label == 'success' %}✅ {% elseif label == 'error' %}❌ {% elseif label == 'warning' %}⚠️ {% endif %}
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endfor %}
+            
+            {% block body %}{% endblock %}
+        </div>
+    </div>
+
+    <script>
+        // Supprimer les messages flash après 5 secondes
+        setTimeout(() => {
+            document.querySelectorAll('.flash-message').forEach(msg => {
+                msg.style.opacity = '0';
+                msg.style.transform = 'translateX(100%)';
+                setTimeout(() => msg.remove(), 300);
+            });
+        }, 5000);
+        
+        // Active link detection
+        document.querySelectorAll('.sidebar-menu li a').forEach(link => {
+            if (link.getAttribute('href') === window.location.pathname) {
+                link.closest('li').classList.add('active');
+            }
+        });
+    </script>
+</body>
+</html>

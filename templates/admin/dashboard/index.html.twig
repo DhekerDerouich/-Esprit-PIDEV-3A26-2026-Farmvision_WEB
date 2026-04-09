@@ -1,0 +1,114 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block body %}
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon">🔧</div>
+        <div class="stat-value">{{ statsEquipements.total }}</div>
+        <div class="stat-label">Total équipements</div>
+        <div style="margin-top: 10px; font-size: 0.8rem;">
+            <span class="text-success">✓ {{ statsEquipements.fonctionnels }} fonctionnels</span><br>
+            <span class="text-warning">⚠️ {{ statsEquipements.enMaintenance }} maintenance</span><br>
+            <span class="text-danger">🔴 {{ statsEquipements.enPanne }} panne</span>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon">🛠️</div>
+        <div class="stat-value">{{ statsMaintenances.total }}</div>
+        <div class="stat-label">Total maintenances</div>
+        <div style="margin-top: 10px; font-size: 0.8rem;">
+            <span class="text-warning">⏰ {{ statsMaintenances.planifiees }} planifiées</span><br>
+            <span class="text-success">✅ {{ statsMaintenances.realisees }} réalisées</span>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-value">{{ statsMaintenances.coutTotal|number_format(0) }} DT</div>
+        <div class="stat-label">Coût total des maintenances</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3>📅 Maintenances à venir</h3>
+        <a href="{{ path('admin_maintenance_index') }}" class="btn btn-primary btn-sm">Voir tout →</a>
+    </div>
+    {% if upcomingMaintenances|length > 0 %}
+    <table>
+        <thead>
+            <tr>
+                <th>Équipement</th>
+                <th>Type</th>
+                <th>Date</th>
+                <th>Statut</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for maintenance in upcomingMaintenances %}
+            <tr>
+                <td><strong>{{ maintenance.equipement.nom }}</strong></td>
+                <td>{{ maintenance.typeMaintenance }}</td>
+                <td>{{ maintenance.dateMaintenance|date('d/m/Y') }}</td>
+                <td>
+                    {% if maintenance.joursRestants <= 3 %}
+                        <span class="badge badge-danger">Urgent (J+{{ maintenance.joursRestants }})</span>
+                    {% else %}
+                        <span class="badge badge-warning">Dans {{ maintenance.joursRestants }} jours</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="text-align: center; color: #666;">Aucune maintenance planifiée</p>
+    {% endif %}
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3>🆕 Derniers équipements ajoutés</h3>
+        <a href="{{ path('admin_equipement_index') }}" class="btn btn-primary btn-sm">Voir tout →</a>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Type</th>
+                <th>État</th>
+                <th>Date d'achat</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for equipement in derniersEquipements %}
+            <tr>
+                <td><strong>{{ equipement.nom }}</strong></td>
+                <td>{{ equipement.type }}</td>
+                <td>
+                    {% if equipement.etat == 'Fonctionnel' %}
+                        <span class="badge badge-success">✓ Fonctionnel</span>
+                    {% elseif equipement.etat == 'En panne' %}
+                        <span class="badge badge-danger">⚠ En panne</span>
+                    {% else %}
+                        <span class="badge badge-warning">🔧 Maintenance</span>
+                    {% endif %}
+                </td>
+                <td>{{ equipement.dateAchat ? equipement.dateAchat|date('d/m/Y') : '-' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3>⚡ Actions rapides</h3>
+    </div>
+    <div style="display: flex; gap: 15px;">
+        <a href="{{ path('admin_equipement_new') }}" class="btn btn-primary">+ Ajouter un équipement</a>
+        <a href="{{ path('admin_maintenance_new') }}" class="btn btn-primary">+ Planifier maintenance</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,237 @@
+{# templates/admin/equipement/index.html.twig #}
+{% extends 'admin/base.html.twig' %}
+
+{% block body %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h1 style="font-size: 1.5rem;">Gestion des équipements</h1>
+    <a href="{{ path('admin_equipement_new') }}" class="btn btn-primary">+ Ajouter un équipement</a>
+</div>
+
+<!-- FORMULAIRE DE RECHERCHE -->
+<div class="card">
+    <form method="get" action="{{ path('admin_equipement_index') }}">
+        <div style="display: grid; grid-template-columns: 1fr auto auto auto; gap: 1rem; align-items: end;">
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">🔍 Rechercher</label>
+                <input type="text" name="search" value="{{ search|default('') }}" placeholder="Nom ou type..." class="form-control">
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">📂 Type</label>
+                <select name="type" class="form-control">
+                    <option value="all" {% if selectedType|default('all') == 'all' %}selected{% endif %}>Tous</option>
+                    {% for type in types|default([]) %}
+                        <option value="{{ type }}" {% if selectedType|default('all') == type %}selected{% endif %}>{{ type }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">📊 État</label>
+                <select name="etat" class="form-control">
+                    <option value="all" {% if selectedEtat|default('all') == 'all' %}selected{% endif %}>Tous</option>
+                    <option value="Fonctionnel" {% if selectedEtat|default('all') == 'Fonctionnel' %}selected{% endif %}>Fonctionnel</option>
+                    <option value="En panne" {% if selectedEtat|default('all') == 'En panne' %}selected{% endif %}>En panne</option>
+                    <option value="Maintenance" {% if selectedEtat|default('all') == 'Maintenance' %}selected{% endif %}>Maintenance</option>
+                </select>
+            </div>
+            <div>
+                <button type="submit" class="btn btn-primary">Rechercher</button>
+                <a href="{{ path('admin_equipement_index') }}" class="btn" style="background: var(--bg-panel);">Réinitialiser</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Statistiques -->
+<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; margin-bottom: 2rem;">
+    <div class="card">
+        <div style="font-size: 0.7rem; color: var(--text-muted);">Total</div>
+        <div style="font-size: 1.75rem; font-weight: 600;">{{ stats.total|default(0) }}</div>
+    </div>
+    <div class="card">
+        <div style="font-size: 0.7rem; color: var(--text-muted);">Fonctionnels</div>
+        <div style="font-size: 1.75rem; font-weight: 600; color: var(--green);">{{ stats.fonctionnels|default(0) }}</div>
+    </div>
+    <div class="card">
+        <div style="font-size: 0.7rem; color: var(--text-muted);">En panne</div>
+        <div style="font-size: 1.75rem; font-weight: 600; color: var(--red);">{{ stats.enPanne|default(0) }}</div>
+    </div>
+    <div class="card">
+        <div style="font-size: 0.7rem; color: var(--text-muted);">En maintenance</div>
+        <div style="font-size: 1.75rem; font-weight: 600; color: var(--gold);">{{ stats.enMaintenance|default(0) }}</div>
+    </div>
+    <div class="card">
+        <div style="font-size: 0.7rem; color: var(--text-muted);">Sous garantie</div>
+        <div style="font-size: 1.75rem; font-weight: 600;">{{ stats.sousGarantie|default(0) }}</div>
+    </div>
+</div>
+
+<!-- Résultats de recherche -->
+{% if search|default('') != '' or selectedType|default('all') != 'all' or selectedEtat|default('all') != 'all' %}
+    <div style="margin-bottom: 1rem; padding: 0.5rem 1rem; background: var(--green-glow); border-radius: 8px;">
+        🔍 Résultats pour : 
+        {% if search|default('') != '' %} "{{ search }}" {% endif %}
+        {% if selectedType|default('all') != 'all' %} | Type: {{ selectedType }} {% endif %}
+        {% if selectedEtat|default('all') != 'all' %} | État: {{ selectedEtat }} {% endif %}
+        ({{ equipements|length }} équipement(s) trouvé(s))
+    </div>
+{% endif %}
+
+<!-- Tableau des équipements -->
+<div class="card" style="overflow-x: auto;">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Type</th>
+                <th>État</th>
+                <th>Date d'achat</th>
+                <th>Âge</th>
+                <th>Garantie</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for equipement in equipements %}
+            <tr>
+                <td><strong>{{ equipement.nom }}</strong></td>
+                <td>{{ equipement.type }}</td>
+                <td>
+                    {% if equipement.etat == 'Fonctionnel' %}
+                        <span class="badge badge-success">✓ Fonctionnel</span>
+                    {% elseif equipement.etat == 'En panne' %}
+                        <span class="badge badge-danger">⚠ En panne</span>
+                    {% else %}
+                        <span class="badge badge-warning">🔧 Maintenance</span>
+                    {% endif %}
+                </td>
+                <td>{{ equipement.dateAchat ? equipement.dateAchat|date('d/m/Y') : '-' }}</td>
+                <td>{{ equipement.age }} an(s)</td>
+                <td>
+                    {% if equipement.sousGarantie %}
+                        <span class="badge badge-success">✓ Active</span>
+                    {% else %}
+                        <span class="badge badge-danger">Expirée</span>
+                    {% endif %}
+                </td>
+                <td style="display: flex; gap: 0.5rem;">
+                    <a href="{{ path('admin_equipement_show', {'id': equipement.id}) }}" class="btn" style="background: var(--green-dim); color: var(--green); padding: 0.25rem 0.75rem;" title="Voir">👁️</a>
+                    <a href="{{ path('admin_equipement_edit', {'id': equipement.id}) }}" class="btn" style="background: var(--gold-dim); color: var(--gold); padding: 0.25rem 0.75rem;" title="Modifier">✏️</a>
+                    <form method="post" action="{{ path('admin_equipement_delete', {'id': equipement.id}) }}" onsubmit="return confirm('Supprimer cet équipement ?');" style="display: inline;">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ equipement.id) }}">
+                        <button type="submit" class="btn" style="background: var(--red-dim); color: var(--red); padding: 0.25rem 0.75rem;" title="Supprimer">🗑️</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="8" style="text-align: center; padding: 3rem;">
+                    📭 Aucun équipement trouvé
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .data-table th {
+        text-align: left;
+        padding: 0.75rem 1rem;
+        background: rgba(82, 183, 136, 0.05);
+        color: var(--text-muted);
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        border-bottom: 1px solid var(--border);
+    }
+    .data-table td {
+        padding: 0.75rem 1rem;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        border-bottom: 1px solid rgba(82, 183, 136, 0.06);
+    }
+    .data-table tr:hover td {
+        background: var(--bg-hover);
+        color: var(--text);
+    }
+    .badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 100px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+    .badge-success {
+        background: var(--green-glow);
+        color: var(--green);
+    }
+    .badge-warning {
+        background: var(--gold-dim);
+        color: var(--gold);
+    }
+    .badge-danger {
+        background: var(--red-dim);
+        color: var(--red);
+    }
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 0.8rem;
+        font-weight: 500;
+        transition: all 0.15s;
+        cursor: pointer;
+        border: none;
+        background: none;
+    }
+    .btn-primary {
+        background: var(--green-dim);
+        color: var(--green-bright);
+        border: 1px solid var(--green-dim);
+    }
+    .btn-primary:hover {
+        background: var(--green);
+        color: var(--bg);
+    }
+    .card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin-bottom: 1.25rem;
+    }
+    .form-control {
+        width: 100%;
+        padding: 0.5rem;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        background: var(--bg);
+        color: var(--text);
+    }
+    .form-control:focus {
+        outline: none;
+        border-color: var(--green);
+    }
+</style>
+
+<script>
+    // Confirmation avant suppression
+    document.addEventListener('DOMContentLoaded', function() {
+        const deleteForms = document.querySelectorAll('form[action*="delete"]');
+        deleteForms.forEach(function(form) {
+            form.addEventListener('submit', function(e) {
+                if (!confirm('⚠️ Êtes-vous sûr de vouloir supprimer cet équipement ? Cette action est irréversible.')) {
+                    e.preventDefault();
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

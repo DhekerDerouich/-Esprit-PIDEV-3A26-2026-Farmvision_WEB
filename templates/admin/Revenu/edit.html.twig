@@ -1,0 +1,43 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block page_title %}Modifier le revenu{% endblock %}
+
+{% block body %}
+<div class="card fade-in">
+    <div class="card-header">
+        <h3>✏️ Modifier le revenu #{{ revenu.idRevenu }}</h3>
+        <a href="{{ path('admin_revenu_index') }}" class="btn btn-outline">← Retour</a>
+    </div>
+    
+    <form method="post">
+        <div class="form-group">
+            <label>Source du revenu *</label>
+            <select name="source" class="form-control" required>
+                <option value="Vente récoltes" {% if revenu.source == 'Vente récoltes' %}selected{% endif %}>🌾 Vente de récoltes</option>
+                <option value="Vente animaux" {% if revenu.source == 'Vente animaux' %}selected{% endif %}>🐄 Vente d'animaux</option>
+                <option value="Subventions" {% if revenu.source == 'Subventions' %}selected{% endif %}>💰 Subventions</option>
+                <option value="Prestations" {% if revenu.source == 'Prestations' %}selected{% endif %}>🚜 Prestations de services</option>
+                <option value="Location matériel" {% if revenu.source == 'Location matériel' %}selected{% endif %}>📦 Location de matériel</option>
+                <option value="Autre" {% if revenu.source == 'Autre' %}selected{% endif %}>📋 Autre</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Montant (DT) *</label>
+            <input type="number" name="montant" class="form-control" step="0.01" min="0.01" value="{{ revenu.montant }}" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Date de revenu *</label>
+            <input type="date" name="date_revenu" class="form-control" value="{{ revenu.dateRevenu|date('Y-m-d') }}" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Description</label>
+            <textarea name="description" class="form-control" rows="3">{{ revenu.description }}</textarea>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">💾 Mettre à jour</button>
+    </form>
+</div>
+{% endblock %}

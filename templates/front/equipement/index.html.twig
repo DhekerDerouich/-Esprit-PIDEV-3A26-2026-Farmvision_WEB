@@ -1,0 +1,112 @@
+{# templates/front/equipement/index.html.twig #}
+{% extends 'front/base.html.twig' %}
+
+{% block body %}
+<div class="container" style="padding: 3rem 0; max-width: 1200px; margin: 0 auto; padding: 3rem 2rem;">
+    <h1 style="font-family: 'Playfair Display', serif; font-size: 2.5rem; margin-bottom: 0.5rem;">Nos équipements</h1>
+    <p style="color: var(--text-muted); margin-bottom: 2rem;">Découvrez tous nos équipements agricoles connectés</p>
+
+    <!-- FORMULAIRE DE RECHERCHE -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <form method="get" action="{{ path('front_equipement_index') }}">
+            <div style="display: grid; grid-template-columns: 1fr auto auto auto; gap: 1rem; align-items: end;">
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">🔍 Rechercher</label>
+                    <input type="text" name="search" value="{{ search }}" placeholder="Nom ou type..." style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text);">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">📂 Type</label>
+                    <select name="type" style="padding: 0.6rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text);">
+                        <option value="all" {% if selectedType == 'all' %}selected{% endif %}>Tous</option>
+                        {% for type in types %}
+                            <option value="{{ type }}" {% if selectedType == type %}selected{% endif %}>{{ type }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">📊 État</label>
+                    <select name="etat" style="padding: 0.6rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text);">
+                        <option value="all" {% if selectedEtat == 'all' %}selected{% endif %}>Tous</option>
+                        <option value="Fonctionnel" {% if selectedEtat == 'Fonctionnel' %}selected{% endif %}>Fonctionnel</option>
+                        <option value="En panne" {% if selectedEtat == 'En panne' %}selected{% endif %}>En panne</option>
+                        <option value="Maintenance" {% if selectedEtat == 'Maintenance' %}selected{% endif %}>Maintenance</option>
+                    </select>
+                </div>
+                <div>
+                    <button type="submit" style="background: var(--green-mid); color: white; padding: 0.6rem 1.5rem; border: none; border-radius: 8px; cursor: pointer;">Rechercher</button>
+                    <a href="{{ path('front_equipement_index') }}" style="margin-left: 0.5rem; padding: 0.6rem 1rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; text-decoration: none; color: var(--text-muted);">Réinitialiser</a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Statistiques rapides -->
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 3rem;">
+        <div class="card" style="text-align: center;">
+            <div style="font-size: 2rem;">📊</div>
+            <div style="font-size: 1.5rem; font-weight: 600;">{{ stats.total }}</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">Total équipements</div>
+        </div>
+        <div class="card" style="text-align: center;">
+            <div style="font-size: 2rem;">✅</div>
+            <div style="font-size: 1.5rem; font-weight: 600; color: var(--green-mid);">{{ stats.fonctionnels }}</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">Fonctionnels</div>
+        </div>
+        <div class="card" style="text-align: center;">
+            <div style="font-size: 2rem;">⚠️</div>
+            <div style="font-size: 1.5rem; font-weight: 600; color: var(--gold);">{{ stats.enMaintenance }}</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">En maintenance</div>
+        </div>
+        <div class="card" style="text-align: center;">
+            <div style="font-size: 2rem;">🔴</div>
+            <div style="font-size: 1.5rem; font-weight: 600; color: var(--red);">{{ stats.enPanne }}</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">En panne</div>
+        </div>
+    </div>
+
+    <!-- Résultats de recherche -->
+    {% if search or selectedType != 'all' or selectedEtat != 'all' %}
+        <div style="margin-bottom: 1rem; padding: 0.5rem 1rem; background: var(--green-glow); border-radius: 8px;">
+            🔍 Résultats pour : 
+            {% if search %} "{{ search }}" {% endif %}
+            {% if selectedType != 'all' %} | Type: {{ selectedType }} {% endif %}
+            {% if selectedEtat != 'all' %} | État: {{ selectedEtat }} {% endif %}
+            ({{ equipements|length }} équipement(s) trouvé(s))
+        </div>
+    {% endif %}
+
+    <!-- Liste des équipements -->
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem;">
+        {% for equipement in equipements %}
+        <div class="card" style="transition: transform 0.2s;">
+            <div style="font-size: 2.5rem; margin-bottom: 1rem;">
+                {% if equipement.type == 'Tracteur' %}🚜
+                {% elseif equipement.type == 'Moissonneuse' %}🌾
+                {% elseif equipement.type == 'Pulvérisateur' %}💨
+                {% elseif equipement.type == 'Charrue' %}🌍
+                {% else %}🔧
+                {% endif %}
+            </div>
+            <h3 style="margin-bottom: 0.5rem;">{{ equipement.nom }}</h3>
+            <p style="color: var(--text-muted); margin-bottom: 0.5rem;">{{ equipement.type }}</p>
+            <p style="font-size: 0.8rem; margin-bottom: 1rem;">
+                📅 Acheté: {{ equipement.dateAchat ? equipement.dateAchat|date('d/m/Y') : '-' }}
+            </p>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="badge 
+                    {% if equipement.etat == 'Fonctionnel' %}badge-success
+                    {% elseif equipement.etat == 'En panne' %}badge-danger
+                    else %}badge-warning{% endif %}">
+                    {{ equipement.etat }}
+                </span>
+                <a href="{{ path('front_equipement_show', {'id': equipement.id}) }}" class="btn-outline btn" style="text-decoration: none;">Détails →</a>
+            </div>
+        </div>
+        {% else %}
+        <div style="grid-column: span 3; text-align: center; padding: 3rem;">
+            <p>Aucun équipement trouvé pour votre recherche.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

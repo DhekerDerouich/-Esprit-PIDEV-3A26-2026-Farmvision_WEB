@@ -1,0 +1,144 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block page_title %}Gestion des utilisateurs{% endblock %}
+
+{% block body %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h1 style="font-size: 1.5rem;">👥 Gestion des utilisateurs</h1>
+    <a href="{{ path('admin_user_new') }}" class="btn btn-primary">+ Ajouter un utilisateur</a>
+</div>
+
+<!-- FORMULAIRE DE RECHERCHE -->
+<div class="card">
+    <form method="get" action="{{ path('admin_user_index') }}">
+        <div style="display: grid; grid-template-columns: 1fr auto auto auto; gap: 1rem; align-items: end;">
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">🔍 Rechercher</label>
+                <input type="text" name="search" value="{{ search }}" placeholder="Nom, prénom ou email..." class="form-control">
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">👔 Rôle</label>
+                <select name="role" class="form-control">
+                    <option value="all" {% if selectedRole == 'all' %}selected{% endif %}>Tous</option>
+                    <option value="ADMINISTRATEUR" {% if selectedRole == 'ADMINISTRATEUR' %}selected{% endif %}>Administrateur</option>
+                    <option value="RESPONSABLE_EXPLOITATION" {% if selectedRole == 'RESPONSABLE_EXPLOITATION' %}selected{% endif %}>Responsable</option>
+                    <option value="AGRICULTEUR" {% if selectedRole == 'AGRICULTEUR' %}selected{% endif %}>Agriculteur</option>
+                </select>
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">📌 Statut</label>
+                <select name="status" class="form-control">
+                    <option value="all" {% if selectedStatus == 'all' %}selected{% endif %}>Tous</option>
+                    <option value="active" {% if selectedStatus == 'active' %}selected{% endif %}>Actif</option>
+                    <option value="inactive" {% if selectedStatus == 'inactive' %}selected{% endif %}>Inactif</option>
+                </select>
+            </div>
+            <div>
+                <button type="submit" class="btn btn-primary">Rechercher</button>
+                <a href="{{ path('admin_user_index') }}" class="btn" style="background: var(--bg-panel);">Réinitialiser</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- STATISTIQUES -->
+<div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 1rem; margin-bottom: 2rem;">
+    <div class="card">
+        <div style="font-size: 0.7rem; color: var(--text-muted);">Total</div>
+        <div style="font-size: 1.5rem; font-weight: 600;">{{ stats.total|default(0) }}</div>
+    </div>
+    <div class="card">
+        <div style="font-size: 0.7rem; color: var(--text-muted);">Administrateurs</div>
+        <div style="font-size: 1.5rem; font-weight: 600; color: var(--red);">{{ stats.admins|default(0) }}</div>
+    </div>
+    <div class="card">
+        <div style="font-size: 0.7rem; color: var(--text-muted);">Responsables</div>
+        <div style="font-size: 1.5rem; font-weight: 600; color: var(--gold);">{{ stats.responsables|default(0) }}</div>
+    </div>
+    <div class="card">
+        <div style="font-size: 0.7rem; color: var(--text-muted);">Agriculteurs</div>
+        <div style="font-size: 1.5rem; font-weight: 600; color: var(--green);">{{ stats.agriculteurs|default(0) }}</div>
+    </div>
+    <div class="card">
+        <div style="font-size: 0.7rem; color: var(--text-muted);">Actifs</div>
+        <div style="font-size: 1.5rem; font-weight: 600; color: var(--green);">{{ stats.actifs|default(0) }}</div>
+    </div>
+    <div class="card">
+        <div style="font-size: 0.7rem; color: var(--text-muted);">Inactifs</div>
+        <div style="font-size: 1.5rem; font-weight: 600; color: var(--red);">{{ stats.inactifs|default(0) }}</div>
+    </div>
+</div>
+
+<!-- RÉSULTATS DE RECHERCHE -->
+{% if search or selectedRole != 'all' or selectedStatus != 'all' %}
+    <div style="margin-bottom: 1rem; padding: 0.5rem 1rem; background: var(--green-glow); border-radius: 8px;">
+        🔍 Résultats pour : 
+        {% if search %} "{{ search }}" {% endif %}
+        {% if selectedRole != 'all' %} | Rôle: {{ selectedRole }} {% endif %}
+        {% if selectedStatus != 'all' %} | Statut: {{ selectedStatus == 'active' ? 'Actif' : 'Inactif' }} {% endif %}
+        ({{ users|length }} utilisateur(s) trouvé(s))
+    </div>
+{% endif %}
+
+<!-- TABLEAU DES UTILISATEURS -->
+<div class="card" style="overflow-x: auto;">
+    <table style="width: 100%;">
+        <thead>
+            <tr>
+                <th>Nom complet</th>
+                <th>Email</th>
+                <th>Téléphone</th>
+                <th>Rôle</th>
+                <th>Statut</th>
+                <th>Date création</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td><strong>{{ user.prenom }} {{ user.nom }}</strong></td>
+                <td style="font-size: 0.8rem;">{{ user.email }}</td>
+                <td>{{ user.telephone ?: '-' }}</td>
+                <td>
+                    {% if user.typeRole == 'ADMINISTRATEUR' %}
+                        <span class="badge badge-danger">👑 Admin</span>
+                    {% elseif user.typeRole == 'RESPONSABLE_EXPLOITATION' %}
+                        <span class="badge badge-warning">📋 Responsable</span>
+                    {% else %}
+                        <span class="badge badge-success">🌾 Agriculteur</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if user.activated %}
+                        <span class="badge badge-success">✓ Actif</span>
+                    {% else %}
+                        <span class="badge badge-danger">✗ Inactif</span>
+                    {% endif %}
+                </td>
+                <td>{{ user.dateCreation ? user.dateCreation|date('d/m/Y') : '-' }}</td>
+                <td style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <a href="{{ path('admin_user_edit', {'id': user.id}) }}" class="btn" style="background: var(--gold-dim); color: var(--gold); padding: 0.25rem 0.75rem;" title="Modifier">✏️</a>
+                    <form method="post" action="{{ path('admin_user_toggle', {'id': user.id}) }}" style="display: inline;">
+                        <input type="hidden" name="_token" value="{{ csrf_token('toggle' ~ user.id) }}">
+                        <button type="submit" class="btn" style="background: var(--green-dim); color: var(--green); padding: 0.25rem 0.75rem;" title="Activer/Désactiver">
+                            {% if user.activated %}🔒{% else %}🔓{% endif %}
+                        </button>
+                    </form>
+                    <form method="post" action="{{ path('admin_user_delete', {'id': user.id}) }}" onsubmit="return confirm('Supprimer cet utilisateur ?');" style="display: inline;">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ user.id) }}">
+                        <button type="submit" class="btn" style="background: var(--red-dim); color: var(--red); padding: 0.25rem 0.75rem;" title="Supprimer">🗑️</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="8" style="text-align: center; padding: 3rem;">
+                    📭 Aucun utilisateur trouvé
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

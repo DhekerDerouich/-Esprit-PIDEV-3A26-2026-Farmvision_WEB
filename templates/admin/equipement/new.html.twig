@@ -1,0 +1,99 @@
+{# templates/admin/equipement/new.html.twig #}
+{% extends 'admin/base.html.twig' %}
+
+{% block body %}
+<div style="margin-bottom: 2rem;">
+    <a href="{{ path('admin_equipement_index') }}" class="btn" style="background: var(--bg-panel);">← Retour</a>
+</div>
+
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <h1 style="font-size: 1.5rem; margin-bottom: 1.5rem;">Ajouter un équipement</h1>
+    
+    {# Affichage des erreurs de validation PHP #}
+    {% if errors is defined and errors|length > 0 %}
+        <div style="background: var(--red-dim); border: 1px solid var(--red); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+            <strong style="color: var(--red);">❌ Veuillez corriger les erreurs suivantes :</strong>
+            <ul style="margin-top: 0.5rem; margin-left: 1.5rem; color: var(--red);">
+                {% for field, error in errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+    
+    <form method="post">
+        <div class="form-group" style="margin-bottom: 1rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Nom <span style="color: var(--red);">*</span></label>
+            <input type="text" name="nom" value="{{ equipement.nom|default('') }}" class="form-control {% if errors.nom is defined %}error{% endif %}" style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);">
+            {% if errors.nom is defined %}
+                <small style="color: var(--red); display: block; margin-top: 0.25rem;">❌ {{ errors.nom }}</small>
+            {% endif %}
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 1rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Type <span style="color: var(--red);">*</span></label>
+            <select name="type" class="form-control {% if errors.type is defined %}error{% endif %}" style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);">
+                <option value="">-- Sélectionner un type --</option>
+                <option value="Tracteur" {% if equipement.type|default('') == 'Tracteur' %}selected{% endif %}>Tracteur</option>
+                <option value="Moissonneuse" {% if equipement.type|default('') == 'Moissonneuse' %}selected{% endif %}>Moissonneuse</option>
+                <option value="Pulvérisateur" {% if equipement.type|default('') == 'Pulvérisateur' %}selected{% endif %}>Pulvérisateur</option>
+                <option value="Charrue" {% if equipement.type|default('') == 'Charrue' %}selected{% endif %}>Charrue</option>
+                <option value="Semoir" {% if equipement.type|default('') == 'Semoir' %}selected{% endif %}>Semoir</option>
+                <option value="Autre" {% if equipement.type|default('') == 'Autre' %}selected{% endif %}>Autre</option>
+            </select>
+            {% if errors.type is defined %}
+                <small style="color: var(--red); display: block; margin-top: 0.25rem;">❌ {{ errors.type }}</small>
+            {% endif %}
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 1rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">État <span style="color: var(--red);">*</span></label>
+            <select name="etat" class="form-control {% if errors.etat is defined %}error{% endif %}" style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);">
+                <option value="Fonctionnel" {% if equipement.etat|default('') == 'Fonctionnel' %}selected{% endif %}>Fonctionnel</option>
+                <option value="En panne" {% if equipement.etat|default('') == 'En panne' %}selected{% endif %}>En panne</option>
+                <option value="Maintenance" {% if equipement.etat|default('') == 'Maintenance' %}selected{% endif %}>Maintenance</option>
+            </select>
+            {% if errors.etat is defined %}
+                <small style="color: var(--red); display: block; margin-top: 0.25rem;">❌ {{ errors.etat }}</small>
+            {% endif %}
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 1rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Date d'achat</label>
+            <input type="text" name="date_achat" value="{{ equipement.dateAchat ? equipement.dateAchat|date('Y-m-d') : '' }}" class="form-control {% if errors.date_achat is defined %}error{% endif %}" placeholder="AAAA-MM-JJ" style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);">
+            {% if errors.date_achat is defined %}
+                <small style="color: var(--red); display: block; margin-top: 0.25rem;">❌ {{ errors.date_achat }}</small>
+            {% else %}
+                <small style="color: var(--text-muted); display: block; margin-top: 0.25rem;">Format: AAAA-MM-JJ (ex: 2024-01-15)</small>
+            {% endif %}
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 1rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Durée de vie estimée (années)</label>
+            <input type="text" name="duree_vie_estimee" value="{{ equipement.dureeVieEstimee|default('') }}" class="form-control {% if errors.duree_vie_estimee is defined %}error{% endif %}" placeholder="Entre 1 et 50 ans" style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);">
+            {% if errors.duree_vie_estimee is defined %}
+                <small style="color: var(--red); display: block; margin-top: 0.25rem;">❌ {{ errors.duree_vie_estimee }}</small>
+            {% else %}
+                <small style="color: var(--text-muted); display: block; margin-top: 0.25rem;">Nombre entier entre 1 et 50</small>
+            {% endif %}
+        </div>
+        
+        <hr style="border-color: var(--border); margin: 1.5rem 0;">
+        
+        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+            <a href="{{ path('admin_equipement_index') }}" class="btn" style="background: var(--bg-panel);">Annuler</a>
+            <button type="submit" class="btn btn-primary">💾 Enregistrer</button>
+        </div>
+    </form>
+</div>
+
+<style>
+    .error {
+        border-color: var(--red) !important;
+    }
+    .form-control:focus {
+        outline: none;
+        border-color: var(--green);
+    }
+</style>
+{% endblock %}
