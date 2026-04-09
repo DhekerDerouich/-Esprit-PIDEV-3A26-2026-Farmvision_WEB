@@ -3,9 +3,9 @@
 
 namespace App\Entity;
 
+use App\Repository\StockRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
-use App\Repository\StockRepository;
 
 #[ORM\Entity(repositoryClass: StockRepository::class)]
 #[ORM\Table(name: 'stock')]
@@ -21,17 +21,25 @@ class Stock
 
     #[ORM\Column(name: 'nom_produit', type: 'string', length: 100)]
     #[Assert\NotBlank(message: "Le nom du produit est obligatoire")]
+    #[Assert\Length(min: 2, max: 100, minMessage: "Le nom doit contenir au moins 2 caractères", maxMessage: "Le nom ne peut pas dépasser 100 caractères")]
+    #[Assert\Regex(pattern: "/^[a-zA-ZÀ-ÿ0-9\s\-]+$/", message: "Le nom ne peut contenir que des lettres, chiffres, espaces et tirets")]
     private ?string $nomProduit = null;
 
     #[ORM\Column(name: 'type_produit', type: 'string', length: 50, nullable: true)]
+    #[Assert\Length(max: 50, maxMessage: "Le type ne peut pas dépasser 50 caractères")]
+    #[Assert\Regex(pattern: "/^[a-zA-ZÀ-ÿ\s\-]*$/", message: "Le type ne peut contenir que des lettres, espaces et tirets")]
     private ?string $typeProduit = null;
 
     #[ORM\Column(name: 'quantite', type: 'float')]
     #[Assert\NotBlank(message: "La quantité est obligatoire")]
     #[Assert\Positive(message: "La quantité doit être positive")]
+    #[Assert\Type(type: "numeric", message: "La quantité doit être un nombre")]
+    #[Assert\LessThanOrEqual(value: 999999, message: "La quantité ne peut pas dépasser 999999")]
     private ?float $quantite = null;
 
     #[ORM\Column(name: 'unite', type: 'string', length: 20, nullable: true)]
+    #[Assert\Length(max: 20, maxMessage: "L'unité ne peut pas dépasser 20 caractères")]
+    #[Assert\Regex(pattern: "/^[a-zA-ZÀ-ÿ\s]*$/", message: "L'unité ne peut contenir que des lettres et espaces")]
     private ?string $unite = null;
 
     #[ORM\Column(name: 'date_entree', type: 'date', nullable: true)]
@@ -41,6 +49,7 @@ class Stock
     private ?\DateTimeInterface $dateExpiration = null;
 
     #[ORM\Column(name: 'statut', type: 'string', length: 30, nullable: true)]
+    #[Assert\Choice(choices: ["Disponible", "Épuisé"], message: "Le statut doit être 'Disponible' ou 'Épuisé'")]
     private ?string $statut = 'Disponible';
 
     #[ORM\Column(name: 'created_at', type: 'datetime', nullable: true)]
@@ -51,6 +60,7 @@ class Stock
         $this->createdAt = new \DateTime();
         $this->dateEntree = new \DateTime();
         $this->statut = 'Disponible';
+        $this->idUtilisateur = 1;
     }
 
     // GETTERS
