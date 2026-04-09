@@ -11,6 +11,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/admin/marketplace')]
 class MarketplaceController extends AbstractController
@@ -35,7 +36,7 @@ class MarketplaceController extends AbstractController
     }
     
     #[Route('/new', name: 'admin_marketplace_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $em, StockRepository $stockRepo): Response
+    public function new(Request $request, EntityManagerInterface $em, StockRepository $stockRepo, ValidatorInterface $validator): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
         $stocks = $stockRepo->findAvailableForMarketplace();
@@ -52,6 +53,16 @@ class MarketplaceController extends AbstractController
                 $marketplace->setDescription($request->request->get('description'));
                 $marketplace->setStatut('En vente');
                 
+                // Validation
+                $errors = $validator->validate($marketplace);
+                
+                if (count($errors) > 0) {
+                    foreach ($errors as $error) {
+                        $this->addFlash('error', $error->getMessage());
+                    }
+                    return $this->render('admin/marketplace/new.html.twig', ['stocks' => $stocks]);
+                }
+                
                 $em->persist($marketplace);
                 $em->flush();
                 
@@ -66,7 +77,7 @@ class MarketplaceController extends AbstractController
     }
     
     #[Route('/{id}/edit', name: 'admin_marketplace_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Marketplace $marketplace, EntityManagerInterface $em): Response
+    public function edit(Request $request, Marketplace $marketplace, EntityManagerInterface $em, ValidatorInterface $validator): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
         
@@ -75,6 +86,16 @@ class MarketplaceController extends AbstractController
             $marketplace->setQuantiteEnVente((float)$request->request->get('quantite_en_vente'));
             $marketplace->setDescription($request->request->get('description'));
             $marketplace->setStatut($request->request->get('statut'));
+            
+            // Validation
+            $errors = $validator->validate($marketplace);
+            
+            if (count($errors) > 0) {
+                foreach ($errors as $error) {
+                    $this->addFlash('error', $error->getMessage());
+                }
+                return $this->render('admin/marketplace/edit.html.twig', ['marketplace' => $marketplace]);
+            }
             
             $em->flush();
             $this->addFlash('success', 'Offre modifiée avec succès !');
