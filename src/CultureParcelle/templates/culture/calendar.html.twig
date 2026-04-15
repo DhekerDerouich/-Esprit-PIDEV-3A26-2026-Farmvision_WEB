@@ -138,8 +138,8 @@
                     <div id="addTypeError" style="color: #e74c3c; font-size: 0.8rem; margin-top: 0.3rem; display: none;"></div>
                 </div>
                 <div style="margin-bottom: 1rem;">
-                    <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.4rem;">Date de récolte (optionnelle)</label>
-                    <input type="date" id="addDateRecolte" style="width: 100%; padding: 0.6rem; border: 1.5px solid #e0e7e3; border-radius: 8px; font-size: 0.9rem;">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.4rem;">Date de récolte *</label>
+                    <input type="date" id="addDateRecolte" required min="{{ 'now'|date('Y-m-d') }}" style="width: 100%; padding: 0.6rem; border: 1.5px solid #e0e7e3; border-radius: 8px; font-size: 0.9rem;">
                     <div id="addDateRecolteError" style="color: #e74c3c; font-size: 0.8rem; margin-top: 0.3rem; display: none;"></div>
                     <div style="color: var(--text-muted); font-size: 0.75rem; margin-top: 0.3rem;">💡 La date de récolte doit être après la date de semis</div>
                 </div>
@@ -177,6 +177,16 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Click on empty date to add culture
         dateClick: function(info) {
+            // Prevent adding culture on past dates
+            const clickedDate = new Date(info.dateStr);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Reset time to compare only dates
+            
+            if (clickedDate < today) {
+                showNotification('❌ Impossible d\'ajouter une culture dans le passé', 'error');
+                return;
+            }
+            
             openAddModal(info.dateStr);
         },
         
@@ -187,12 +197,37 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Drag and drop to reschedule
         eventDrop: function(info) {
+            // Prevent dropping on past dates
+            const newDate = new Date(info.event.start);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            if (newDate < today) {
+                info.revert(); // Revert the drag
+                showNotification('❌ Impossible de déplacer une culture dans le passé', 'error');
+                return;
+            }
+            
             updateEventDate(info.event, info.event.start);
         },
         
         eventDidMount: function(info) {
             info.el.style.borderRadius = '4px';
             info.el.style.cursor = 'move';
+        },
+        
+        // Style past dates
+        dayCellDidMount: function(info) {
+            const cellDate = new Date(info.date);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            if (cellDate < today) {
+                info.el.style.backgroundColor = '#f5f5f5';
+                info.el.style.opacity = '0.5';
+                info.el.style.cursor = 'not-allowed';
+                info.el.title = 'Impossible d\'ajouter une culture dans le passé';
+            }
         }
     });
     
@@ -281,10 +316,15 @@ function submitQuickAdd() {
                     document.getElementById('addTypeError').textContent = data.errors.typeCulture;
                     document.getElementById('addTypeError').style.display = 'block';
                 }
+                if (data.errors.dateSemis) {
+                    showNotification('❌ ' + data.errors.dateSemis, 'error');
+                }
                 if (data.errors.dateRecolte) {
                     document.getElementById('addDateRecolteError').textContent = data.errors.dateRecolte;
                     document.getElementById('addDateRecolteError').style.display = 'block';
                 }
+            } else {
+                showNotification('❌ Erreur lors de l\'ajout', 'error');
             }
         }
     })

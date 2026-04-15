@@ -28,10 +28,11 @@ class Culture
 
     #[ORM\Column(name: 'dateSemis', type: 'date')]
     #[Assert\NotNull(message: 'La date de semis est obligatoire')]
-    #[Assert\LessThanOrEqual('today', message: 'La date de semis ne peut pas être dans le futur')]
+    #[Assert\GreaterThanOrEqual('today', message: 'La date de semis ne peut pas être dans le passé')]
     private ?\DateTimeInterface $dateSemis = null;
 
-    #[ORM\Column(name: 'dateRecolte', type: 'date', nullable: true)]
+    #[ORM\Column(name: 'dateRecolte', type: 'date')]
+    #[Assert\NotNull(message: 'La date de récolte est obligatoire')]
     #[Assert\GreaterThan(propertyPath: 'dateSemis', message: 'La date de récolte doit être après la date de semis')]
     private ?\DateTimeInterface $dateRecolte = null;
 
