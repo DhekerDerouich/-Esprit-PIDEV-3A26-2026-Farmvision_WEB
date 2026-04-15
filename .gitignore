@@ -9,6 +9,10 @@
 /vendor/
 ###< symfony/framework-bundle ###
 
+###> Documentation (internal use only) ###
+CULTUREPARCELLE_MODULE_SUMMARY.md
+###< Documentation (internal use only) ###
+
 ###> phpunit/phpunit ###
 /phpunit.xml
 .phpunit.result.cache

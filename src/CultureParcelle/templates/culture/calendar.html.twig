@@ -1,0 +1,417 @@
+{% extends 'front/base.html.twig' %}
+
+{% block body %}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+
+<style>
+    .cal-page { padding: 2.5rem 2rem; max-width: 1400px; margin: 0 auto; }
+    .cal-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; }
+    .cal-header h1 { font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--green-deep); margin-bottom: 0.25rem; }
+    .cal-header p { color: var(--text-muted); font-size: 0.95rem; }
+    .cal-btn-back { display: inline-flex; align-items: center; gap: 0.5rem; background: #f0f4f2; color: var(--green-mid); padding: 0.65rem 1.4rem; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 0.9rem; border: 1.5px solid #e0e7e3; transition: all 0.2s; }
+    .cal-btn-back:hover { background: var(--green-mist); border-color: var(--green-mid); }
+    
+    .cal-container { background: #fff; border: 1px solid #e8f0eb; border-radius: 16px; padding: 2rem; box-shadow: 0 2px 16px rgba(45,106,79,0.06); }
+    
+    .cal-legend { display: flex; gap: 2rem; margin-bottom: 1.5rem; padding: 1rem; background: #f8faf9; border-radius: 10px; }
+    .cal-legend-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; }
+    .cal-legend-color { width: 20px; height: 20px; border-radius: 6px; }
+    .cal-legend-semis { background: #52b788; border: 2px solid #2d6a4f; }
+    .cal-legend-recolte { background: #f77f00; border: 2px solid #d62828; }
+    
+    .cal-info-banner { background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border: 2px solid #64b5f6; border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1rem; }
+    .cal-info-icon { font-size: 2rem; flex-shrink: 0; }
+    .cal-info-content { flex: 1; }
+    .cal-info-title { font-weight: 700; color: #1565c0; font-size: 1rem; margin-bottom: 0.3rem; }
+    .cal-info-text { color: #1976d2; font-size: 0.9rem; line-height: 1.5; }
+    .cal-info-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 0.5rem; }
+    .cal-info-badge { display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(255,255,255,0.9); padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; color: #1565c0; border: 1px solid #90caf9; }
+    
+    #calendar { min-height: 600px; }
+    
+    /* FullCalendar customization */
+    .fc { font-family: inherit; }
+    .fc .fc-button-primary { background: var(--green-mid); border-color: var(--green-mid); }
+    .fc .fc-button-primary:hover { background: var(--green-deep); border-color: var(--green-deep); }
+    .fc .fc-button-primary:not(:disabled).fc-button-active { background: var(--green-deep); border-color: var(--green-deep); }
+    .fc .fc-button-primary:disabled { opacity: 0.5; }
+    .fc-theme-standard td, .fc-theme-standard th { border-color: #e8f0eb; }
+    .fc-theme-standard .fc-scrollgrid { border-color: #e8f0eb; }
+    .fc .fc-daygrid-day.fc-day-today { background: #f0f7f3; }
+    .fc-event { cursor: pointer; border-radius: 4px; padding: 2px 4px; }
+    .fc-event-title { font-weight: 600; }
+    
+    /* Event detail modal */
+    .event-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center; }
+    .event-modal { background: #fff; border-radius: 16px; padding: 2rem; max-width: 400px; width: 90%; box-shadow: 0 24px 64px rgba(0,0,0,0.2); }
+    .event-modal-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+    .event-modal-icon { font-size: 2.5rem; }
+    .event-modal-title { font-size: 1.3rem; font-weight: 700; color: var(--green-deep); }
+    .event-modal-body { margin-bottom: 1.5rem; }
+    .event-modal-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; font-size: 0.95rem; color: var(--text-muted); }
+    .event-modal-row strong { color: var(--text); }
+    .event-modal-actions { display: flex; gap: 0.75rem; }
+    .event-modal-btn { flex: 1; padding: 0.7rem; border-radius: 10px; text-align: center; text-decoration: none; font-weight: 600; font-size: 0.9rem; transition: all 0.2s; }
+    .event-modal-edit { background: var(--green-mid); color: #fff; border: none; }
+    .event-modal-edit:hover { background: var(--green-deep); }
+    .event-modal-close { background: #f5f5f5; color: #333; border: 1.5px solid #e0e0e0; cursor: pointer; }
+    .event-modal-close:hover { background: #e8e8e8; }
+</style>
+
+<div class="cal-page">
+    <div class="cal-header">
+        <div>
+            <h1>📅 Calendrier des cultures</h1>
+            <p>Vue d'ensemble de vos dates de semis et de récolte</p>
+        </div>
+        <a href="{{ path('front_culture_index') }}" class="cal-btn-back">← Retour à la liste</a>
+    </div>
+
+    <div class="cal-container">
+        <div class="cal-info-banner">
+            <div class="cal-info-icon">💡</div>
+            <div class="cal-info-content">
+                <div class="cal-info-title">Comment utiliser le calendrier interactif ?</div>
+                <div class="cal-info-text">
+                    Cliquez sur une date libre pour ajouter une nouvelle culture, ou glissez-déposez un événement existant pour modifier sa date.
+                </div>
+                <div class="cal-info-actions">
+                    <span class="cal-info-badge">🖱️ Cliquer sur date = Ajouter</span>
+                    <span class="cal-info-badge">✋ Glisser-déposer = Modifier</span>
+                    <span class="cal-info-badge">👆 Cliquer sur événement = Détails</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="cal-legend">
+            <div class="cal-legend-item">
+                <div class="cal-legend-color cal-legend-semis"></div>
+                <span>🌱 Date de semis</span>
+            </div>
+            <div class="cal-legend-item">
+                <div class="cal-legend-color cal-legend-recolte"></div>
+                <span>🌾 Date de récolte</span>
+            </div>
+        </div>
+        
+        <div id="calendar"></div>
+    </div>
+</div>
+
+<!-- Event Detail Modal -->
+<div class="event-modal-overlay" id="eventModal">
+    <div class="event-modal">
+        <div class="event-modal-header">
+            <div class="event-modal-icon" id="modalIcon"></div>
+            <div class="event-modal-title" id="modalTitle"></div>
+        </div>
+        <div class="event-modal-body" id="modalBody"></div>
+        <div class="event-modal-actions">
+            <a href="#" class="event-modal-btn event-modal-edit" id="modalEditBtn">✏️ Modifier</a>
+            <button class="event-modal-btn event-modal-close" onclick="closeEventModal()">Fermer</button>
+        </div>
+    </div>
+</div>
+
+<!-- Add Culture Modal -->
+<div class="event-modal-overlay" id="addModal">
+    <div class="event-modal">
+        <div class="event-modal-header">
+            <div class="event-modal-icon">🌱</div>
+            <div class="event-modal-title">Ajouter une culture</div>
+        </div>
+        <div class="event-modal-body">
+            <form id="quickAddForm">
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.4rem;">Date de semis *</label>
+                    <input type="date" id="addDate" readonly style="width: 100%; padding: 0.6rem; border: 1.5px solid #e0e7e3; border-radius: 8px; font-size: 0.9rem; background: #f8faf9;">
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.4rem;">Nom de la culture *</label>
+                    <input type="text" id="addNom" required style="width: 100%; padding: 0.6rem; border: 1.5px solid #e0e7e3; border-radius: 8px; font-size: 0.9rem;" placeholder="Ex: Tomate">
+                    <div id="addNomError" style="color: #e74c3c; font-size: 0.8rem; margin-top: 0.3rem; display: none;"></div>
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.4rem;">Type de culture *</label>
+                    <input type="text" id="addType" required style="width: 100%; padding: 0.6rem; border: 1.5px solid #e0e7e3; border-radius: 8px; font-size: 0.9rem;" placeholder="Ex: Légume">
+                    <div id="addTypeError" style="color: #e74c3c; font-size: 0.8rem; margin-top: 0.3rem; display: none;"></div>
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.4rem;">Date de récolte (optionnelle)</label>
+                    <input type="date" id="addDateRecolte" style="width: 100%; padding: 0.6rem; border: 1.5px solid #e0e7e3; border-radius: 8px; font-size: 0.9rem;">
+                    <div id="addDateRecolteError" style="color: #e74c3c; font-size: 0.8rem; margin-top: 0.3rem; display: none;"></div>
+                    <div style="color: var(--text-muted); font-size: 0.75rem; margin-top: 0.3rem;">💡 La date de récolte doit être après la date de semis</div>
+                </div>
+            </form>
+        </div>
+        <div class="event-modal-actions">
+            <button class="event-modal-btn event-modal-edit" onclick="submitQuickAdd()">✅ Ajouter</button>
+            <button class="event-modal-btn event-modal-close" onclick="closeAddModal()">Annuler</button>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'fr',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,dayGridWeek'
+        },
+        buttonText: {
+            today: "Aujourd'hui",
+            month: 'Mois',
+            week: 'Semaine'
+        },
+        firstDay: 1,
+        height: 'auto',
+        editable: true,
+        droppable: true,
+        events: '{{ path('front_culture_calendar_events') }}',
+        
+        // Click on empty date to add culture
+        dateClick: function(info) {
+            openAddModal(info.dateStr);
+        },
+        
+        // Click on event to view details
+        eventClick: function(info) {
+            showEventModal(info.event);
+        },
+        
+        // Drag and drop to reschedule
+        eventDrop: function(info) {
+            updateEventDate(info.event, info.event.start);
+        },
+        
+        eventDidMount: function(info) {
+            info.el.style.borderRadius = '4px';
+            info.el.style.cursor = 'move';
+        }
+    });
+    
+    calendar.render();
+    
+    // Store calendar globally for refresh
+    window.calendar = calendar;
+});
+
+function openAddModal(dateStr) {
+    document.getElementById('addDate').value = dateStr;
+    document.getElementById('addNom').value = '';
+    document.getElementById('addType').value = '';
+    document.getElementById('addDateRecolte').value = '';
+    document.getElementById('addNomError').style.display = 'none';
+    document.getElementById('addTypeError').style.display = 'none';
+    document.getElementById('addDateRecolteError').style.display = 'none';
+    document.getElementById('addModal').style.display = 'flex';
+    setTimeout(() => document.getElementById('addNom').focus(), 100);
+}
+
+function closeAddModal() {
+    document.getElementById('addModal').style.display = 'none';
+}
+
+function submitQuickAdd() {
+    const date = document.getElementById('addDate').value;
+    const nom = document.getElementById('addNom').value.trim();
+    const type = document.getElementById('addType').value.trim();
+    const dateRecolte = document.getElementById('addDateRecolte').value;
+    
+    // Clear previous errors
+    document.getElementById('addNomError').style.display = 'none';
+    document.getElementById('addTypeError').style.display = 'none';
+    document.getElementById('addDateRecolteError').style.display = 'none';
+    
+    if (!nom || !type) {
+        if (!nom) {
+            document.getElementById('addNomError').textContent = 'Le nom est obligatoire';
+            document.getElementById('addNomError').style.display = 'block';
+        }
+        if (!type) {
+            document.getElementById('addTypeError').textContent = 'Le type est obligatoire';
+            document.getElementById('addTypeError').style.display = 'block';
+        }
+        return;
+    }
+    
+    // Validate harvest date is after planting date
+    if (dateRecolte && dateRecolte <= date) {
+        document.getElementById('addDateRecolteError').textContent = 'La date de récolte doit être après la date de semis';
+        document.getElementById('addDateRecolteError').style.display = 'block';
+        return;
+    }
+    
+    const payload = {
+        date: date,
+        nomCulture: nom,
+        typeCulture: type
+    };
+    
+    if (dateRecolte) {
+        payload.dateRecolte = dateRecolte;
+    }
+    
+    fetch('{{ path('front_culture_calendar_quick_add') }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            closeAddModal();
+            window.calendar.refetchEvents();
+            showNotification('✅ Culture ajoutée avec succès', 'success');
+        } else {
+            if (data.errors) {
+                if (data.errors.nomCulture) {
+                    document.getElementById('addNomError').textContent = data.errors.nomCulture;
+                    document.getElementById('addNomError').style.display = 'block';
+                }
+                if (data.errors.typeCulture) {
+                    document.getElementById('addTypeError').textContent = data.errors.typeCulture;
+                    document.getElementById('addTypeError').style.display = 'block';
+                }
+                if (data.errors.dateRecolte) {
+                    document.getElementById('addDateRecolteError').textContent = data.errors.dateRecolte;
+                    document.getElementById('addDateRecolteError').style.display = 'block';
+                }
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('❌ Erreur lors de l\'ajout', 'error');
+    });
+}
+
+function updateEventDate(event, newDate) {
+    const props = event.extendedProps;
+    // Fix timezone issue - get local date string
+    const year = newDate.getFullYear();
+    const month = String(newDate.getMonth() + 1).padStart(2, '0');
+    const day = String(newDate.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
+    
+    fetch('{{ path('front_culture_calendar_update_date') }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            cultureId: props.cultureId,
+            type: props.type,
+            newDate: dateStr
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('✅ Date mise à jour', 'success');
+        } else {
+            showNotification('❌ Erreur lors de la mise à jour', 'error');
+            window.calendar.refetchEvents();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('❌ Erreur lors de la mise à jour', 'error');
+        window.calendar.refetchEvents();
+    });
+}
+
+function showEventModal(event) {
+    const props = event.extendedProps;
+    const icon = props.type === 'semis' ? '🌱' : '🌾';
+    const typeLabel = props.type === 'semis' ? 'Semis' : 'Récolte';
+    const cultureName = event.title.replace('🌱 ', '').replace('🌾 ', '');
+    
+    document.getElementById('modalIcon').textContent = icon;
+    document.getElementById('modalTitle').textContent = cultureName;
+    
+    const dateFormatted = new Date(event.start).toLocaleDateString('fr-FR', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+    
+    document.getElementById('modalBody').innerHTML = `
+        <div class="event-modal-row">
+            📅 Date : <strong>${dateFormatted}</strong>
+        </div>
+        <div class="event-modal-row">
+            ${icon} Type : <strong>${typeLabel}</strong>
+        </div>
+        <div class="event-modal-row">
+            🏷️ Catégorie : <strong>${props.cultureType}</strong>
+        </div>
+        <div style="margin-top: 1rem; padding: 0.75rem; background: #f0f7f3; border-radius: 8px; font-size: 0.85rem; color: var(--green-mid);">
+            💡 Astuce : Glissez-déposez l'événement pour changer la date
+        </div>
+    `;
+    
+    document.getElementById('modalEditBtn').href = '{{ path('front_culture_edit', {'idCulture': '__ID__'}) }}'.replace('__ID__', props.cultureId);
+    
+    document.getElementById('eventModal').style.display = 'flex';
+}
+
+function closeEventModal() {
+    document.getElementById('eventModal').style.display = 'none';
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 1rem 1.5rem;
+        background: ${type === 'success' ? '#52b788' : '#e74c3c'};
+        color: white;
+        border-radius: 10px;
+        font-weight: 600;
+        z-index: 10000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        animation: slideIn 0.3s ease;
+    `;
+    document.body.appendChild(notification);
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+// Close modals on overlay click
+document.getElementById('eventModal').addEventListener('click', function(e) {
+    if (e.target === this) closeEventModal();
+});
+document.getElementById('addModal').addEventListener('click', function(e) {
+    if (e.target === this) closeAddModal();
+});
+
+// Add CSS animations
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(400px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(400px); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

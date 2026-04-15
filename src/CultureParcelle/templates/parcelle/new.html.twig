@@ -43,8 +43,8 @@
     {% endif %}
 
     <form method="post" action="{{ path('front_parcelle_new') }}" id="parcelleForm">
-        <input type="hidden" name="latitude"  id="lat" value="{{ parcelle.latitude ?? '' }}">
-        <input type="hidden" name="longitude" id="lng" value="{{ parcelle.longitude ?? '' }}">
+        <input type="hidden" name="latitude"  id="lat" value="{{ (parcelle and parcelle.latitude) ? parcelle.latitude : '' }}">
+        <input type="hidden" name="longitude" id="lng" value="{{ (parcelle and parcelle.longitude) ? parcelle.longitude : '' }}">
 
         <div class="pf-grid">
             {# Left: form fields #}
@@ -52,7 +52,7 @@
                 <div class="pf-field">
                     <label class="pf-label">Localisation *</label>
                     <input type="text" name="localisation" id="localisationInput"
-                        value="{{ parcelle.localisation ?? '' }}"
+                        value="{{ (parcelle and parcelle.localisation) ? parcelle.localisation : '' }}"
                         placeholder="Ex: Champ Nord, Sfax..."
                         class="pf-input {{ errors.localisation is defined ? 'error' : '' }}">
                     {% if errors.localisation is defined %}
@@ -64,7 +64,7 @@
                 <div class="pf-field">
                     <label class="pf-label">Surface (ha) *</label>
                     <input type="number" name="surface"
-                        value="{{ parcelle.surface ?? '' }}"
+                        value="{{ (parcelle and parcelle.surface) ? parcelle.surface : '' }}"
                         min="0.01" step="0.01" placeholder="Ex: 2.5"
                         class="pf-input {{ errors.surface is defined ? 'error' : '' }}">
                     {% if errors.surface is defined %}
@@ -91,9 +91,9 @@
 </div>
 
 <script>
-    var initLat = {{ parcelle.latitude ?? 36.8065 }};
-    var initLng = {{ parcelle.longitude ?? 10.1815 }};
-    var hasCoords = {{ (parcelle.latitude is not null) ? 'true' : 'false' }};
+    var initLat = {{ (parcelle and parcelle.latitude) ? parcelle.latitude : 36.8065 }};
+    var initLng = {{ (parcelle and parcelle.longitude) ? parcelle.longitude : 10.1815 }};
+    var hasCoords = {{ (parcelle and parcelle.latitude is not null) ? 'true' : 'false' }};
 
     var map = L.map('map').setView([initLat, initLng], hasCoords ? 13 : 6);
 

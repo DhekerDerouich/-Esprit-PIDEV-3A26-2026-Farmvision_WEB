@@ -57,6 +57,15 @@
     .cp-modal-cancel { flex: 1; padding: 0.7rem; background: #f5f5f5; border: 1.5px solid #e0e0e0; border-radius: 10px; cursor: pointer; font-size: 0.95rem; color: #333; font-weight: 500; }
     .cp-modal-confirm { flex: 1; padding: 0.7rem; background: #e74c3c; border: none; border-radius: 10px; cursor: pointer; font-size: 0.95rem; color: #fff; font-weight: 600; }
     .cp-modal-confirm:hover { background: #c0392b; }
+
+    /* Pagination Styling */
+    .pagination { display: flex; gap: 0.5rem; list-style: none; padding: 0; margin: 0; align-items: center; }
+    .pagination li { display: inline-block; }
+    .pagination a, .pagination span { display: inline-block; padding: 0.5rem 0.9rem; border-radius: 8px; text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: all 0.2s; }
+    .pagination a { background: #f8faf9; color: var(--green-mid); border: 1.5px solid #e0e7e3; }
+    .pagination a:hover { background: var(--green-mist); border-color: var(--green-mid); }
+    .pagination .current { background: var(--green-mid); color: #fff; border: 1.5px solid var(--green-mid); font-weight: 600; }
+    .pagination .disabled { color: #ccc; cursor: not-allowed; background: #f5f5f5; border: 1.5px solid #e0e0e0; }
 </style>
 
 <div class="cp-page">
@@ -92,7 +101,7 @@
 
     {% if search or surfaceMin != '' or surfaceMax != '' %}
     <div class="cp-result-bar">
-        <span>{{ parcelles|length }}</span> résultat(s)
+        <span>{{ parcelles.getTotalItemCount }}</span> résultat(s)
         {% if search %} pour "{{ search }}"{% endif %}
         {% if surfaceMin != '' %} · ≥ {{ surfaceMin }} ha{% endif %}
         {% if surfaceMax != '' %} · ≤ {{ surfaceMax }} ha{% endif %}
@@ -131,6 +140,16 @@
             <p>Aucune parcelle trouvée.</p>
         </div>
         {% endfor %}
+    </div>
+
+    {# Pagination - always show to demonstrate KnpPaginatorBundle usage #}
+    <div style="margin-top: 2rem; display: flex; justify-content: center; flex-direction: column; align-items: center; gap: 1rem;">
+        <div style="font-size: 0.85rem; color: var(--text-muted);">
+            Affichage de {{ parcelles|length }} parcelle(s) sur {{ parcelles.getTotalItemCount }} au total
+        </div>
+        <div style="background: #fff; padding: 1rem 1.5rem; border-radius: 12px; border: 1px solid #e8f0eb; box-shadow: 0 2px 8px rgba(45,106,79,0.08);">
+            {{ knp_pagination_render(parcelles) }}
+        </div>
     </div>
 </div>
 

@@ -41,7 +41,7 @@
 
             <div style="margin-bottom: 1.25rem;">
                 <label style="display: block; margin-bottom: 0.5rem;">Date de semis *</label>
-                <input type="date" name="dateSemis" value="{{ culture.dateSemis ? culture.dateSemis|date('Y-m-d') : '' }}"
+                <input type="date" name="dateSemis" value="{{ (culture and culture.dateSemis) ? culture.dateSemis|date('Y-m-d') : '' }}"
                     style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid {{ errors.dateSemis is defined ? '#e74c3c' : 'var(--border)' }}; background: var(--bg-card); color: var(--text);">
                 {% if errors.dateSemis is defined %}
                     <p style="color: #e74c3c; font-size: 0.8rem; margin-top: 0.25rem;">{{ errors.dateSemis }}</p>
@@ -50,7 +50,7 @@
 
             <div style="margin-bottom: 1.75rem;">
                 <label style="display: block; margin-bottom: 0.5rem;">Date de récolte <span style="color: var(--text-muted); font-size: 0.8rem;">(optionnelle)</span></label>
-                <input type="date" name="dateRecolte" value="{{ culture.dateRecolte ? culture.dateRecolte|date('Y-m-d') : '' }}"
+                <input type="date" name="dateRecolte" value="{{ (culture and culture.dateRecolte) ? culture.dateRecolte|date('Y-m-d') : '' }}"
                     style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid {{ errors.dateRecolte is defined ? '#e74c3c' : 'var(--border)' }}; background: var(--bg-card); color: var(--text);">
                 {% if errors.dateRecolte is defined %}
                     <p style="color: #e74c3c; font-size: 0.8rem; margin-top: 0.25rem;">{{ errors.dateRecolte }}</p>
