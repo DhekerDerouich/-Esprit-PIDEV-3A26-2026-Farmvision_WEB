@@ -26,10 +26,16 @@ Your Parcelle module now displays real-time weather information from OpenWeather
 - Sign up and get your free API key
 - Copy the key
 
-### 2. Configure .env
+### 2. Configure .env.local (NOT .env)
+Create `.env.local` file (this file is ignored by git):
 ```env
 OPENWEATHER_API_KEY=your_api_key_here
 ```
+
+**Important**: 
+- ✅ Add your real API key to `.env.local` (NOT committed to git)
+- ❌ Never commit API keys to `.env` (this file IS committed to git)
+- The `.env` file contains only placeholder: `OPENWEATHER_API_KEY=your_api_key_here`
 
 ### 3. Wait & Clear Cache
 New API keys take 10-30 minutes to activate. After waiting, clear cache:
@@ -37,6 +43,36 @@ New API keys take 10-30 minutes to activate. After waiting, clear cache:
 php bin/console cache:clear
 ```
 Then refresh your browser and visit `/parcelles`
+
+---
+
+## For Team Members / Git
+
+### Environment Files:
+
+| File | Purpose | Git Status |
+|------|---------|------------|
+| `.env` | Placeholder values | ✅ Committed |
+| `.env.local` | Real API keys | ❌ NOT committed (in .gitignore) |
+| `.env.example` | Template for setup | ✅ Committed |
+
+### Setup for New Developers:
+```bash
+# 1. Clone repo
+git clone <repo-url>
+
+# 2. Copy example to local
+cp .env.example .env.local
+
+# 3. Edit .env.local and add your API key
+# OPENWEATHER_API_KEY=your_key_here
+
+# 4. Install and run
+composer install
+php bin/console cache:clear
+```
+
+**See `SETUP_FOR_DEVELOPERS.md` for complete setup guide.**
 
 ---
 
