@@ -3,10 +3,12 @@ namespace App\CultureParcelle\Controller;
 
 use App\Entity\Parcelle;
 use App\CultureParcelle\Repository\ParcelleRepository;
+use App\CultureParcelle\Service\WeatherService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -116,5 +118,32 @@ public function index(Request $request, ParcelleRepository $repo): Response
         }
 
         return $this->redirectToRoute('front_parcelle_index');
+    }
+
+    #[Route('/{idParcelle}/weather', name: 'front_parcelle_weather', methods: ['GET'])]
+    public function getWeather(int $idParcelle, ParcelleRepository $repo, WeatherService $weatherService): JsonResponse
+    {
+        $parcelle = $repo->find($idParcelle);
+        
+        if (!$parcelle) {
+            return $this->json(['error' => 'Parcelle non trouvée'], 404);
+        }
+
+        if (!$parcelle->getLatitude() || !$parcelle->getLongitude()) {
+            return $this->json(['error' => 'Coordonnées GPS manquantes'], 400);
+        }
+
+        $weatherData = $weatherService->getWeatherByCoordinates(
+            $parcelle->getLatitude(),
+            $parcelle->getLongitude()
+        );
+
+        if (!$weatherData) {
+            return $this->json(['error' => 'Impossible de récupérer les données météo'], 503);
+        }
+
+        $weatherData['emoji'] = $weatherService->getWeatherEmoji($weatherData['icon']);
+
+        return $this->json($weatherData);
     }
 }

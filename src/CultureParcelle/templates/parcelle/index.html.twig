@@ -32,6 +32,16 @@
     .cp-card-map { height: 180px; border-radius: 10px; overflow: hidden; border: 2px solid #e8f0eb; }
     .cp-surface-badge { display: inline-flex; align-items: center; gap: 0.4rem; background: var(--green-mist); color: var(--green-mid); padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
     .cp-coord-row { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.4rem; }
+    .cp-weather-box { background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border-radius: 10px; padding: 0.75rem 1rem; margin-top: 0.5rem; }
+    .cp-weather-loading { text-align: center; color: #64b5f6; font-size: 0.8rem; }
+    .cp-weather-error { text-align: center; color: #999; font-size: 0.75rem; }
+    .cp-weather-content { display: flex; align-items: center; gap: 0.75rem; }
+    .cp-weather-icon { font-size: 2rem; }
+    .cp-weather-main { flex: 1; }
+    .cp-weather-temp { font-size: 1.5rem; font-weight: 700; color: #1565c0; line-height: 1; }
+    .cp-weather-desc { font-size: 0.75rem; color: #1976d2; text-transform: capitalize; margin-top: 0.2rem; }
+    .cp-weather-details { display: flex; gap: 0.75rem; font-size: 0.7rem; color: #1976d2; margin-top: 0.4rem; }
+    .cp-weather-detail { display: flex; align-items: center; gap: 0.2rem; }
     .cp-card-footer { padding: 1rem 1.5rem; border-top: 1px solid #f0f4f2; display: flex; gap: 0.6rem; }
     .cp-btn-edit { flex: 1; text-align: center; padding: 0.55rem; border-radius: 8px; border: 1.5px solid var(--green-mid); color: var(--green-mid); text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: background 0.2s; }
     .cp-btn-edit:hover { background: var(--green-mist); }
@@ -101,6 +111,11 @@
                 {% if parcelle.latitude and parcelle.longitude %}
                 <div id="map-{{ parcelle.idParcelle }}" class="cp-card-map"></div>
                 <div class="cp-coord-row">📍 {{ parcelle.latitude|number_format(4, '.') }}, {{ parcelle.longitude|number_format(4, '.') }}</div>
+                
+                {# Weather Widget #}
+                <div class="cp-weather-box" id="weather-{{ parcelle.idParcelle }}">
+                    <div class="cp-weather-loading">⏳ Chargement météo...</div>
+                </div>
                 {% else %}
                 <div class="cp-card-map" style="background:#f5f5f5;display:flex;align-items:center;justify-content:center;color:#999;font-size:0.85rem;">📍 Position non définie</div>
                 {% endif %}
@@ -169,5 +184,43 @@ function openModal(action, token, name) {
 }
 function closeModal() { document.getElementById('deleteModal').style.display = 'none'; }
 document.getElementById('deleteModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+
+// Load weather data for each parcelle
+{% for p in parcelles %}
+{% if p.latitude and p.longitude %}
+(function() {
+    var parcelleId = {{ p.idParcelle }};
+    var weatherBox = document.getElementById('weather-' + parcelleId);
+    
+    fetch('{{ path('front_parcelle_weather', {'idParcelle': '__ID__'}) }}'.replace('__ID__', parcelleId))
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                weatherBox.innerHTML = '<div class="cp-weather-error">⚠️ ' + data.error + '</div>';
+                return;
+            }
+            
+            weatherBox.innerHTML = `
+                <div class="cp-weather-content">
+                    <div class="cp-weather-icon">${data.emoji}</div>
+                    <div class="cp-weather-main">
+                        <div class="cp-weather-temp">${data.temperature}°C</div>
+                        <div class="cp-weather-desc">${data.description}</div>
+                    </div>
+                </div>
+                <div class="cp-weather-details">
+                    <div class="cp-weather-detail">💧 ${data.humidity}%</div>
+                    <div class="cp-weather-detail">💨 ${data.wind_speed} km/h</div>
+                    ${data.visibility ? `<div class="cp-weather-detail">👁️ ${data.visibility} km</div>` : ''}
+                </div>
+            `;
+        })
+        .catch(error => {
+            weatherBox.innerHTML = '<div class="cp-weather-error">❌ Erreur de chargement</div>';
+            console.error('Weather fetch error:', error);
+        });
+})();
+{% endif %}
+{% endfor %}
 </script>
 {% endblock %}
