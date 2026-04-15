@@ -13,7 +13,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 #[Route('/cultures')]
 class CultureController extends AbstractController
 {
-    #[Route('/', name: 'front_culture_index', methods: ['GET'])]
+   /* #[Route('/', name: 'front_culture_index', methods: ['GET'])]
     public function index(Request $request, CultureRepository $repo): Response
     {
         $search = $request->query->get('search', '');
@@ -25,7 +25,27 @@ class CultureController extends AbstractController
             'search'       => $search,
             'selectedType' => $type,
         ]);
-    }
+    }*/
+        #[Route('/', name: 'front_culture_index', methods: ['GET'])]
+public function index(Request $request, CultureRepository $repo): Response
+{
+    $search = $request->query->get('search', '');
+    $type   = $request->query->get('type', 'all');
+
+    // Get the currently logged-in user
+    $user = $this->getUser();
+
+    return $this->render('@CultureParcelle/culture/index.html.twig', [
+        'cultures' => $repo->search(
+            $search ?: null,
+            $type,
+            $user ? $user->getId() : null // filter by user ID
+        ),
+        'types'        => $repo->findAllTypes(),
+        'search'       => $search,
+        'selectedType' => $type,
+    ]);
+}
 
     #[Route('/new', name: 'front_culture_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $em, ValidatorInterface $validator): Response

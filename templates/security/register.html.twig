@@ -180,13 +180,13 @@
         </div>
         
         <div class="register-body">
-            <form method="post" id="registerForm">
+            <form method="post" id="registerForm" novalidate>
                 <div class="row-modern">
                     <div class="form-group-modern">
                         <label>Nom <span class="required">*</span></label>
                         <input type="text" name="nom" value="{{ old.nom|default('') }}" 
                                class="form-control-modern {% if errors.nom is defined %}error{% endif %}" 
-                               placeholder="Votre nom" required>
+                               placeholder="Votre nom">
                         {% if errors.nom is defined %}
                             <span class="error-message">{{ errors.nom }}</span>
                         {% endif %}
@@ -196,7 +196,7 @@
                         <label>Prénom <span class="required">*</span></label>
                         <input type="text" name="prenom" value="{{ old.prenom|default('') }}" 
                                class="form-control-modern {% if errors.prenom is defined %}error{% endif %}" 
-                               placeholder="Votre prénom" required>
+                               placeholder="Votre prénom">
                         {% if errors.prenom is defined %}
                             <span class="error-message">{{ errors.prenom }}</span>
                         {% endif %}
@@ -207,7 +207,7 @@
                     <label>Email <span class="required">*</span></label>
                     <input type="email" name="email" value="{{ old.email|default('') }}" 
                            class="form-control-modern {% if errors.email is defined %}error{% endif %}" 
-                           placeholder="exemple@farmvision.tn" required>
+                           placeholder="exemple@farmvision.tn">
                     {% if errors.email is defined %}
                         <span class="error-message">{{ errors.email }}</span>
                     {% endif %}
@@ -215,7 +215,7 @@
                 
                 <div class="form-group-modern">
                     <label>Rôle <span class="required">*</span></label>
-                    <select name="role" id="roleSelect" class="form-control-modern" required>
+                    <select name="role" id="roleSelect" class="form-control-modern">
                         <option value="AGRICULTEUR" {% if old.role|default('AGRICULTEUR') == 'AGRICULTEUR' %}selected{% endif %}>
                             🌾 Agriculteur
                         </option>
@@ -264,18 +264,18 @@
                     <label>Mot de passe <span class="required">*</span></label>
                     <input type="password" name="password" id="password" 
                            class="form-control-modern {% if errors.password is defined %}error{% endif %}" 
-                           placeholder="••••••••" required>
+                           placeholder="••••••••">
                     {% if errors.password is defined %}
                         <span class="error-message">{{ errors.password }}</span>
                     {% endif %}
-                    <span class="input-hint">🔒 Minimum 6 caractères</span>
+                    <span class="input-hint">🔒 Minimum 6 caractères (majuscule, minuscule, chiffre)</span>
                 </div>
                 
                 <div class="form-group-modern">
                     <label>Confirmer mot de passe <span class="required">*</span></label>
                     <input type="password" name="password_confirm" 
                            class="form-control-modern {% if errors.password_confirm is defined %}error{% endif %}" 
-                           placeholder="••••••••" required>
+                           placeholder="••••••••">
                     {% if errors.password_confirm is defined %}
                         <span class="error-message">{{ errors.password_confirm }}</span>
                     {% endif %}
@@ -304,34 +304,13 @@
         if (role === 'AGRICULTEUR') {
             agriculteurFields.style.display = 'block';
             responsableFields.style.display = 'none';
-            // Désactiver la validation du matricule
-            document.querySelector('input[name="matricule"]').removeAttribute('required');
         } else {
             agriculteurFields.style.display = 'none';
             responsableFields.style.display = 'block';
-            // Activer la validation du matricule
-            document.querySelector('input[name="matricule"]').setAttribute('required', 'required');
         }
     }
     
     roleSelect.addEventListener('change', toggleFields);
     toggleFields();
-    
-    // Nettoyer les champs vides au chargement
-    document.addEventListener('DOMContentLoaded', function() {
-        // Supprimer les valeurs pré-remplies indésirables
-        const emailInput = document.querySelector('input[name="email"]');
-        const passwordInput = document.querySelector('input[name="password"]');
-        
-        // Ne vider que s'il n'y a pas d'erreur (pas de old data)
-        {% if old is empty %}
-            if (emailInput && emailInput.value === 'dhekr@gmail.com') {
-                emailInput.value = '';
-            }
-            if (passwordInput && passwordInput.value) {
-                passwordInput.value = '';
-            }
-        {% endif %}
-    });
 </script>
 {% endblock %}

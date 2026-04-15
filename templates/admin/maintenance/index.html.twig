@@ -84,7 +84,6 @@
     <table>
         <thead>
             <tr>
-                <th>ID</th>
                 <th>Équipement</th>
                 <th>Type</th>
                 <th>Description</th>
@@ -97,7 +96,6 @@
         <tbody>
             {% for maintenance in maintenances %}
             <tr>
-                <td>{{ maintenance.id }}</td>
                 <td><strong>{{ maintenance.equipement.nom }}</strong></td>
                 <td>
                     {% if maintenance.typeMaintenance == 'Préventive' %}

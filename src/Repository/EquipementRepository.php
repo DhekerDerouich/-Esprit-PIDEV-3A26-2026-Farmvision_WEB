@@ -42,33 +42,38 @@ class EquipementRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult();
 
+        $sousGarantie = $this->createQueryBuilder('e')
+            ->select('COUNT(e.id)')
+            ->where('e.dateAchat IS NOT NULL')
+            ->andWhere('e.dureeVieEstimee IS NOT NULL')
+            ->andWhere('DATE_ADD(e.dateAchat, e.dureeVieEstimee, \'year\') > :now')
+            ->setParameter('now', new \DateTime())
+            ->getQuery()
+            ->getSingleScalarResult();
+
         return [
             'total' => (int) $total,
             'fonctionnels' => (int) $fonctionnels,
             'enPanne' => (int) $enPanne,
             'enMaintenance' => (int) $enMaintenance,
-            'sousGarantie' => 0,
+            'sousGarantie' => (int) $sousGarantie,
         ];
     }
 
-    // Méthode de recherche pour les équipements
     public function search(string $keyword, ?string $type = null, ?string $etat = null): array
     {
         $qb = $this->createQueryBuilder('e');
         
-        // Recherche par mot-clé (nom ou type)
         if (!empty($keyword)) {
             $qb->andWhere('e.nom LIKE :keyword OR e.type LIKE :keyword')
                ->setParameter('keyword', '%' . $keyword . '%');
         }
         
-        // Filtre par type
         if (!empty($type) && $type !== 'all') {
             $qb->andWhere('e.type = :type')
                ->setParameter('type', $type);
         }
         
-        // Filtre par état
         if (!empty($etat) && $etat !== 'all') {
             $qb->andWhere('e.etat = :etat')
                ->setParameter('etat', $etat);
@@ -79,7 +84,6 @@ class EquipementRepository extends ServiceEntityRepository
                   ->getResult();
     }
 
-    // Obtenir les types uniques pour le filtre
     public function getUniqueTypes(): array
     {
         $result = $this->createQueryBuilder('e')

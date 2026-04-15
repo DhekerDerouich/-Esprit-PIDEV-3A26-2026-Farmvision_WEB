@@ -12,7 +12,7 @@ class CultureRepository extends ServiceEntityRepository
         parent::__construct($registry, Culture::class);
     }
 
-    public function search(?string $nom, ?string $type): array
+  /*  public function search(?string $nom, ?string $type): array
     {
         $qb = $this->createQueryBuilder('c');
 
@@ -28,7 +28,31 @@ class CultureRepository extends ServiceEntityRepository
 
         return $qb->orderBy('c.dateSemis', 'DESC')->getQuery()->getResult();
     }
+*/
+public function search(?string $nom, ?string $type, ?int $userId): array
+{
+    $qb = $this->createQueryBuilder('c');
 
+    // Filter by user if userId is provided
+    if ($userId) {
+        $qb->andWhere('c.user_id = :userId')
+           ->setParameter('userId', $userId);
+    }
+
+    if ($nom) {
+        $qb->andWhere('c.nomCulture LIKE :nom')
+           ->setParameter('nom', '%' . $nom . '%');
+    }
+
+    if ($type && $type !== 'all') {
+        $qb->andWhere('c.typeCulture = :type')
+           ->setParameter('type', $type);
+    }
+
+    return $qb->orderBy('c.dateSemis', 'DESC')
+              ->getQuery()
+              ->getResult();
+}
     public function findAllTypes(): array
     {
         return $this->createQueryBuilder('c')

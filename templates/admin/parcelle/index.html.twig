@@ -1,0 +1,105 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block page_title %}Parcelles{% endblock %}
+
+{% block body %}
+<div class="fade-in">
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">🗺️</div>
+            <div class="stat-value">{{ parcelles|length }}</div>
+            <div class="stat-label">Total des parcelles</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">📏</div>
+            <div class="stat-value">{{ parcelles|reduce((sum, p) => sum + p.surface, 0)|number_format(2) }} ha</div>
+            <div class="stat-label">Surface totale</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">📍</div>
+            <div class="stat-value">{{ parcelles|filter(p => p.latitude is not null)|length }}</div>
+            <div class="stat-label">Géolocalisées</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3>🔍 Recherche et filtres</h3>
+            <a href="{{ path('admin_parcelle_new') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Ajouter une parcelle
+            </a>
+        </div>
+        <form method="get" class="search-bar">
+            <input type="text" name="search" class="search-input" value="{{ app.request.query.get('search') }}" placeholder="Rechercher par localisation...">
+            
+            <input type="number" name="surface_min" class="search-input" value="{{ app.request.query.get('surface_min') }}" placeholder="Surface min (ha)" step="0.01">
+            
+            <input type="number" name="surface_max" class="search-input" value="{{ app.request.query.get('surface_max') }}" placeholder="Surface max (ha)" step="0.01">
+            
+            <select name="geoloc" class="search-input">
+                <option value="">Toutes</option>
+                <option value="oui" {{ app.request.query.get('geoloc') == 'oui' ? 'selected' : '' }}>Géolocalisées</option>
+                <option value="non" {{ app.request.query.get('geoloc') == 'non' ? 'selected' : '' }}>Non géolocalisées</option>
+            </select>
+            
+            <button type="submit" class="btn btn-primary">🔍 Filtrer</button>
+            <a href="{{ path('admin_parcelle_index') }}" class="btn btn-outline">🔄 Réinitialiser</a>
+        </form>
+    </div>
+
+    <div class="card">
+        <h3>📋 Liste des parcelles</h3>
+        
+        {% if parcelles is empty %}
+            <p style="text-align: center; color: var(--gray); padding: 2rem;">Aucune parcelle enregistrée</p>
+        {% else %}
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Localisation</th>
+                        <th>Surface (ha)</th>
+                        <th>Coordonnées</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for parcelle in parcelles %}
+                    <tr>
+                        <td><strong>{{ parcelle.localisation }}</strong></td>
+                        <td><span class="badge badge-info">{{ parcelle.surface }} ha</span></td>
+                        <td>
+                            {% if parcelle.latitude and parcelle.longitude %}
+                                <small>{{ parcelle.latitude|number_format(4) }}, {{ parcelle.longitude|number_format(4) }}</small>
+                            {% else %}
+                                <span style="color: var(--gray);">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if parcelle.latitude and parcelle.longitude %}
+                                <span class="badge badge-success">📍 Géolocalisée</span>
+                            {% else %}
+                                <span class="badge badge-warning">⚠️ Non géolocalisée</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ path('admin_parcelle_show', {idParcelle: parcelle.idParcelle}) }}" class="btn btn-sm btn-outline" title="Voir">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{{ path('admin_parcelle_edit', {idParcelle: parcelle.idParcelle}) }}" class="btn btn-sm btn-outline" title="Modifier">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form method="post" action="{{ path('admin_parcelle_delete', {idParcelle: parcelle.idParcelle}) }}" style="display: inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette parcelle ?');">
+                                <button type="submit" class="btn btn-sm btn-outline" style="color: var(--danger); border-color: var(--danger);" title="Supprimer">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

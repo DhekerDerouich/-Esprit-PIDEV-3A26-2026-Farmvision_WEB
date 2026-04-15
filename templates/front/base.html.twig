@@ -1,29 +1,46 @@
 {# templates/front/base.html.twig #}
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FarmVision - Agriculture Intelligente</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/farmvision.css') }}">
 
     <style>
         :root {
             --green-deep: #1a3a2a;
             --green-mid: #2d6a4f;
-            --green-light: #40916c;
-            --green-mist: #eaf5ee;
+            --green-light: #52b788;
+            --green-pale: #b7e4c7;
+            --green-mist: #d8f3dc;
             --cream: #faf7f2;
             --text: #1a1a18;
+            --text-muted: #5a6b5e;
+            --gold: #c8a84b;
+            --gold-dim: rgba(200, 168, 75, 0.15);
+            --red: #e05c5c;
+            --red-dim: rgba(224, 92, 92, 0.12);
+            --border: rgba(45, 106, 79, 0.15);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: 'DM Sans', sans-serif;
             background: var(--cream);
             color: var(--text);
         }
+
 
         /* ───── NAVBAR ───── */
         nav.main-nav {
@@ -37,10 +54,10 @@
             justify-content: space-between;
             align-items: center;
 
-            background: rgba(255,255,255,0.96);
+            background: rgba(255, 255, 255, 0.96);
             backdrop-filter: blur(14px);
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
             z-index: 200;
         }
 
@@ -51,7 +68,10 @@
             color: var(--green-deep);
             text-decoration: none;
         }
-        .logo span { color: var(--green-light); }
+
+        .logo span {
+            color: var(--green-light);
+        }
 
         .nav-links {
             display: flex;
@@ -80,32 +100,52 @@
         }
 
         /* Dropdown */
-        .has-dropdown { position: relative; }
+       /* Dropdown */
+.has-dropdown { position: relative; }
 
-        .nav-dropdown {
-            position: absolute;
-            top: 110%;
-            left: 0;
-            background: white;
-            border-radius: 10px;
-            padding: 0.4rem 0;
-            min-width: 170px;
-            border: 1px solid rgba(0,0,0,0.06);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-            display: none;
-        }
+.nav-dropdown {
+    position: absolute;
+    top: 100%;                    /* ← NEW: no gap */
+    left: 0;
+    background: white;
+    border-radius: 10px;
+    padding: 0.6rem 0;            /* ← NEW: slightly more padding */
+    min-width: 170px;
+    border: 1px solid rgba(0,0,0,0.06);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    opacity: 0;                   /* ← NEW: starts invisible */
+    visibility: hidden;           /* ← NEW: hidden by default */
+    transform: translateY(-10px); /* ← NEW: starts slightly up */
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0s linear 0.2s;  /* ← NEW: smooth animation */
+    pointer-events: none;         /* ← NEW: can't click when hidden */
+}
 
-        .has-dropdown:hover .nav-dropdown {
-            display: block;
-        }
+.has-dropdown:hover .nav-dropdown {
+    opacity: 1;                   /* ← NEW: fade in */
+    visibility: visible;          /* ← NEW: become visible */
+    transform: translateY(0);     /* ← NEW: slide down */
+    transition: opacity 0.2s ease, transform 0.2s ease;  /* ← NEW: smooth show */
+    pointer-events: auto;         /* ← NEW: can click when visible */
+}
 
-        .nav-dropdown a {
-            padding: 0.55rem 1rem;
-        }
+/* Add padding area to prevent dropdown from closing */
+.has-dropdown::after {            /* ← NEW: invisible bridge */
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    height: 10px;                 /* ← NEW: 10px invisible area */
+}
 
-        .nav-dropdown a:hover {
-            background: #f1f7f3;
-        }
+.nav-dropdown a {
+    padding: 0.55rem 1rem;
+    display: block;               /* ← NEW: proper block display */
+}
+
+.nav-dropdown a:hover {
+    background: #f1f7f3;
+}
 
         /* Actions */
         .nav-actions {
@@ -128,14 +168,14 @@
             gap: 10px;
             padding: 0.35rem 0.9rem 0.35rem 0.4rem;
             background: linear-gradient(135deg, #eaf5ee, #d8f3dc);
-            border: 1px solid rgba(45,106,79,0.25);
+            border: 1px solid rgba(45, 106, 79, 0.25);
             border-radius: 999px;
             transition: 0.25s;
         }
 
         .user-pill:hover {
             transform: translateY(-1px);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
         }
 
         .user-avatar {
@@ -180,102 +220,332 @@
         .btn-logout {
             padding: 0.4rem 0.9rem;
             border-radius: 8px;
-            border: 1px solid rgba(192,60,60,0.3);
+            border: 1px solid rgba(192, 60, 60, 0.3);
             color: #c03c3c;
             text-decoration: none;
         }
 
         .btn-logout:hover {
-            background: rgba(192,60,60,0.08);
+            background: rgba(192, 60, 60, 0.08);
         }
 
         main {
-            padding-top: 80px;
+            padding-top: 72px;
         }
 
-        footer {
-            margin-top: 50px;
-            padding: 2rem;
-            text-align: center;
+        main.with-subnav {
+            padding-top: 116px;
+        }
+
+        /* ── Buttons ── */
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .btn-outline {
+            border: 1px solid var(--green-mid);
+            color: var(--green-mid);
+            background: transparent;
+        }
+
+        .btn-outline:hover {
+            background: var(--green-mist);
+        }
+
+        .btn-primary {
+            background: var(--green-mid);
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
             background: var(--green-deep);
-            color: rgba(255,255,255,0.6);
+            transform: translateY(-1px);
+        }
+
+        .btn-login {
+            padding: 0.5rem 1.25rem;
+            background: transparent;
+            border: 1px solid var(--green-mid);
+            border-radius: 8px;
+            color: var(--green-mid);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-login:hover {
+            background: var(--green-mist);
+        }
+
+        .btn-signup {
+            padding: 0.5rem 1.25rem;
+            background: var(--green-mid);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-signup:hover {
+            background: var(--green-deep);
+        }
+
+        .btn-logout {
+            padding: 0.5rem 1.25rem;
+            background: transparent;
+            border: 1px solid var(--red);
+            border-radius: 8px;
+            color: var(--red);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-logout:hover {
+            background: var(--red-dim);
+        }
+
+        /* ── User info ── */
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0.5rem 1rem;
+            background: var(--green-mist);
+            border-radius: 8px;
+        }
+
+        .user-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--green-deep);
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: var(--green-mid);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        /* ── Layout ── */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* ── Card ── */
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        /* ── Badges ── */
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 100px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: var(--green-mist);
+            color: var(--green-mid);
+        }
+
+        .badge-warning {
+            background: var(--gold-dim);
+            color: var(--gold);
+        }
+
+        .badge-danger {
+            background: var(--red-dim);
+            color: var(--red);
+        }
+
+        /* ── Footer ── */
+        footer {
+            background: var(--green-deep);
+            color: rgba(255, 255, 255, 0.6);
+            padding: 3rem;
+            text-align: center;
+            margin-top: 4rem;
+        }
+
+        /* ── Flash messages ── */
+        .flash-message {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            z-index: 1000;
+            animation: slideIn 0.3s ease, fadeOut 0.5s ease 4.5s forwards;
+        }
+
+        .flash-success {
+            background: var(--green-mid);
+            border-left: 4px solid var(--green-light);
+        }
+
+        .flash-error {
+            background: var(--red-dim);
+            border-left: 4px solid var(--red);
+            color: var(--red);
+        }
+
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                visibility: hidden;
+            }
+        }
+
+        @media (max-width: 768px) {
+            nav.main-nav {
+                padding: 0 1rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .container {
+                padding: 0 1rem;
+            }
         }
     </style>
 </head>
 
 <body>
 
-<nav class="main-nav">
+    <nav class="main-nav">
 
-    <a href="{{ path('front_home') }}" class="logo">Farm<span>Vision</span></a>
+        <a href="{{ path('front_home') }}" class="logo">Farm<span>Vision</span></a>
 
-    <ul class="nav-links">
-        <li><a href="{{ path('front_home') }}">Accueil</a></li>
-        <li><a href="{{ path('front_about') }}">À propos</a></li>
+        <ul class="nav-links">
+            <li><a href="{{ path('front_home') }}"
+                    class="{{ app.request.get('_route') == 'front_home' ? 'active' : '' }}">Accueil</a></li>
+            <li><a href="{{ path('front_about') }}"
+                    class="{{ app.request.get('_route') == 'front_about' ? 'active' : '' }}">À propos</a></li>
 
-        {% if is_granted('ROLE_USER') %}
-
-        <li class="has-dropdown">
-            <a href="#">📂 Gestion</a>
-            <div class="nav-dropdown">
-                <a href="{{ path('front_equipement_index') }}">⚙️ Équipements</a>
-                <a href="{{ path('front_maintenance_index') }}">🔧 Maintenances</a>
-                <a href="{{ path('front_stock_index') }}">📦 Stocks</a>
-            </div>
-        </li>
-
-        <li class="has-dropdown">
-            <a href="#">🌱 Cultures</a>
-            <div class="nav-dropdown">
-                <a href="{{ path('front_culture_index') }}">🌿 Cultures</a>
-                <a href="{{ path('front_parcelle_index') }}">🗺️ Parcelles</a>
-            </div>
-        </li>
-
-        <li><a href="{{ path('front_marketplace_index') }}">🛒 Market</a></li>
-
-        <li class="has-dropdown">
-            <a href="#">💰 Finances</a>
+            {# Seulement si l'utilisateur est admin ou responsable #}
+            {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_RESPONSABLE') %}
+            <li><a href="{{ path('front_equipement_index') }}"
+                    class="{{ app.request.get('_route') starts with 'front_equipement' ? 'active' : '' }}">Équipements</a>
+            </li>
+            <li><a href="{{ path('front_maintenance_index') }}"
+                    class="{{ app.request.get('_route') starts with 'front_maintenance' ? 'active' : '' }}">Maintenances</a>
+            </li>
+            <li class="has-dropdown">
+            <a href="#">Finances</a>
             <div class="nav-dropdown">
                 <a href="{{ path('front_finance_dashboard') }}">📊 Dashboard</a>
                 <a href="{{ path('front_finance_depenses') }}">💸 Dépenses</a>
                 <a href="{{ path('front_finance_revenus') }}">💵 Revenus</a>
             </div>
         </li>
+        <li>
+        <a href="{{ path('front_stock_index') }}">📦 Stocks</a></li>
+        
+            <li><a href="{{ path('front_marketplace_index') }}">Market</a></li>
+             
 
-        {% endif %}
-    </ul>
+            {% endif %}
 
-    <div class="nav-actions">
-        {% if app.user %}
-            <div class="user-pill">
-                <div class="user-avatar">
-                    {{ app.user.prenom|first }}{{ app.user.nom|first }}
-                </div>
-                <div>
-                    <div class="user-name">{{ app.user.prenom }}</div>
-                    <div class="user-role">Utilisateur</div>
-                </div>
+            {# Pour l'agriculteur UNIQUEMENT (pas responsable ni admin) #}
+            {% if is_granted('ROLE_AGRICULTEUR') and not is_granted('ROLE_RESPONSABLE') and not is_granted('ROLE_ADMIN') %}
+            <li><a href="{{ path('front_culture_index') }}"
+                    class="{{ app.request.get('_route') starts with 'front_culture' ? 'active' : '' }}">🌾 Cultures</a></li>
+            <li><a href="{{ path('front_parcelle_index') }}"
+                    class="{{ app.request.get('_route') starts with 'front_parcelle' ? 'active' : '' }}">🗺️ Parcelles</a></li>
+            {% endif %}
+        </ul>
+
+        <div class="nav-actions">
+            {% if app.user %}
+            <div class="user-info">
+                <span class="user-name">{{ app.user.prenom }} {{ app.user.nom }}</span>
+                <div class="user-avatar">{{ app.user.prenom|first }}{{ app.user.nom|first }}</div>
             </div>
 
-            <div class="nav-divider"></div>
+            {# Nouveau lien vers le profil #}
+            <a href="{{ path('profile_show') }}" class="btn-login">👤 Mon profil</a>
 
-            <a href="{{ path('agriculteur_dashboard') }}" class="btn-dash">📊 Dashboard</a>
+            {% if is_granted('ROLE_ADMIN') %}
+            <a href="{{ path('admin_dashboard') }}" class="btn-login">📊 Dashboard</a>
+            {% elseif is_granted('ROLE_RESPONSABLE') %}
+            <a href="{{ path('responsable_dashboard') }}" class="btn-login">📊 Dashboard</a>
+            {% elseif is_granted('ROLE_AGRICULTEUR') %}
+            <a href="{{ path('agriculteur_dashboard') }}" class="btn-login">👨‍🌾 Mon espace</a>
+            {% endif %}
+
             <a href="{{ path('app_logout') }}" class="btn-logout">🚪 Déconnexion</a>
-        {% else %}
-            <a href="{{ path('app_login') }}" class="btn-dash">🔑 Connexion</a>
-        {% endif %}
-    </div>
+            {% else %}
+            <a href="{{ path('app_login') }}" class="btn-login">🔑 Connexion</a>
+            <a href="{{ path('app_register') }}" class="btn-signup">✨ Inscription</a>
+            {% endif %}
+        </div>
 
-</nav>
+    </nav>
 
-<main>
-    {% block body %}{% endblock %}
-</main>
+    <main>
+        {% block body %}{% endblock %}
+    </main>
 
-<footer>
-    © 2025 FarmVision — Agriculture intelligente
-</footer>
-
+    <footer>
+        © 2025 FarmVision — Agriculture intelligente
+    </footer>
+    <script src="{{ asset('js/farmvision.js') }}" defer></script>
 </body>
+
 </html>

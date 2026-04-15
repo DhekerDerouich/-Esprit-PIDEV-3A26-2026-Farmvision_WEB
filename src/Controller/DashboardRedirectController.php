@@ -13,12 +13,23 @@ class DashboardRedirectController extends AbstractController
     public function redirectDashboard(): Response
     {
         $user = $this->getUser();
-        if (!$user) return $this->redirectToRoute('app_login');
+        
+        if (!$user) {
+            return $this->redirectToRoute('app_login');
+        }
 
-        switch($user->getTypeRole()) {
-            case 'ADMINISTRATEUR': return $this->redirectToRoute('admin_dashboard');
-            case 'RESPONSABLE_EXPLOITATION': return $this->redirectToRoute('responsable_dashboard');
-            default: return $this->redirectToRoute('agriculteur_dashboard');
+        $role = $user->getTypeRole();
+        
+        switch($role) {
+            case 'ADMINISTRATEUR':
+                // CORRECTION : Utiliser le bon nom de route 'admin_dashboard'
+                return $this->redirectToRoute('admin_dashboard');
+            case 'RESPONSABLE_EXPLOITATION':
+                return $this->redirectToRoute('responsable_dashboard');
+            case 'AGRICULTEUR':
+                return $this->redirectToRoute('agriculteur_dashboard');
+            default:
+                return $this->redirectToRoute('front_home');
         }
     }
 

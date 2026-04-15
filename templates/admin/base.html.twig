@@ -1,4 +1,4 @@
-{# templates/admin/base.html.twig - Version moderne #}
+{# templates/admin/base.html.twig - Version moderne avec menu déroulant #}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -34,6 +34,17 @@
             --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
         }
 
+        /* Dark Theme */
+        body.dark-theme {
+            --dark: #e2e8f0;
+            --darker: #f1f5f9;
+            --gray: #94a3b8;
+            --gray-light: #64748b;
+            --gray-lighter: #334155;
+            --light: #0f172a;
+            --white: #1e293b;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
@@ -41,6 +52,7 @@
             background: var(--light);
             color: var(--dark);
             overflow-x: hidden;
+            transition: background 0.3s, color 0.3s;
         }
 
         /* Sidebar moderne */
@@ -155,10 +167,19 @@
             background-clip: text;
         }
 
+        /* User menu dropdown */
         .user-menu {
+            position: relative;
             display: flex;
             align-items: center;
             gap: 1rem;
+            cursor: pointer;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
         }
 
         .user-avatar {
@@ -171,6 +192,120 @@
             justify-content: center;
             color: var(--white);
             font-weight: 600;
+        }
+
+        .user-name {
+            color: var(--gray);
+            font-weight: 500;
+        }
+
+        .dropdown-arrow {
+            font-size: 0.7rem;
+            color: var(--gray);
+            transition: transform 0.3s;
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 0.5rem;
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            min-width: 240px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: 100;
+            border: 1px solid var(--gray-lighter);
+        }
+
+        .user-menu.active .user-dropdown {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .user-menu.active .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-header {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--gray-lighter);
+        }
+
+        .dropdown-header .name {
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .dropdown-header .email {
+            font-size: 0.7rem;
+            color: var(--gray);
+            margin-top: 0.25rem;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            text-decoration: none;
+            color: var(--dark);
+            transition: background 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background: var(--gray-lighter);
+        }
+
+        .dropdown-item i {
+            width: 20px;
+            color: var(--primary);
+        }
+
+        .theme-switch {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            border-top: 1px solid var(--gray-lighter);
+            border-bottom: 1px solid var(--gray-lighter);
+        }
+
+        .theme-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .theme-btn {
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            border: 1px solid var(--gray-lighter);
+            background: var(--white);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .theme-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: var(--gray-lighter);
+            margin: 0;
+        }
+
+        .dropdown-item.logout {
+            color: var(--danger);
+        }
+
+        .dropdown-item.logout i {
+            color: var(--danger);
         }
 
         /* Content */
@@ -367,6 +502,8 @@
             border-radius: var(--radius);
             font-size: 0.875rem;
             transition: all 0.2s;
+            background: var(--white);
+            color: var(--dark);
         }
 
         .form-control:focus {
@@ -393,6 +530,8 @@
             border: 1px solid var(--gray-lighter);
             border-radius: var(--radius);
             font-size: 0.875rem;
+            background: var(--white);
+            color: var(--dark);
         }
 
         /* Flash messages */
@@ -465,6 +604,9 @@
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
+            .user-name {
+                display: none;
+            }
         }
     </style>
 </head>
@@ -477,8 +619,14 @@
             </div>
         </div>
         <ul class="sidebar-menu">
+            <!-- DASHBOARD -->
             <li class="{{ app.request.get('_route') == 'admin_dashboard' ? 'active' : '' }}">
                 <a href="{{ path('admin_dashboard') }}"><i class="fas fa-chart-line"></i> Dashboard</a>
+            </li>
+            
+            <!-- SECTION ÉQUIPEMENTS & MAINTENANCES -->
+            <li style="margin-top: 1rem; margin-bottom: 0.5rem;">
+                <span style="padding: 0.5rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--gray); display: block;">🚜 Parc matériel</span>
             </li>
             <li class="{{ app.request.get('_route') starts with 'admin_equipement' ? 'active' : '' }}">
                 <a href="{{ path('admin_equipement_index') }}"><i class="fas fa-tractor"></i> Équipements</a>
@@ -487,7 +635,18 @@
                 <a href="{{ path('admin_maintenance_index') }}"><i class="fas fa-wrench"></i> Maintenances</a>
             </li>
             
-            <!-- SECTION FINANCES - Added for Dépenses & Revenus -->
+            <!-- SECTION CULTURES & PARCELLES -->
+            <li style="margin-top: 1rem; margin-bottom: 0.5rem;">
+                <span style="padding: 0.5rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--gray); display: block;">🌾 Agriculture</span>
+            </li>
+            <li class="{{ app.request.get('_route') starts with 'admin_culture' ? 'active' : '' }}">
+                <a href="{{ path('admin_culture_index') }}"><i class="fas fa-seedling"></i> Cultures</a>
+            </li>
+            <li class="{{ app.request.get('_route') starts with 'admin_parcelle' ? 'active' : '' }}">
+                <a href="{{ path('admin_parcelle_index') }}"><i class="fas fa-map-marked-alt"></i> Parcelles</a>
+            </li>
+            
+            <!-- SECTION FINANCES -->
             <li style="margin-top: 1rem; margin-bottom: 0.5rem;">
                 <span style="padding: 0.5rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--gray); display: block;">💰 Finances</span>
             </li>
@@ -498,11 +657,9 @@
                 <a href="{{ path('admin_revenu_index') }}"><i class="fas fa-chart-line"></i> Revenus</a>
             </li>
             
+            <!-- SECTION GESTION DES STOCKS & MARKETPLACE -->
             <li style="margin-top: 1rem; margin-bottom: 0.5rem;">
-                <span style="padding: 0.5rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--gray); display: block;">👥 Gestion</span>
-            </li>
-            <li class="{{ app.request.get('_route') starts with 'admin_user' ? 'active' : '' }}">
-                <a href="{{ path('admin_user_index') }}"><i class="fas fa-users"></i> Utilisateurs</a>
+                <span style="padding: 0.5rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--gray); display: block;">📦 Commercial</span>
             </li>
             <li class="{{ app.request.get('_route') starts with 'admin_stock' ? 'active' : '' }}">
                 <a href="{{ path('admin_stock_index') }}"><i class="fas fa-boxes"></i> Stocks</a>
@@ -510,22 +667,60 @@
             <li class="{{ app.request.get('_route') starts with 'admin_marketplace' ? 'active' : '' }}">
                 <a href="{{ path('admin_marketplace_index') }}"><i class="fas fa-store"></i> Marketplace</a>
             </li>
+            
+            <!-- SECTION UTILISATEURS -->
+            <li style="margin-top: 1rem; margin-bottom: 0.5rem;">
+                <span style="padding: 0.5rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--gray); display: block;">👥 Administration</span>
+            </li>
+            <li class="{{ app.request.get('_route') starts with 'admin_user' ? 'active' : '' }}">
+                <a href="{{ path('admin_user_index') }}"><i class="fas fa-users"></i> Utilisateurs</a>
+            </li>
         </ul>
     </div>
 
     <div class="main-content">
         <div class="top-bar">
             <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
-            <div class="user-menu">
-                {% if app.user %}
-                    <span style="color: var(--gray);">{{ app.user.prenom }} {{ app.user.nom }}</span>
+            
+            <!-- Menu utilisateur déroulant -->
+            <div class="user-menu" id="userMenu">
+                <div class="user-info">
+                    <span class="user-name">{{ app.user.prenom }} {{ app.user.nom }}</span>
                     <div class="user-avatar">{{ app.user.prenom|first }}{{ app.user.nom|first }}</div>
-                    <a href="{{ path('app_logout') }}" style="color: var(--danger); text-decoration: none;">
-                        <i class="fas fa-sign-out-alt"></i>
+                    <span class="dropdown-arrow">▼</span>
+                </div>
+                
+                <div class="user-dropdown">
+                    <div class="dropdown-header">
+                        <div class="name">{{ app.user.prenom }} {{ app.user.nom }}</div>
+                        <div class="email">{{ app.user.email }}</div>
+                    </div>
+                    
+                    <a href="{{ path('profile_show') }}" class="dropdown-item">
+                        <i class="fas fa-user"></i> Mon profil
                     </a>
-                {% endif %}
+                    
+                    <a href="{{ path('profile_edit') }}" class="dropdown-item">
+                        <i class="fas fa-cog"></i> Paramètres
+                    </a>
+                    
+                    <div class="theme-switch">
+                        <span><i class="fas fa-moon"></i> Thème</span>
+                        <div class="theme-buttons">
+                            <button onclick="setTheme('light')" class="theme-btn">☀️</button>
+                            <button onclick="setTheme('dark')" class="theme-btn">🌙</button>
+                        </div>
+                    </div>
+                    
+                    <div class="dropdown-divider"></div>
+                    
+                    <a href="{{ path('app_logout') }}" class="dropdown-item logout">
+                        <i class="fas fa-sign-out-alt"></i> Déconnexion
+                    </a>
+                </div>
             </div>
         </div>
+        
         <div class="content">
             <!-- Flash messages -->
             {% for label, messages in app.flashes %}
@@ -542,6 +737,35 @@
     </div>
 
     <script>
+        // Toggle dropdown menu
+        const userMenu = document.getElementById('userMenu');
+        userMenu.addEventListener('click', function(e) {
+            e.stopPropagation();
+            this.classList.toggle('active');
+        });
+        
+        // Fermer le dropdown en cliquant ailleurs
+        document.addEventListener('click', function() {
+            userMenu.classList.remove('active');
+        });
+        
+        // Thème Dark/Light
+        function setTheme(theme) {
+            if (theme === 'dark') {
+                document.body.classList.add('dark-theme');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                document.body.classList.remove('dark-theme');
+                localStorage.setItem('theme', 'light');
+            }
+        }
+        
+        // Charger le thème sauvegardé
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-theme');
+        }
+        
         // Supprimer les messages flash après 5 secondes
         setTimeout(() => {
             document.querySelectorAll('.flash-message').forEach(msg => {
@@ -553,7 +777,9 @@
         
         // Active link detection
         document.querySelectorAll('.sidebar-menu li a').forEach(link => {
-            if (link.getAttribute('href') === window.location.pathname) {
+            const currentPath = window.location.pathname;
+            const linkPath = link.getAttribute('href');
+            if (linkPath && currentPath === linkPath) {
                 link.closest('li').classList.add('active');
             }
         });

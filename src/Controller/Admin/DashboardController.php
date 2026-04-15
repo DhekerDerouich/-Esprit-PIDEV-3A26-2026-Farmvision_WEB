@@ -5,6 +5,7 @@ namespace App\Controller\Admin;
 
 use App\Repository\EquipementRepository;
 use App\Repository\MaintenanceRepository;
+use App\Repository\UtilisateurRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -13,7 +14,11 @@ use Symfony\Component\Routing\Annotation\Route;
 class DashboardController extends AbstractController
 {
     #[Route('/', name: 'admin_dashboard')]
-    public function index(EquipementRepository $equipementRepo, MaintenanceRepository $maintenanceRepo): Response
+    public function index(
+        EquipementRepository $equipementRepo, 
+        MaintenanceRepository $maintenanceRepo,
+        UtilisateurRepository $utilisateurRepo
+    ): Response
     {
         $equipements = $equipementRepo->findAll();
         $maintenances = $maintenanceRepo->findAll();
@@ -24,7 +29,15 @@ class DashboardController extends AbstractController
         // Statistiques maintenances
         $statsMaintenances = $maintenanceRepo->getStatistics();
         
-        // Maintenances à venir (prochaines 5)
+        // Statistiques utilisateurs
+        $statsUtilisateurs = [
+            'total' => $utilisateurRepo->createQueryBuilder('u')->select('COUNT(u.id)')->getQuery()->getSingleScalarResult(),
+            'admins' => $utilisateurRepo->createQueryBuilder('u')->select('COUNT(u.id)')->where('u.type_role = :role')->setParameter('role', 'ADMINISTRATEUR')->getQuery()->getSingleScalarResult(),
+            'responsables' => $utilisateurRepo->createQueryBuilder('u')->select('COUNT(u.id)')->where('u.type_role = :role')->setParameter('role', 'RESPONSABLE_EXPLOITATION')->getQuery()->getSingleScalarResult(),
+            'agriculteurs' => $utilisateurRepo->createQueryBuilder('u')->select('COUNT(u.id)')->where('u.type_role = :role')->setParameter('role', 'AGRICULTEUR')->getQuery()->getSingleScalarResult(),
+        ];
+        
+        // Maintenances à venir
         $aujourdhui = new \DateTime();
         $maintenancesPlanifiees = array_filter($maintenances, fn($m) => $m->getStatut() === 'Planifiée');
         $upcoming = array_filter($maintenancesPlanifiees, fn($m) => $m->getDateMaintenance() >= $aujourdhui);
@@ -37,6 +50,8 @@ class DashboardController extends AbstractController
         return $this->render('admin/dashboard/index.html.twig', [
             'statsEquipements' => $statsEquipements,
             'statsMaintenances' => $statsMaintenances,
+            'statsUtilisateurs' => $statsUtilisateurs,
+            
             'upcomingMaintenances' => $upcomingMaintenances,
             'derniersEquipements' => $derniersEquipements,
         ]);

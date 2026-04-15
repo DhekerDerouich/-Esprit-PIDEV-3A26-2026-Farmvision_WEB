@@ -13,20 +13,27 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 #[Route('/parcelles')]
 class ParcelleController extends AbstractController
 {
-    #[Route('/', name: 'front_parcelle_index', methods: ['GET'])]
-    public function index(Request $request, ParcelleRepository $repo): Response
-    {
-        $localisation  = $request->query->get('search', '');
-        $surfaceMinRaw = $request->query->get('surface_min', '');
-        $surfaceMaxRaw = $request->query->get('surface_max', '');
+   #[Route('/', name: 'front_parcelle_index', methods: ['GET'])]
+public function index(Request $request, ParcelleRepository $repo): Response
+{
+    $localisation  = $request->query->get('search', '');
+    $surfaceMinRaw = $request->query->get('surface_min', '');
+    $surfaceMaxRaw = $request->query->get('surface_max', '');
 
-        return $this->render('@CultureParcelle/parcelle/index.html.twig', [
-            'parcelles'  => $repo->search($localisation ?: null, $surfaceMinRaw !== '' ? (float)$surfaceMinRaw : null, $surfaceMaxRaw !== '' ? (float)$surfaceMaxRaw : null),
-            'search'     => $localisation,
-            'surfaceMin' => $surfaceMinRaw,
-            'surfaceMax' => $surfaceMaxRaw,
-        ]);
-    }
+    $user = $this->getUser(); // 🔥 get logged-in user
+
+    return $this->render('@CultureParcelle/parcelle/index.html.twig', [
+        'parcelles'  => $repo->search(
+            $localisation ?: null,
+            $surfaceMinRaw !== '' ? (float)$surfaceMinRaw : null,
+            $surfaceMaxRaw !== '' ? (float)$surfaceMaxRaw : null,
+            $user ? $user->getId() : null //  filter by user
+        ),
+        'search'     => $localisation,
+        'surfaceMin' => $surfaceMinRaw,
+        'surfaceMax' => $surfaceMaxRaw,
+    ]);
+}
 
     #[Route('/new', name: 'front_parcelle_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $em, ValidatorInterface $validator): Response

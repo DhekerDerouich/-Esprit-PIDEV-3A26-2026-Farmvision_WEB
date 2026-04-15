@@ -9,12 +9,16 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class HomeController extends AbstractController
 {
-    #[Route('/', name: 'front_home')]
+     #[Route('/', name: 'front_home')]
     public function index(EquipementRepository $equipementRepo, MaintenanceRepository $maintenanceRepo): Response
     {
+        // Si l'utilisateur est connecté, le rediriger vers son dashboard
+        if ($this->getUser()) {
+            return $this->redirectToRoute('app_dashboard_redirect');
+        }
+        
         $equipements = $equipementRepo->findBy([], ['id' => 'DESC'], 6);
         $maintenances = $maintenanceRepo->findUpcoming(5);
-
         $statsEquipements = $equipementRepo->getStatistics();
 
         return $this->render('front/home/index.html.twig', [
@@ -23,6 +27,7 @@ class HomeController extends AbstractController
             'statsEquipements' => $statsEquipements,
         ]);
     }
+    
     #[Route('/about', name: 'front_about')]
     public function about(): Response
     {

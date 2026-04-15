@@ -44,7 +44,7 @@ class DepenseRepository extends ServiceEntityRepository
         ];
     }
 
-    // NEW: Search with date range
+    //  Search with date range
     public function search(?string $keyword = null, ?string $type = null, ?string $startDate = null, ?string $endDate = null): array
     {
         $qb = $this->createQueryBuilder('d');

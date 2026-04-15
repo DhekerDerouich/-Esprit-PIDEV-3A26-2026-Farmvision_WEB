@@ -3,53 +3,109 @@
 {% block page_title %}Ajouter un utilisateur{% endblock %}
 
 {% block body %}
-<div style="margin-bottom: 2rem;">
-    <a href="{{ path('admin_user_index') }}" class="btn btn-outline">
-        <i class="fas fa-arrow-left"></i> Retour
-    </a>
+<style>
+    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+    .page-header h1 { font-size: 1.5rem; font-weight: 600; margin: 0; }
+    .btn-back { background: #6c757d; color: white; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; }
+    .btn-back:hover { background: #5a6268; }
+    .card { background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); max-width: 700px; margin: 0 auto; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-weight: 500; margin-bottom: 0.5rem; color: #333; }
+    .form-group label .required { color: #dc3545; margin-left: 0.25rem; }
+    .form-control { width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem; }
+    .form-control:focus { outline: none; border-color: #4CAF50; }
+    .form-control.error { border-color: #dc3545; background: #fff5f5; }
+    .error-message { color: #dc3545; font-size: 0.75rem; margin-top: 0.25rem; display: block; }
+    .btn-primary { background: #4CAF50; color: white; padding: 0.5rem 1rem; border-radius: 6px; border: none; cursor: pointer; }
+    .btn-primary:hover { background: #45a049; }
+    .btn-outline { background: #6c757d; color: white; padding: 0.5rem 1rem; border-radius: 6px; border: none; cursor: pointer; text-decoration: none; display: inline-block; }
+    .btn-outline:hover { background: #5a6268; }
+    .flash-error { background: #f8d7da; color: #721c24; padding: 0.75rem; border-radius: 6px; margin-bottom: 1rem; border: 1px solid #f5c6cb; }
+    .flash-success { background: #d4edda; color: #155724; padding: 0.75rem; border-radius: 6px; margin-bottom: 1rem; border: 1px solid #c3e6cb; }
+    .info-text { color: #6c757d; font-size: 0.75rem; margin-top: 0.25rem; }
+    .role-fields { margin-top: 1rem; }
+</style>
+
+<div class="page-header">
+    <h1>➕ Ajouter un utilisateur</h1>
+    <a href="{{ path('admin_user_index') }}" class="btn-back">← Retour</a>
 </div>
 
-<div class="card" style="max-width: 700px; margin: 0 auto;">
-    <h1 style="font-size: 1.5rem; margin-bottom: 1.5rem;">
-        <i class="fas fa-user-plus"></i> Ajouter un utilisateur
-    </h1>
-    
-    <form method="post" id="userForm">
-        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+{# Affichage des messages flash #}
+{% for message in app.flashes('error') %}
+    <div class="flash-error">{{ message }}</div>
+{% endfor %}
+
+{% for message in app.flashes('success') %}
+    <div class="flash-success">{{ message }}</div>
+{% endfor %}
+
+<div class="card">
+    <form method="post" id="userForm" novalidate>
+        <div class="form-grid">
             <div class="form-group">
-                <label>Nom <span style="color: var(--danger);">*</span></label>
-                <input type="text" name="nom" class="form-control" required>
+                <label>Nom <span class="required">*</span></label>
+                <input type="text" name="nom" value="{{ formData.nom|default('') }}" 
+                       class="form-control {% if errors.nom is defined %}error{% endif %}">
+                {% if errors.nom is defined %}
+                    <span class="error-message">{{ errors.nom }}</span>
+                {% endif %}
+                <div class="info-text">2 à 100 caractères, lettres, espaces et tirets</div>
             </div>
             <div class="form-group">
-                <label>Prénom <span style="color: var(--danger);">*</span></label>
-                <input type="text" name="prenom" class="form-control" required>
+                <label>Prénom <span class="required">*</span></label>
+                <input type="text" name="prenom" value="{{ formData.prenom|default('') }}" 
+                       class="form-control {% if errors.prenom is defined %}error{% endif %}">
+                {% if errors.prenom is defined %}
+                    <span class="error-message">{{ errors.prenom }}</span>
+                {% endif %}
+                <div class="info-text">2 à 100 caractères, lettres, espaces et tirets</div>
             </div>
         </div>
         
         <div class="form-group">
-            <label>Email <span style="color: var(--danger);">*</span></label>
-            <input type="email" name="email" class="form-control" required>
+            <label>Email <span class="required">*</span></label>
+            <input type="email" name="email" value="{{ formData.email|default('') }}" 
+                   class="form-control {% if errors.email is defined %}error{% endif %}" 
+                   placeholder="exemple@domaine.com">
+            {% if errors.email is defined %}
+                <span class="error-message">{{ errors.email }}</span>
+            {% endif %}
+            <div class="info-text">Email valide et unique</div>
         </div>
         
         <div class="form-group">
-            <label>Rôle <span style="color: var(--danger);">*</span></label>
-            <select name="type_role" id="roleSelect" class="form-control" required>
-                <option value="AGRICULTEUR">🌾 Agriculteur</option>
-                <option value="RESPONSABLE_EXPLOITATION">📋 Responsable d'exploitation</option>
-                <option value="ADMINISTRATEUR">👑 Administrateur</option>
+            <label>Rôle <span class="required">*</span></label>
+            <select name="type_role" id="roleSelect" class="form-control">
+                <option value="AGRICULTEUR" {% if formData.type_role|default('AGRICULTEUR') == 'AGRICULTEUR' %}selected{% endif %}>🌾 Agriculteur</option>
+                <option value="RESPONSABLE_EXPLOITATION" {% if formData.type_role|default('') == 'RESPONSABLE_EXPLOITATION' %}selected{% endif %}>📋 Responsable d'exploitation</option>
+                <option value="ADMINISTRATEUR" {% if formData.type_role|default('') == 'ADMINISTRATEUR' %}selected{% endif %}>👑 Administrateur</option>
             </select>
         </div>
         
         <!-- Champs pour Agriculteur -->
         <div id="agriculteurFields" class="role-fields">
-            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-grid">
                 <div class="form-group">
-                    <label><i class="fas fa-phone"></i> Téléphone</label>
-                    <input type="tel" name="telephone" class="form-control" placeholder="+216 XX XXX XXX">
+                    <label>Téléphone</label>
+                    <input type="text" name="telephone" value="{{ formData.telephone|default('') }}" 
+                           class="form-control {% if errors.telephone is defined %}error{% endif %}" 
+                           placeholder="12345678">
+                    {% if errors.telephone is defined %}
+                        <span class="error-message">{{ errors.telephone }}</span>
+                    {% endif %}
+                    <div class="info-text">8 chiffres</div>
                 </div>
                 <div class="form-group">
-                    <label><i class="fas fa-map-marker-alt"></i> Adresse</label>
-                    <input type="text" name="adresse" class="form-control" placeholder="Adresse complète">
+                    <label>Adresse</label>
+                    <input type="text" name="adresse" value="{{ formData.adresse|default('') }}" 
+                           class="form-control {% if errors.adresse is defined %}error{% endif %}" 
+                           placeholder="Adresse complète">
+                    {% if errors.adresse is defined %}
+                        <span class="error-message">{{ errors.adresse }}</span>
+                    {% endif %}
+                    <div class="info-text">Optionnel, maximum 255 caractères</div>
                 </div>
             </div>
         </div>
@@ -57,31 +113,47 @@
         <!-- Champs pour Responsable et Admin -->
         <div id="responsableAdminFields" class="role-fields" style="display: none;">
             <div class="form-group">
-                <label><i class="fas fa-id-card"></i> Matricule <span style="color: var(--danger);">*</span></label>
-                <input type="text" name="matricule" class="form-control" placeholder="Ex: ADM-001, RES-002">
-                <small style="color: var(--gray); font-size: 0.75rem;">Format: XXX-000 (ex: ADM-001)</small>
+                <label>Matricule <span class="required">*</span></label>
+                <input type="text" name="matricule" value="{{ formData.matricule|default('') }}" 
+                       class="form-control {% if errors.matricule is defined %}error{% endif %}" 
+                       placeholder="Ex: ADM-001, RES-002">
+                {% if errors.matricule is defined %}
+                    <span class="error-message">{{ errors.matricule }}</span>
+                {% endif %}
+                <div class="info-text">Format: XXX-000 (lettres majuscules, chiffres, tirets) - Unique</div>
             </div>
         </div>
         
         <div class="form-group">
             <label>Mot de passe</label>
-            <input type="password" name="password" id="password" class="form-control" placeholder="Laisser vide pour générer automatiquement">
-            <button type="button" id="generatePassword" class="btn btn-outline" style="margin-top: 0.5rem;">
-                <i class="fas fa-key"></i> Générer mot de passe
+            <input type="text" name="password" id="password" 
+                   class="form-control {% if errors.password is defined %}error{% endif %}" 
+                   placeholder="Laisser vide pour générer automatiquement">
+            {% if errors.password is defined %}
+                <span class="error-message">{{ errors.password }}</span>
+            {% endif %}
+            <button type="button" id="generatePassword" class="btn-outline" style="margin-top: 0.5rem; font-size: 0.8rem;">
+                🔑 Générer mot de passe
             </button>
+            <div class="info-text">Minimum 6 caractères (laissez vide pour génération automatique)</div>
         </div>
+        
+        {% if formData.generated_password is defined %}
+            <div class="flash-success" style="margin-bottom: 1rem;">
+                🔐 Mot de passe généré: <strong>{{ formData.generated_password }}</strong>
+            </div>
+        {% endif %}
         
         <div class="form-group">
             <label>
-                <input type="checkbox" name="activated" value="1" checked> Activer le compte immédiatement
+                <input type="checkbox" name="activated" value="1" {% if formData.activated|default(1) == 1 %}checked{% endif %}> 
+                Activer le compte immédiatement
             </label>
         </div>
         
         <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-            <button type="submit" class="btn btn-primary">
-                <i class="fas fa-save"></i> Créer l'utilisateur
-            </button>
-            <a href="{{ path('admin_user_index') }}" class="btn btn-outline">Annuler</a>
+            <button type="submit" class="btn-primary">💾 Créer l'utilisateur</button>
+            <a href="{{ path('admin_user_index') }}" class="btn-outline">Annuler</a>
         </div>
     </form>
 </div>
@@ -97,12 +169,18 @@
             agriculteurFields.style.display = 'block';
             responsableAdminFields.style.display = 'none';
             // Désactiver matricule
-            document.querySelector('input[name="matricule"]').removeAttribute('required');
+            const matriculeInput = document.querySelector('input[name="matricule"]');
+            if (matriculeInput) {
+                matriculeInput.removeAttribute('required');
+            }
         } else {
             agriculteurFields.style.display = 'none';
             responsableAdminFields.style.display = 'block';
             // Activer matricule comme requis
-            document.querySelector('input[name="matricule"]').setAttribute('required', 'required');
+            const matriculeInput = document.querySelector('input[name="matricule"]');
+            if (matriculeInput) {
+                matriculeInput.setAttribute('required', 'required');
+            }
         }
     }
     
@@ -113,7 +191,7 @@
     document.getElementById('generatePassword').addEventListener('click', function() {
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%';
         let password = '';
-        for (let i = 0; i < 12; i++) {
+        for (let i = 0; i < 10; i++) {
             password += chars.charAt(Math.floor(Math.random() * chars.length));
         }
         document.getElementById('password').value = password;

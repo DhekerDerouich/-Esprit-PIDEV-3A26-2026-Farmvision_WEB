@@ -64,6 +64,29 @@
     .dash-info-card h4 { font-size: 0.95rem; font-weight: 700; color: var(--green-deep); margin-bottom: 0.4rem; }
     .dash-info-card p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; margin: 0; }
     .dash-badge-readonly { display: inline-block; background: #fef9ec; color: #c8a84b; border: 1px solid #f0d98a; border-radius: 20px; font-size: 0.75rem; font-weight: 600; padding: 0.2rem 0.7rem; margin-bottom: 0.5rem; }
+    
+    .dash-profile-link {
+        margin-top: 2rem;
+        text-align: center;
+        padding: 1rem;
+        border-top: 1px solid #e8f0eb;
+    }
+    .btn-profile {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: var(--green-mist);
+        color: var(--green-deep);
+        padding: 0.6rem 1.5rem;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+    .btn-profile:hover {
+        background: var(--green-pale);
+        transform: translateY(-2px);
+    }
 </style>
 
 <div class="dash-wrap">
@@ -119,18 +142,17 @@
 
         <div class="dash-card">
             <div class="dash-card-header">
-                <div class="dash-card-icon icon-earth">🌱</div>
+                <div class="dash-card-icon icon-earth">👥</div>
                 <div>
-                    <h3>Cultures & Parcelles</h3>
-                    <p>Consultation</p>
+                    <h3>Mon profil</h3>
+                    <p>Gestion du compte</p>
                 </div>
             </div>
             <div class="dash-divider"></div>
             <div class="dash-card-body">
-                <p class="desc">Consultez les cultures en cours et les parcelles de l'exploitation.</p>
+                <p class="desc">Consultez et modifiez vos informations personnelles.</p>
                 <div class="dash-actions">
-                    <a href="{{ path('front_culture_index') }}" class="dash-btn-primary">Cultures →</a>
-                    <a href="{{ path('front_parcelle_index') }}" class="dash-btn-outline">🗺️ Parcelles</a>
+                    <a href="{{ path('profile_show') }}" class="dash-btn-primary">👤 Mon profil →</a>
                 </div>
             </div>
         </div>
@@ -144,6 +166,12 @@
             <h4>Accès en consultation uniquement</h4>
             <p>En tant que responsable d'exploitation, vous pouvez consulter toutes les données mais ne pouvez pas les modifier. Pour toute modification, veuillez contacter un administrateur.</p>
         </div>
+    </div>
+
+    <div class="dash-profile-link">
+        <a href="{{ path('profile_show') }}" class="btn-profile">
+            👤 Voir mon profil
+        </a>
     </div>
 
 </div>

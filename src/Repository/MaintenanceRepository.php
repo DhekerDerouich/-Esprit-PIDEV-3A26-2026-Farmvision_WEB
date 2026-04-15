@@ -77,25 +77,21 @@ class MaintenanceRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    // Méthode de recherche pour les maintenances
     public function search(string $keyword, ?string $type = null, ?string $statut = null): array
     {
         $qb = $this->createQueryBuilder('m')
             ->leftJoin('m.equipement', 'e');
         
-        // Recherche par mot-clé (description ou nom équipement)
         if (!empty($keyword)) {
             $qb->andWhere('m.description LIKE :keyword OR e.nom LIKE :keyword')
                ->setParameter('keyword', '%' . $keyword . '%');
         }
         
-        // Filtre par type de maintenance
         if (!empty($type) && $type !== 'all') {
             $qb->andWhere('m.typeMaintenance = :type')
                ->setParameter('type', $type);
         }
         
-        // Filtre par statut
         if (!empty($statut) && $statut !== 'all') {
             $qb->andWhere('m.statut = :statut')
                ->setParameter('statut', $statut);

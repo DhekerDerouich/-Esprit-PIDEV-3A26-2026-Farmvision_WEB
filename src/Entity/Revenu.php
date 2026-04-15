@@ -25,7 +25,14 @@ class Revenu
     #[Assert\NotBlank(message: 'La source est obligatoire')]
     private ?string $source = null;
 
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[ORM\Column(type: Types::TEXT)]
+    #[Assert\NotBlank(message: 'La description est obligatoire')]
+    #[Assert\Length(
+        min: 3,
+        max: 500,
+        minMessage: 'La description doit contenir au moins {{ limit }} caractères',
+        maxMessage: 'La description ne peut pas dépasser {{ limit }} caractères'
+    )]
     private ?string $description = null;
 
     #[ORM\Column(name: 'dateRevenu', type: Types::DATE_MUTABLE)]
@@ -72,7 +79,7 @@ class Revenu
         return $this->description; 
     }
     
-    public function setDescription(?string $description): self 
+    public function setDescription(string $description): self 
     { 
         $this->description = $description; 
         return $this; 
