@@ -1,0 +1,58 @@
+# config/services.yaml
+parameters:
+    openweather.api_key: '%env(OPENWEATHER_API_KEY)%'
+    openai_api_key: '%env(OPENAI_API_KEY)%'
+    twilio_account_sid: '%env(TWILIO_ACCOUNT_SID)%'
+    twilio_auth_token: '%env(TWILIO_AUTH_TOKEN)%'
+    twilio_from_number: '%env(TWILIO_FROM_NUMBER)%'
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+
+    App\Controller\:
+        resource: '../src/Controller/'
+        tags: ['controller.service_arguments']
+
+    App\Service\ImageUploadService:
+        arguments:
+            $targetDirectory: '%kernel.project_dir%/public/uploads/products'
+
+    App\Service\ImageAnalysisService:
+        arguments:
+            $apiKey: '%openai_api_key%'
+
+    App\Service\SmsService:
+        arguments:
+            $accountSid: '%twilio_account_sid%'
+            $authToken: '%twilio_auth_token%'
+            $fromNumber: '%twilio_from_number%'
+            $enabled: '%env(bool:TWILIO_ENABLED)%'
+
+    App\Service\OpenFoodFactsService:
+        autowire: true
+
+    App\CultureParcelle\Service\WeatherService:
+        arguments:
+            $apiKey: '%openweather.api_key%'
+
+    App\Service\InvoiceService:
+        arguments:
+            $invoiceDir: '%kernel.project_dir%/var/invoices'
+
+    App\Service\StripeService:
+        arguments:
+            $secretKey: '%env(STRIPE_SECRET_KEY)%'
+            $publicKey: '%env(STRIPE_PUBLIC_KEY)%'
+
+    App\Command\CheckStockAlertCommand:
+        tags:
+            - { name: console.command }

@@ -1,0 +1,77 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block page_title %}Détails de la parcelle{% endblock %}
+
+{% block body %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+    #map { height: 350px; border-radius: var(--radius); }
+</style>
+
+<div style="margin-bottom: 1.5rem;">
+    <a href="{{ path('admin_parcelle_index') }}" class="btn btn-outline">
+        <i class="fas fa-arrow-left"></i> Retour
+    </a>
+    <a href="{{ path('admin_parcelle_edit', {idParcelle: parcelle.idParcelle}) }}" class="btn btn-primary">
+        <i class="fas fa-edit"></i> Modifier
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3>🗺️ {{ parcelle.localisation }}</h3>
+    </div>
+
+    <table class="data-table">
+        <tr>
+            <th style="width: 200px;">Localisation</th>
+            <td>{{ parcelle.localisation }}</td>
+        </tr>
+        <tr>
+            <th>Surface</th>
+            <td>{{ parcelle.surface }} ha</td>
+        </tr>
+        <tr>
+            <th>Latitude</th>
+            <td>{{ parcelle.latitude ? parcelle.latitude|number_format(6) : '-' }}</td>
+        </tr>
+        <tr>
+            <th>Longitude</th>
+            <td>{{ parcelle.longitude ? parcelle.longitude|number_format(6) : '-' }}</td>
+        </tr>
+        <tr>
+            <th>Statut</th>
+            <td>
+                {% if parcelle.latitude and parcelle.longitude %}
+                    <span class="badge badge-success">📍 Géolocalisée</span>
+                {% else %}
+                    <span class="badge badge-warning">⚠️ Non géolocalisée</span>
+                {% endif %}
+            </td>
+        </tr>
+    </table>
+
+    {% if parcelle.latitude and parcelle.longitude %}
+    <div style="margin-top: 1.5rem;">
+        <h4 style="margin-bottom: 1rem;">📍 Position sur la carte</h4>
+        <div id="map"></div>
+    </div>
+
+    <script>
+        var lat = {{ parcelle.latitude }};
+        var lng = {{ parcelle.longitude }};
+        
+        var map = L.map('map').setView([lat, lng], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+        
+        L.marker([lat, lng]).addTo(map)
+            .bindPopup('{{ parcelle.localisation }}')
+            .openPopup();
+    </script>
+    {% endif %}
+</div>
+{% endblock %}

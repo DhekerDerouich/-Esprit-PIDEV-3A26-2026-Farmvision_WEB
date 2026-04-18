@@ -1,0 +1,59 @@
+{# Simple custom pagination template #}
+{% if pageCount > 1 %}
+<nav aria-label="Page navigation">
+    <ul class="pagination">
+        {% if previous is defined %}
+            <li>
+                <a href="{{ path(route, query|merge({(pageParameterName): previous})) }}" rel="prev">
+                    « Précédent
+                </a>
+            </li>
+        {% else %}
+            <li>
+                <span class="disabled">« Précédent</span>
+            </li>
+        {% endif %}
+
+        {% for page in pagesInRange %}
+            {% if page != current %}
+                <li>
+                    <a href="{{ path(route, query|merge({(pageParameterName): page})) }}">
+                        {{ page }}
+                    </a>
+                </li>
+            {% else %}
+                <li>
+                    <span class="current">{{ page }}</span>
+                </li>
+            {% endif %}
+        {% endfor %}
+
+        {% if next is defined %}
+            <li>
+                <a href="{{ path(route, query|merge({(pageParameterName): next})) }}" rel="next">
+                    Suivant »
+                </a>
+            </li>
+        {% else %}
+            <li>
+                <span class="disabled">Suivant »</span>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+{% else %}
+    {# Show pagination even with one page to demonstrate bundle usage #}
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            <li>
+                <span class="disabled">« Précédent</span>
+            </li>
+            <li>
+                <span class="current">1</span>
+            </li>
+            <li>
+                <span class="disabled">Suivant »</span>
+            </li>
+        </ul>
+    </nav>
+{% endif %}

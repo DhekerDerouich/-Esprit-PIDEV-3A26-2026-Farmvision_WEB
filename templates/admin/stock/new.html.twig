@@ -1,0 +1,441 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block page_title %}Ajouter un produit au stock{% endblock %}
+
+{% block body %}
+<style>
+:root {
+    --green: #2e7d32;
+    --green-hover: #1b5e20;
+    --green-light: #e8f5e9;
+    --gray: #6c757d;
+    --gray-hover: #5a6268;
+    --danger: #dc3545;
+    --border: #dde1e7;
+    --radius: 8px;
+    --shadow: 0 1px 4px rgba(0,0,0,.08);
+}
+
+*,*::before,*::after { box-sizing: border-box; }
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: .75rem;
+}
+
+.page-header h1 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+.btn-back {
+    background: #fff;
+    color: var(--gray);
+    padding: .45rem 1rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    text-decoration: none;
+    font-size: .875rem;
+    font-weight: 500;
+    transition: background .15s, color .15s;
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+}
+.btn-back:hover { background: #f5f5f5; color: #333; }
+
+.card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+}
+
+.form-group { display: flex; flex-direction: column; gap: .4rem; }
+
+.form-group label {
+    font-size: .875rem;
+    font-weight: 500;
+    color: #333;
+}
+
+.form-group label .req {
+    color: var(--danger);
+    margin-left: 2px;
+}
+
+.form-control {
+    width: 100%;
+    padding: .55rem .75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: .9rem;
+    color: #1a1a1a;
+    background: #fff;
+    transition: border-color .15s, box-shadow .15s;
+    appearance: none;
+}
+.form-control:focus {
+    outline: none;
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px rgba(46,125,50,.12);
+}
+.form-control::placeholder { color: #aaa; }
+
+.hint {
+    color: #888;
+    font-size: .75rem;
+    margin-top: .2rem;
+}
+
+.span-2 { grid-column: span 2; }
+
+.barcode-row {
+    display: flex;
+    gap: .5rem;
+    align-items: stretch;
+}
+.barcode-row .form-control { flex: 1; }
+
+.btn-primary {
+    background: var(--green);
+    color: #fff;
+    padding: .6rem 1.25rem;
+    border-radius: var(--radius);
+    border: none;
+    cursor: pointer;
+    font-size: .9rem;
+    font-weight: 500;
+    transition: background .15s;
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+}
+.btn-primary:hover { background: var(--green-hover); }
+.btn-primary:disabled { opacity: .6; cursor: not-allowed; }
+
+.btn-secondary {
+    background: #fff;
+    color: var(--gray);
+    padding: .6rem 1rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    font-size: .875rem;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: background .15s;
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+}
+.btn-secondary:hover { background: #f5f5f5; }
+
+.form-actions {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+}
+
+.alert {
+    padding: .6rem .9rem;
+    border-radius: var(--radius);
+    font-size: .85rem;
+    margin-top: .5rem;
+}
+.alert-success { background: #d4edda; color: #155724; }
+.alert-warning { background: #fff3cd; color: #856404; }
+.alert-danger  { background: #f8d7da; color: #721c24; }
+
+.error-list {
+    background: #f8d7da;
+    color: #721c24;
+    border-radius: var(--radius);
+    padding: .75rem 1rem;
+    margin-bottom: 1.5rem;
+    font-size: .875rem;
+}
+.error-list ul { margin: .4rem 0 0 1rem; padding: 0; }
+.error-list li { margin-bottom: .2rem; }
+
+@media (max-width: 640px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .span-2 { grid-column: span 1; }
+    .card { padding: 1.25rem; }
+}
+</style>
+
+<div class="page-header">
+    <h1>➕ Ajouter un produit au stock</h1>
+    <a href="{{ path('admin_stock_index') }}" class="btn-back">← Retour</a>
+</div>
+
+{% if errors is defined and errors|length %}
+<div class="error-list">
+    <strong>Veuillez corriger les erreurs suivantes :</strong>
+    <ul>
+        {% for error in errors %}
+            <li>{{ error }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<div class="card">
+    <form method="post" action="{{ path('admin_stock_new') }}" enctype="multipart/form-data" novalidate>
+
+        {# CSRF token Symfony #}
+        <input type="hidden" name="_token" value="{{ csrf_token('stock_new') }}">
+
+        <div class="form-grid">
+
+            <div class="form-group">
+                <label for="nom_produit">Nom du produit <span class="req">*</span></label>
+                <input
+                    type="text"
+                    id="nom_produit"
+                    name="nom_produit"
+                    value="{{ formData.nomProduit|default('') }}"
+                    class="form-control"
+                    placeholder="Ex : Tomates cerises"
+                    required
+                    maxlength="255"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="type_produit">Type de produit</label>
+                <input
+                    type="text"
+                    id="type_produit"
+                    name="type_produit"
+                    value="{{ formData.typeProduit|default('') }}"
+                    class="form-control"
+                    placeholder="Ex : Légumes, Fruits, Céréales…"
+                    maxlength="100"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="quantite">Quantité <span class="req">*</span></label>
+                <input
+                    type="number"
+                    id="quantite"
+                    name="quantite"
+                    value="{{ formData.quantite|default('') }}"
+                    class="form-control"
+                    placeholder="Ex : 50"
+                    step="0.01"
+                    min="0.01"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="unite">Unité</label>
+                <input
+                    type="text"
+                    id="unite"
+                    name="unite"
+                    value="{{ formData.unite|default('') }}"
+                    class="form-control"
+                    placeholder="Ex : kg, L, pièce, caisse"
+                    maxlength="30"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="date_expiration">Date d'expiration</label>
+                <input
+                    type="date"
+                    id="date_expiration"
+                    name="date_expiration"
+                    value="{{ formData.dateExpiration|default('') }}"
+                    class="form-control"
+                    min="{{ 'today'|date('Y-m-d') }}"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="statut">Statut</label>
+                {% set currentStatut = formData.statut|default('Disponible') %}
+                <select id="statut" name="statut" class="form-control">
+                    <option value="Disponible" {% if currentStatut == 'Disponible' %}selected{% endif %}>✅ Disponible</option>
+                    <option value="Épuisé"     {% if currentStatut == 'Épuisé'     %}selected{% endif %}>❌ Épuisé</option>
+                </select>
+            </div>
+
+            <div class="form-group span-2">
+                <label for="barcodeInput">🔖 Code-barres (optionnel)</label>
+                <div class="barcode-row">
+                    <input
+                        type="text"
+                        id="barcodeInput"
+                        name="barcode"
+                        value="{{ formData.barcode|default('') }}"
+                        class="form-control"
+                        placeholder="Ex : 3017620422003"
+                        inputmode="numeric"
+                        maxlength="20"
+                    >
+                    <button type="button" class="btn-secondary" id="enrichBtn" onclick="enrichFromBarcode()">
+                        🔍 Enrichir via OpenFoodFacts
+                    </button>
+                </div>
+                <span class="hint">Entrez un code-barres et cliquez sur Enrichir pour remplir automatiquement les champs.</span>
+                <div id="barcodeResult"></div>
+            </div>
+
+            <div class="form-group span-2">
+                <label for="image_file">📷 Image du produit</label>
+                <input
+                    type="file"
+                    id="image_file"
+                    name="image_file"
+                    accept="image/jpeg,image/png,image/webp"
+                    class="form-control"
+                >
+                <span class="hint">Formats acceptés : JPEG, PNG, WebP — Taille max : 5 Mo</span>
+            </div>
+
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">💾 Enregistrer le produit</button>
+            <a href="{{ path('admin_stock_index') }}" class="btn-back">Annuler</a>
+        </div>
+
+    </form>
+</div>
+
+<script>
+(function () {
+    'use strict';
+
+    function enrichFromBarcode() {
+        var barcode = document.getElementById('barcodeInput').value.trim();
+        var result  = document.getElementById('barcodeResult');
+        var btn     = document.getElementById('enrichBtn');
+
+        if (!barcode) {
+            showAlert(result, 'warning', '⚠️ Veuillez entrer un code-barres avant de continuer.');
+            return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = '🔍 Recherche…';
+        result.innerHTML = '<div class="alert" style="color:#666">🔍 Recherche en cours…</div>';
+
+        var fd = new URLSearchParams();
+        fd.append('barcode', barcode);
+
+        fetch('/admin/stocks/api/enrich-barcode', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: fd.toString()
+        })
+        .then(function (r) {
+            if (!r.ok) { throw new Error('Erreur serveur (' + r.status + ')'); }
+            return r.json();
+        })
+        .then(function (data) {
+            if (data.success) {
+                if (data.nom_produit)  setVal('nom_produit',  data.nom_produit);
+                if (data.type_produit) setVal('type_produit', data.type_produit);
+
+                var extra = data.marque ? ' — Marque : <strong>' + escHtml(data.marque) + '</strong>' : '';
+                showAlert(result, 'success', '✅ Données enrichies depuis OpenFoodFacts' + extra);
+            } else {
+                showAlert(result, 'warning', '⚠️ ' + escHtml(data.error || 'Produit non trouvé dans la base OpenFoodFacts.'));
+            }
+        })
+        .catch(function (e) {
+            showAlert(result, 'danger', '❌ ' + escHtml(e.message));
+        })
+        .finally(function () {
+            btn.disabled = false;
+            btn.textContent = '🔍 Enrichir via OpenFoodFacts';
+        });
+    }
+
+    function setVal(name, value) {
+        var el = document.querySelector('[name="' + name + '"]');
+        if (el) { el.value = value; }
+    }
+
+    function showAlert(container, type, html) {
+        container.innerHTML = '<div class="alert alert-' + type + '">' + html + '</div>';
+    }
+
+    function escHtml(str) {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    window.enrichFromBarcode = enrichFromBarcode;
+
+    /* Validation côté client avant soumission */
+    document.querySelector('form').addEventListener('submit', function (e) {
+        var errors = [];
+        var nom = document.getElementById('nom_produit');
+        var qty = document.getElementById('quantite');
+
+        if (!nom.value.trim()) {
+            errors.push('Le nom du produit est obligatoire.');
+            nom.focus();
+        }
+        if (!qty.value || parseFloat(qty.value) <= 0) {
+            errors.push('La quantité doit être supérieure à 0.');
+            if (!errors.length) qty.focus();
+        }
+
+        if (errors.length) {
+            e.preventDefault();
+            var box = document.querySelector('.error-list');
+            if (!box) {
+                box = document.createElement('div');
+                box.className = 'error-list';
+                document.querySelector('.card').insertAdjacentElement('beforebegin', box);
+            }
+            box.innerHTML = '<strong>Veuillez corriger les erreurs suivantes :</strong><ul>'
+                + errors.map(function (m) { return '<li>' + escHtml(m) + '</li>'; }).join('')
+                + '</ul>';
+            box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    });
+
+    /* Validation taille image */
+    document.getElementById('image_file').addEventListener('change', function () {
+        var maxBytes = 5 * 1024 * 1024;
+        if (this.files[0] && this.files[0].size > maxBytes) {
+            alert('L\'image dépasse 5 Mo. Veuillez choisir un fichier plus petit.');
+            this.value = '';
+        }
+    });
+}());
+</script>
+
+{% endblock %}

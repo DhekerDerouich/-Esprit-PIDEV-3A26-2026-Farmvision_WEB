@@ -1,0 +1,245 @@
+{% extends 'front/base.html.twig' %}
+
+{% block body %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+    .cp-page { padding: 2.5rem 2rem; max-width: 1200px; margin: 0 auto; }
+    .cp-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; }
+    .cp-header h1 { font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--green-deep); margin-bottom: 0.25rem; }
+    .cp-header p { color: var(--text-muted); font-size: 0.95rem; }
+    .cp-btn-add { display: inline-flex; align-items: center; gap: 0.5rem; background: var(--green-mid); color: #fff; padding: 0.65rem 1.4rem; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 0.9rem; transition: background 0.2s, transform 0.15s; }
+    .cp-btn-add:hover { background: var(--green-deep); transform: translateY(-1px); }
+    .cp-filters { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem 1.5rem; margin-bottom: 2rem; display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
+    .cp-filters label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    .cp-filters input { padding: 0.55rem 0.9rem; border-radius: 8px; border: 1.5px solid #e0e7e3; background: #f8faf9; color: var(--text); font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
+    .cp-filters input:focus { border-color: var(--green-light); }
+    .cp-filters .f-grow { flex: 1; min-width: 180px; }
+    .cp-filters .f-sm input { width: 100px; }
+    .cp-filters .f-btn { display: flex; gap: 0.5rem; align-items: flex-end; }
+    .cp-btn-filter { background: var(--green-mid); color: #fff; border: none; padding: 0.55rem 1.3rem; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; }
+    .cp-btn-filter:hover { background: var(--green-deep); }
+    .cp-btn-reset { background: #f0f4f2; color: var(--text-muted); border: 1.5px solid #e0e7e3; padding: 0.55rem 1rem; border-radius: 8px; text-decoration: none; font-size: 0.9rem; }
+    .cp-result-bar { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem; }
+    .cp-result-bar span { background: var(--green-mist); color: var(--green-mid); padding: 0.2rem 0.7rem; border-radius: 20px; font-weight: 600; }
+    .cp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+    .cp-card { background: #fff; border-radius: 16px; border: 1px solid #e8f0eb; box-shadow: 0 2px 16px rgba(45,106,79,0.06); overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; }
+    .cp-card:hover { transform: translateY(-3px); box-shadow: 0 8px 32px rgba(45,106,79,0.12); }
+    .cp-card-top { background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); padding: 1.5rem 1.5rem 1rem; display: flex; align-items: center; gap: 1rem; }
+    .cp-card-icon { font-size: 2.2rem; }
+    .cp-card-title { font-size: 1.1rem; font-weight: 700; color: var(--green-deep); }
+    .cp-card-body { padding: 1rem 1.5rem; flex: 1; display: flex; flex-direction: column; gap: 0.75rem; }
+    .cp-card-map { height: 180px; border-radius: 10px; overflow: hidden; border: 2px solid #e8f0eb; }
+    .cp-surface-badge { display: inline-flex; align-items: center; gap: 0.4rem; background: var(--green-mist); color: var(--green-mid); padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+    .cp-coord-row { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.4rem; }
+    .cp-weather-box { background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border-radius: 10px; padding: 0.75rem 1rem; margin-top: 0.5rem; }
+    .cp-weather-loading { text-align: center; color: #64b5f6; font-size: 0.8rem; }
+    .cp-weather-error { text-align: center; color: #999; font-size: 0.75rem; }
+    .cp-weather-content { display: flex; align-items: center; gap: 0.75rem; }
+    .cp-weather-icon { font-size: 2rem; }
+    .cp-weather-main { flex: 1; }
+    .cp-weather-temp { font-size: 1.5rem; font-weight: 700; color: #1565c0; line-height: 1; }
+    .cp-weather-desc { font-size: 0.75rem; color: #1976d2; text-transform: capitalize; margin-top: 0.2rem; }
+    .cp-weather-details { display: flex; gap: 0.75rem; font-size: 0.7rem; color: #1976d2; margin-top: 0.4rem; }
+    .cp-weather-detail { display: flex; align-items: center; gap: 0.2rem; }
+    .cp-card-footer { padding: 1rem 1.5rem; border-top: 1px solid #f0f4f2; display: flex; gap: 0.6rem; }
+    .cp-btn-edit { flex: 1; text-align: center; padding: 0.55rem; border-radius: 8px; border: 1.5px solid var(--green-mid); color: var(--green-mid); text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: background 0.2s; }
+    .cp-btn-edit:hover { background: var(--green-mist); }
+    .cp-btn-del { padding: 0.55rem 0.9rem; border-radius: 8px; background: #fff0f0; border: 1.5px solid #fcc; color: #e74c3c; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
+    .cp-btn-del:hover { background: #ffe0e0; }
+    .cp-empty { grid-column: 1/-1; text-align: center; padding: 4rem 2rem; color: var(--text-muted); }
+    .cp-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center; }
+    .cp-modal { background: #fff; border-radius: 16px; padding: 2rem; max-width: 400px; width: 90%; box-shadow: 0 24px 64px rgba(0,0,0,0.2); text-align: center; }
+    .cp-modal-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .cp-modal h3 { font-size: 1.1rem; font-weight: 700; color: #1a1a18; margin-bottom: 0.5rem; }
+    .cp-modal p { font-size: 0.9rem; color: #5a6b5e; margin-bottom: 1.5rem; line-height: 1.5; }
+    .cp-modal-actions { display: flex; gap: 0.75rem; }
+    .cp-modal-cancel { flex: 1; padding: 0.7rem; background: #f5f5f5; border: 1.5px solid #e0e0e0; border-radius: 10px; cursor: pointer; font-size: 0.95rem; color: #333; font-weight: 500; }
+    .cp-modal-confirm { flex: 1; padding: 0.7rem; background: #e74c3c; border: none; border-radius: 10px; cursor: pointer; font-size: 0.95rem; color: #fff; font-weight: 600; }
+    .cp-modal-confirm:hover { background: #c0392b; }
+
+    /* Pagination Styling */
+    .pagination { display: flex; gap: 0.5rem; list-style: none; padding: 0; margin: 0; align-items: center; }
+    .pagination li { display: inline-block; }
+    .pagination a, .pagination span { display: inline-block; padding: 0.5rem 0.9rem; border-radius: 8px; text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: all 0.2s; }
+    .pagination a { background: #f8faf9; color: var(--green-mid); border: 1.5px solid #e0e7e3; }
+    .pagination a:hover { background: var(--green-mist); border-color: var(--green-mid); }
+    .pagination .current { background: var(--green-mid); color: #fff; border: 1.5px solid var(--green-mid); font-weight: 600; }
+    .pagination .disabled { color: #ccc; cursor: not-allowed; background: #f5f5f5; border: 1.5px solid #e0e0e0; }
+</style>
+
+<div class="cp-page">
+    <div class="cp-header">
+        <div>
+            <h1>🗺️ Mes parcelles</h1>
+            <p>Vue d'ensemble de toutes vos parcelles agricoles</p>
+        </div>
+        <a href="{{ path('front_parcelle_new') }}" class="cp-btn-add">+ Ajouter une parcelle</a>
+    </div>
+
+    {# Filters #}
+    <div class="cp-filters">
+        <form method="get" action="{{ path('front_parcelle_index') }}" style="display:contents;">
+            <div class="f-grow">
+                <label>Localisation</label>
+                <input type="text" name="search" value="{{ search }}" placeholder="Rechercher...">
+            </div>
+            <div class="f-sm">
+                <label>Surface min (ha)</label>
+                <input type="number" name="surface_min" value="{{ surfaceMin }}" min="0" step="0.1" placeholder="0">
+            </div>
+            <div class="f-sm">
+                <label>Surface max (ha)</label>
+                <input type="number" name="surface_max" value="{{ surfaceMax }}" min="0" step="0.1" placeholder="∞">
+            </div>
+            <div class="f-btn">
+                <button type="submit" class="cp-btn-filter">Filtrer</button>
+                <a href="{{ path('front_parcelle_index') }}" class="cp-btn-reset">Réinitialiser</a>
+            </div>
+        </form>
+    </div>
+
+    {% if search or surfaceMin != '' or surfaceMax != '' %}
+    <div class="cp-result-bar">
+        <span>{{ parcelles.getTotalItemCount }}</span> résultat(s)
+        {% if search %} pour "{{ search }}"{% endif %}
+        {% if surfaceMin != '' %} · ≥ {{ surfaceMin }} ha{% endif %}
+        {% if surfaceMax != '' %} · ≤ {{ surfaceMax }} ha{% endif %}
+    </div>
+    {% endif %}
+
+    <div class="cp-grid">
+        {% for parcelle in parcelles %}
+        <div class="cp-card">
+            <div class="cp-card-top">
+                <div class="cp-card-icon">🌍</div>
+                <div class="cp-card-title">{{ parcelle.localisation }}</div>
+            </div>
+            <div class="cp-card-body">
+                <div class="cp-surface-badge">📐 {{ parcelle.surface }} ha</div>
+                {% if parcelle.latitude and parcelle.longitude %}
+                <div id="map-{{ parcelle.idParcelle }}" class="cp-card-map"></div>
+                <div class="cp-coord-row">📍 {{ parcelle.latitude|number_format(4, '.') }}, {{ parcelle.longitude|number_format(4, '.') }}</div>
+                
+                {# Weather Widget #}
+                <div class="cp-weather-box" id="weather-{{ parcelle.idParcelle }}">
+                    <div class="cp-weather-loading">⏳ Chargement météo...</div>
+                </div>
+                {% else %}
+                <div class="cp-card-map" style="background:#f5f5f5;display:flex;align-items:center;justify-content:center;color:#999;font-size:0.85rem;">📍 Position non définie</div>
+                {% endif %}
+            </div>
+            <div class="cp-card-footer">
+                <a href="{{ path('front_parcelle_edit', {'idParcelle': parcelle.idParcelle}) }}" class="cp-btn-edit">✏️ Modifier</a>
+                <button class="cp-btn-del" onclick="openModal('{{ path('front_parcelle_delete', {'idParcelle': parcelle.idParcelle}) }}','{{ csrf_token('delete_parcelle_' ~ parcelle.idParcelle) }}','{{ parcelle.localisation|e('js') }}')">🗑️ Supprimer</button>
+            </div>
+        </div>
+        {% else %}
+        <div class="cp-empty">
+            <div style="font-size:3rem;margin-bottom:1rem;">🗺️</div>
+            <p>Aucune parcelle trouvée.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    {# Pagination - always show to demonstrate KnpPaginatorBundle usage #}
+    <div style="margin-top: 2rem; display: flex; justify-content: center; flex-direction: column; align-items: center; gap: 1rem;">
+        <div style="font-size: 0.85rem; color: var(--text-muted);">
+            Affichage de {{ parcelles|length }} parcelle(s) sur {{ parcelles.getTotalItemCount }} au total
+        </div>
+        <div style="background: #fff; padding: 1rem 1.5rem; border-radius: 12px; border: 1px solid #e8f0eb; box-shadow: 0 2px 8px rgba(45,106,79,0.08);">
+            {{ knp_pagination_render(parcelles) }}
+        </div>
+    </div>
+</div>
+
+{# Modal #}
+<div class="cp-modal-overlay" id="deleteModal">
+    <div class="cp-modal">
+        <div class="cp-modal-icon">🗑️</div>
+        <h3>Confirmer la suppression</h3>
+        <p id="deleteModalText"></p>
+        <div class="cp-modal-actions">
+            <button class="cp-modal-cancel" onclick="closeModal()">Annuler</button>
+            <form id="deleteForm" method="post" style="flex:1;">
+                <input type="hidden" name="_token" id="deleteToken">
+                <button type="submit" class="cp-modal-confirm" style="width:100%;">Supprimer</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Individual maps for each parcelle
+var greenIcon = L.divIcon({
+    html: '<div style="background:#2d6a4f;width:16px;height:16px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.3);"></div>',
+    iconSize: [16,16], iconAnchor: [8,8], className: ''
+});
+
+{% for p in parcelles %}
+{% if p.latitude and p.longitude %}
+(function() {
+    var map = L.map('map-{{ p.idParcelle }}', {
+        center: [{{ p.latitude }}, {{ p.longitude }}],
+        zoom: 14,
+        scrollWheelZoom: false,
+        dragging: true,
+        zoomControl: true
+    });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+    }).addTo(map);
+    L.marker([{{ p.latitude }}, {{ p.longitude }}], { icon: greenIcon }).addTo(map);
+    setTimeout(function() { map.invalidateSize(); }, 100);
+})();
+{% endif %}
+{% endfor %}
+
+function openModal(action, token, name) {
+    document.getElementById('deleteForm').action = action;
+    document.getElementById('deleteToken').value = token;
+    document.getElementById('deleteModalText').textContent = 'Voulez-vous vraiment supprimer "' + name + '" ? Cette action est irréversible.';
+    document.getElementById('deleteModal').style.display = 'flex';
+}
+function closeModal() { document.getElementById('deleteModal').style.display = 'none'; }
+document.getElementById('deleteModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+
+// Load weather data for each parcelle
+{% for p in parcelles %}
+{% if p.latitude and p.longitude %}
+(function() {
+    var parcelleId = {{ p.idParcelle }};
+    var weatherBox = document.getElementById('weather-' + parcelleId);
+    
+    fetch('{{ path('front_parcelle_weather', {'idParcelle': '__ID__'}) }}'.replace('__ID__', parcelleId))
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                weatherBox.innerHTML = '<div class="cp-weather-error">⚠️ ' + data.error + '</div>';
+                return;
+            }
+            
+            weatherBox.innerHTML = `
+                <div class="cp-weather-content">
+                    <div class="cp-weather-icon">${data.emoji}</div>
+                    <div class="cp-weather-main">
+                        <div class="cp-weather-temp">${data.temperature}°C</div>
+                        <div class="cp-weather-desc">${data.description}</div>
+                    </div>
+                </div>
+                <div class="cp-weather-details">
+                    <div class="cp-weather-detail">💧 ${data.humidity}%</div>
+                    <div class="cp-weather-detail">💨 ${data.wind_speed} km/h</div>
+                    ${data.visibility ? `<div class="cp-weather-detail">👁️ ${data.visibility} km</div>` : ''}
+                </div>
+            `;
+        })
+        .catch(error => {
+            weatherBox.innerHTML = '<div class="cp-weather-error">❌ Erreur de chargement</div>';
+            console.error('Weather fetch error:', error);
+        });
+})();
+{% endif %}
+{% endfor %}
+</script>
+{% endblock %}

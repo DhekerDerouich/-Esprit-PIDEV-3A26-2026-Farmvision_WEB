@@ -1,0 +1,54 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block page_title %}Modifier la culture{% endblock %}
+
+{% block body %}
+<div style="margin-bottom: 1.5rem;">
+    <a href="{{ path('admin_culture_index') }}" class="btn btn-outline">
+        <i class="fas fa-arrow-left"></i> Retour
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3>✏️ Modifier la culture</h3>
+    </div>
+
+    {% if errors is not empty %}
+    <div style="padding: 1rem; background: #fee2e2; border: 1px solid var(--danger); border-radius: var(--radius); margin-bottom: 1.5rem;">
+        <p style="color: var(--danger); font-weight: 600; margin-bottom: 0.5rem;">⚠️ Erreurs de validation :</p>
+        <ul style="margin: 0; padding-left: 1.5rem; color: var(--danger);">
+            {% for error in errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <form method="post">
+        <div class="form-group">
+            <label>Nom de la culture *</label>
+            <input type="text" name="nomCulture" class="form-control" value="{{ culture.nomCulture }}" required>
+        </div>
+
+        <div class="form-group">
+            <label>Type de culture *</label>
+            <input type="text" name="typeCulture" class="form-control" value="{{ culture.typeCulture }}" required>
+        </div>
+
+        <div class="form-group">
+            <label>Date de semis *</label>
+            <input type="date" name="dateSemis" class="form-control" value="{{ culture.dateSemis ? culture.dateSemis|date('Y-m-d') : '' }}" required>
+        </div>
+
+        <div class="form-group">
+            <label>Date de récolte (optionnelle)</label>
+            <input type="date" name="dateRecolte" class="form-control" value="{{ culture.dateRecolte ? culture.dateRecolte|date('Y-m-d') : '' }}">
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> Enregistrer les modifications
+        </button>
+    </form>
+</div>
+{% endblock %}

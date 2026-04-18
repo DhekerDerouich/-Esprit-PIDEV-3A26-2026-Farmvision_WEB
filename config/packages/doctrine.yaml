@@ -1,0 +1,21 @@
+doctrine:
+    dbal:
+        url: '%env(DATABASE_URL)%'
+        driver: 'pdo_mysql'
+        charset: utf8mb4
+        server_version: 'mariadb-10.4.32'
+
+    orm:
+        auto_generate_proxy_classes: true
+        enable_lazy_ghost_objects: true
+        # Supprimez cette ligne ou mettez-la à true
+        # report_fields_where_declared: true  # NE PAS DÉSACTIVER EN ORM 3
+        naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+        auto_mapping: true
+        mappings:
+            App:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Entity'
+                prefix: 'App\Entity'
+                alias: App

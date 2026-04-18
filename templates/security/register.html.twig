@@ -1,0 +1,316 @@
+{% extends 'front/base.html.twig' %}
+
+{% block body %}
+<style>
+    .register-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6rem 1.5rem;
+        background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+    }
+    
+    .register-card {
+        max-width: 520px;
+        width: 100%;
+        background: white;
+        border-radius: 24px;
+        box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        transition: transform 0.3s ease;
+    }
+    
+    .register-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .register-header {
+        background: linear-gradient(135deg, #1a3a2a 0%, #2d6a4f 100%);
+        padding: 2rem;
+        text-align: center;
+        color: white;
+    }
+    
+    .register-header .icon {
+        font-size: 3rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .register-header h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin: 0;
+        font-family: 'Playfair Display', serif;
+    }
+    
+    .register-header p {
+        opacity: 0.9;
+        margin-top: 0.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .register-body {
+        padding: 2rem;
+    }
+    
+    .form-group-modern {
+        margin-bottom: 1.25rem;
+    }
+    
+    .form-group-modern label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #1a3a2a;
+    }
+    
+    .form-group-modern label .required {
+        color: #e05c5c;
+    }
+    
+    .form-control-modern {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        transition: all 0.3s;
+        background: #f8fafc;
+    }
+    
+    .form-control-modern:focus {
+        outline: none;
+        border-color: #2d6a4f;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.1);
+    }
+    
+    .form-control-modern.error {
+        border-color: #e05c5c;
+        background: #fff5f5;
+    }
+    
+    .error-message {
+        color: #e05c5c;
+        font-size: 0.7rem;
+        margin-top: 0.25rem;
+        display: block;
+    }
+    
+    .input-hint {
+        color: #94a3b8;
+        font-size: 0.7rem;
+        margin-top: 0.25rem;
+        display: block;
+    }
+    
+    .role-fields-modern {
+        transition: all 0.3s ease;
+    }
+    
+    .btn-register {
+        width: 100%;
+        padding: 0.875rem;
+        background: linear-gradient(135deg, #2d6a4f 0%, #1a3a2a 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        margin-top: 0.5rem;
+    }
+    
+    .btn-register:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px -5px rgba(45, 106, 79, 0.3);
+    }
+    
+    .login-link {
+        text-align: center;
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e2e8f0;
+    }
+    
+    .login-link a {
+        color: #2d6a4f;
+        text-decoration: none;
+        font-weight: 600;
+    }
+    
+    .login-link a:hover {
+        text-decoration: underline;
+    }
+    
+    .row-modern {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+    
+    select.form-control-modern {
+        appearance: none;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232d6a4f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        background-size: 1rem;
+    }
+    
+    @media (max-width: 640px) {
+        .row-modern {
+            grid-template-columns: 1fr;
+            gap: 0;
+        }
+        .register-body {
+            padding: 1.5rem;
+        }
+    }
+</style>
+
+<div class="register-container">
+    <div class="register-card">
+        <div class="register-header">
+            <div class="icon">✨</div>
+            <h1>Créer un compte</h1>
+            <p>Rejoignez la communauté FarmVision</p>
+        </div>
+        
+        <div class="register-body">
+            <form method="post" id="registerForm" novalidate>
+                <div class="row-modern">
+                    <div class="form-group-modern">
+                        <label>Nom <span class="required">*</span></label>
+                        <input type="text" name="nom" value="{{ old.nom|default('') }}" 
+                               class="form-control-modern {% if errors.nom is defined %}error{% endif %}" 
+                               placeholder="Votre nom">
+                        {% if errors.nom is defined %}
+                            <span class="error-message">{{ errors.nom }}</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group-modern">
+                        <label>Prénom <span class="required">*</span></label>
+                        <input type="text" name="prenom" value="{{ old.prenom|default('') }}" 
+                               class="form-control-modern {% if errors.prenom is defined %}error{% endif %}" 
+                               placeholder="Votre prénom">
+                        {% if errors.prenom is defined %}
+                            <span class="error-message">{{ errors.prenom }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="form-group-modern">
+                    <label>Email <span class="required">*</span></label>
+                    <input type="email" name="email" value="{{ old.email|default('') }}" 
+                           class="form-control-modern {% if errors.email is defined %}error{% endif %}" 
+                           placeholder="exemple@farmvision.tn">
+                    {% if errors.email is defined %}
+                        <span class="error-message">{{ errors.email }}</span>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group-modern">
+                    <label>Rôle <span class="required">*</span></label>
+                    <select name="role" id="roleSelect" class="form-control-modern">
+                        <option value="AGRICULTEUR" {% if old.role|default('AGRICULTEUR') == 'AGRICULTEUR' %}selected{% endif %}>
+                            🌾 Agriculteur
+                        </option>
+                        <option value="RESPONSABLE_EXPLOITATION" {% if old.role|default('') == 'RESPONSABLE_EXPLOITATION' %}selected{% endif %}>
+                            📋 Responsable d'exploitation
+                        </option>
+                    </select>
+                </div>
+                
+                <!-- Champs pour Agriculteur -->
+                <div id="agriculteurFields" class="role-fields-modern">
+                    <div class="form-group-modern">
+                        <label>Téléphone</label>
+                        <input type="tel" name="telephone" value="{{ old.telephone|default('') }}" 
+                               class="form-control-modern {% if errors.telephone is defined %}error{% endif %}" 
+                               placeholder="12345678">
+                        {% if errors.telephone is defined %}
+                            <span class="error-message">{{ errors.telephone }}</span>
+                        {% endif %}
+                        <span class="input-hint">📱 8 chiffres</span>
+                    </div>
+                    
+                    <div class="form-group-modern">
+                        <label>Adresse</label>
+                        <input type="text" name="adresse" value="{{ old.adresse|default('') }}" 
+                               class="form-control-modern" 
+                               placeholder="Votre adresse complète">
+                    </div>
+                </div>
+                
+                <!-- Champs pour Responsable -->
+                <div id="responsableFields" class="role-fields-modern" style="display: none;">
+                    <div class="form-group-modern">
+                        <label>Matricule <span class="required">*</span></label>
+                        <input type="text" name="matricule" value="{{ old.matricule|default('') }}" 
+                               class="form-control-modern {% if errors.matricule is defined %}error{% endif %}" 
+                               placeholder="ADM-001">
+                        {% if errors.matricule is defined %}
+                            <span class="error-message">{{ errors.matricule }}</span>
+                        {% endif %}
+                        <span class="input-hint">📋 Format: XXX-000 (ex: ADM-001)</span>
+                    </div>
+                </div>
+                
+                <div class="form-group-modern">
+                    <label>Mot de passe <span class="required">*</span></label>
+                    <input type="password" name="password" id="password" 
+                           class="form-control-modern {% if errors.password is defined %}error{% endif %}" 
+                           placeholder="••••••••">
+                    {% if errors.password is defined %}
+                        <span class="error-message">{{ errors.password }}</span>
+                    {% endif %}
+                    <span class="input-hint">🔒 Minimum 6 caractères (majuscule, minuscule, chiffre)</span>
+                </div>
+                
+                <div class="form-group-modern">
+                    <label>Confirmer mot de passe <span class="required">*</span></label>
+                    <input type="password" name="password_confirm" 
+                           class="form-control-modern {% if errors.password_confirm is defined %}error{% endif %}" 
+                           placeholder="••••••••">
+                    {% if errors.password_confirm is defined %}
+                        <span class="error-message">{{ errors.password_confirm }}</span>
+                    {% endif %}
+                </div>
+                
+                <button type="submit" class="btn-register">
+                    <span>✨</span> Créer mon compte
+                </button>
+                
+                <div class="login-link">
+                    <span style="color: #64748b;">Déjà un compte ?</span>
+                    <a href="{{ path('app_login') }}">Se connecter</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    const roleSelect = document.getElementById('roleSelect');
+    const agriculteurFields = document.getElementById('agriculteurFields');
+    const responsableFields = document.getElementById('responsableFields');
+    
+    function toggleFields() {
+        const role = roleSelect.value;
+        if (role === 'AGRICULTEUR') {
+            agriculteurFields.style.display = 'block';
+            responsableFields.style.display = 'none';
+        } else {
+            agriculteurFields.style.display = 'none';
+            responsableFields.style.display = 'block';
+        }
+    }
+    
+    roleSelect.addEventListener('change', toggleFields);
+    toggleFields();
+</script>
+{% endblock %}

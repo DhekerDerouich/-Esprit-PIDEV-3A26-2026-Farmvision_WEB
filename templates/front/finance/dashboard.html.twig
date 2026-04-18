@@ -1,0 +1,105 @@
+{% extends 'front/base.html.twig' %}
+
+{% block body %}
+<div class="container" style="padding: 3rem 0; max-width: 1200px; margin: 0 auto; padding: 3rem 2rem;">
+    <h1 style="font-family: 'Playfair Display', serif; font-size: 2.5rem; margin-bottom: 0.5rem;">💰 Mon Dashboard Financier</h1>
+    <p style="color: var(--text-muted); margin-bottom: 2rem;">Suivez vos revenus et dépenses en temps réel</p>
+
+    <!-- Stats Cards -->
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
+        <div class="card" style="text-align: center;">
+            <div style="font-size: 2rem;">💰</div>
+            <div style="font-size: 1.8rem; font-weight: 700; color: var(--green-mid);">{{ totalRevenus|number_format(2) }} DT</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">Total Revenus</div>
+        </div>
+        <div class="card" style="text-align: center;">
+            <div style="font-size: 2rem;">💸</div>
+            <div style="font-size: 1.8rem; font-weight: 700; color: var(--red);">{{ totalDepenses|number_format(2) }} DT</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">Total Dépenses</div>
+        </div>
+        <div class="card" style="text-align: center;">
+            <div style="font-size: 2rem;">⚖️</div>
+            <div style="font-size: 1.8rem; font-weight: 700; {% if balance < 0 %}color: var(--red);{% else %}color: var(--green-mid);{% endif %}">
+                {{ balance|number_format(2) }} DT
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">Solde</div>
+        </div>
+        <div class="card" style="text-align: center;">
+            <div style="font-size: 2rem;">📅</div>
+            <div style="font-size: 1.8rem; font-weight: 700;">{{ 'now'|date('F Y') }}</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">Période</div>
+        </div>
+    </div>
+
+    <!-- This Month Stats -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+        <div class="card">
+            <h3 style="margin-bottom: 1rem;">📈 Ce mois-ci</h3>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                <span>Revenus</span>
+                <span style="font-weight: 700; color: var(--green-mid);">{{ revenusCeMois|number_format(2) }} DT</span>
+            </div>
+            <div style="height: 8px; background: var(--green-mist); border-radius: 4px; overflow: hidden;">
+                <div style="width: {{ revenusCeMois > 0 ? (revenusCeMois / (revenusCeMois + depensesCeMois) * 100) : 0 }}%; height: 100%; background: var(--green-mid);"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-top: 0.5rem;">
+                <span>Dépenses</span>
+                <span style="font-weight: 700; color: var(--red);">{{ depensesCeMois|number_format(2) }} DT</span>
+            </div>
+            <div style="height: 8px; background: var(--green-mist); border-radius: 4px; overflow: hidden;">
+                <div style="width: {{ depensesCeMois > 0 ? (depensesCeMois / (revenusCeMois + depensesCeMois) * 100) : 0 }}%; height: 100%; background: var(--red);"></div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h3 style="margin-bottom: 1rem;">🎯 Actions rapides</h3>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <a href="{{ path('front_finance_depense_new') }}" class="btn-primary" style="padding: 0.75rem 1.5rem; text-decoration: none;">+ Ajouter une dépense</a>
+                <a href="{{ path('front_finance_revenu_new') }}" class="btn-primary" style="padding: 0.75rem 1.5rem; text-decoration: none; background: var(--green-mid);">+ Ajouter un revenu</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+            <h3>📋 Dernières transactions</h3>
+            <div style="display: flex; gap: 0.5rem;">
+                <a href="{{ path('front_finance_depenses') }}" class="btn-outline btn" style="text-decoration: none;">Voir toutes les dépenses →</a>
+                <a href="{{ path('front_finance_revenus') }}" class="btn-outline btn" style="text-decoration: none;">Voir tous les revenus →</a>
+            </div>
+        </div>
+        
+        {% if recentTransactions|length > 0 %}
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr>
+                    <th style="text-align: left; padding: 0.75rem; background: var(--green-mist);">Date</th>
+                    <th style="text-align: left; padding: 0.75rem; background: var(--green-mist);">Catégorie</th>
+                    <th style="text-align: left; padding: 0.75rem; background: var(--green-mist);">Description</th>
+                    <th style="text-align: right; padding: 0.75rem; background: var(--green-mist);">Montant</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transaction in recentTransactions %}
+                <tr>
+                    <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">{{ transaction.date|date('d/m/Y') }}</td>
+                    <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">
+                        <span class="badge {% if transaction.type == 'revenu' %}badge-success{% else %}badge-warning{% endif %}">
+                            {{ transaction.categorie }}
+                        </span>
+                    </td>
+                    <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">{{ transaction.description|slice(0, 50) }}{% if transaction.description|length > 50 %}...{% endif %}</td>
+                    <td style="padding: 0.75rem; border-bottom: 1px solid var(--border); text-align: right; font-weight: 600; {% if transaction.type == 'revenu' %}color: var(--green-mid);{% else %}color: var(--red);{% endif %}">
+                        {{ transaction.type == 'revenu' ? '+' : '-' }}{{ transaction.montant|number_format(2) }} DT
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p style="text-align: center; padding: 2rem; color: var(--text-muted);">Aucune transaction. Commencez par ajouter une dépense ou un revenu !</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

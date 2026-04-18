@@ -1,0 +1,313 @@
+{% extends 'front/base.html.twig' %}
+
+{% block body %}
+<!-- Hero Section avec animation -->
+<section class="hero-section">
+    <div class="hero-particles"></div>
+    <div class="container hero-container">
+        <div class="hero-content fade-in-up">
+            <div class="chip-glass">
+                <span class="pulse-dot"></span>
+                ⚡ L'agriculture 4.0
+            </div>
+            <h1 class="hero-title">
+                L'agriculture 
+                <span class="highlight-text">
+                    intelligente
+                    <svg class="underline-svg" viewBox="0 0 200 10">
+                        <path d="M0,5 Q50,0 100,5 Q150,10 200,5" stroke="var(--green-light)" fill="none" stroke-width="2"/>
+                    </svg>
+                </span> 
+                à portée de main
+            </h1>
+            <p class="hero-subtitle">FarmVision connecte vos parcelles, capteurs et données pour vous donner une vision complète de votre exploitation.</p>
+            <div class="hero-buttons">
+                <a href="{{ path('front_equipement_index') }}" class="btn-primary-glow">Découvrir nos équipements →</a>
+                <a href="{{ path('front_maintenance_index') }}" class="btn-outline-white">Voir les maintenances</a>
+            </div>
+        </div>
+        <div class="hero-stats fade-in-up" style="animation-delay: 0.2s;">
+            <div class="glass-stats-card">
+                <div class="floating-icon">🌱</div>
+                <div class="counter-number" data-target="{{ statsEquipements.total }}">0</div>
+                <div class="stats-label">Équipements connectés</div>
+                <div class="stats-divider"></div>
+                <div class="floating-icon">🔧</div>
+                <div class="counter-number" data-target="{{ statsEquipements.fonctionnels }}">0</div>
+                <div class="stats-label">Équipements fonctionnels</div>
+                <div class="progress-ring-container">
+                    <svg class="progress-ring" width="80" height="80" viewBox="0 0 80 80">
+                        <circle class="progress-ring-bg" cx="40" cy="40" r="35"/>
+                        <circle class="progress-ring-fill" cx="40" cy="40" r="35" 
+                                data-value="{{ (statsEquipements.fonctionnels / statsEquipements.total * 100) }}"/>
+                    </svg>
+                    <div class="progress-label">Taux fonctionnel</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Mission Section -->
+<section class="mission-section">
+    <div class="container mission-container">
+        <div class="mission-content fade-in-left">
+            <div class="chip-mist">🎯 Notre vision</div>
+            <h2 class="section-title">Notre Mission</h2>
+            <p class="mission-text">
+                FarmVision a pour mission de transformer l'agriculture traditionnelle en une agriculture 
+                intelligente et connectée. Nous fournissons aux agriculteurs les outils nécessaires pour 
+                optimiser leurs rendements, réduire leurs coûts et préserver l'environnement.
+            </p>
+            <div class="mission-stats">
+                <div class="mission-stat">
+                    <div class="mission-stat-number">98%</div>
+                    <div class="mission-stat-label">Satisfaction client</div>
+                </div>
+                <div class="mission-stat">
+                    <div class="mission-stat-number">24/7</div>
+                    <div class="mission-stat-label">Support technique</div>
+                </div>
+            </div>
+        </div>
+        <div class="mission-card-glass fade-in-right">
+            <div class="animated-target">🎯</div>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <span>2024 - Lancement de FarmVision</span>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <span>2025 - 1000+ agriculteurs</span>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <span>2026 - Leader en Tunisie</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Valeurs Section -->
+<section class="values-section">
+    <div class="container">
+        <div class="section-header">
+            <div class="chip-mist">✨ Nos fondations</div>
+            <h2 class="section-title">Nos Valeurs</h2>
+            <p class="section-subtitle">Ce qui nous guide au quotidien</p>
+        </div>
+        <div class="values-grid">
+            <div class="value-card" data-value="innovation">
+                <div class="value-icon">🌱</div>
+                <h3>Innovation</h3>
+                <p>Des solutions technologiques de pointe pour une agriculture moderne</p>
+                <div class="value-progress"></div>
+            </div>
+            <div class="value-card" data-value="confiance">
+                <div class="value-icon">🤝</div>
+                <h3>Confiance</h3>
+                <p>Une relation de confiance avec nos agriculteurs partenaires</p>
+                <div class="value-progress"></div>
+            </div>
+            <div class="value-card" data-value="durabilite">
+                <div class="value-icon">🌍</div>
+                <h3>Durabilité</h3>
+                <p>Engagement pour une agriculture respectueuse de l'environnement</p>
+                <div class="value-progress"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Équipe Section -->
+<section class="team-section">
+    <div class="container">
+        <div class="section-header">
+            <div class="chip-mist">👥 L'équipe</div>
+            <h2 class="section-title">Notre Équipe</h2>
+            <p class="section-subtitle">Des experts passionnés à votre service</p>
+        </div>
+        <div class="team-grid">
+            <div class="team-card">
+                <div class="team-avatar">👨‍💼</div>
+                <h3>DHEKER DEROUICHE</h3>
+                <p class="team-role">CEO & Fondateur</p>
+                <p class="team-bio">Visionnaire en agriculture 4.0</p>
+                <div class="team-social">
+                    <a href="#" class="social-link">🔗</a>
+                    <a href="#" class="social-link">🐦</a>
+                </div>
+            </div>
+            <div class="team-card">
+                <div class="team-avatar">👩‍💻</div>
+                <h3>BADIS AOUADI</h3>
+                <p class="team-role">CTO</p>
+                <p class="team-bio">Expert en IoT et IA</p>
+                <div class="team-social">
+                    <a href="#" class="social-link">💻</a>
+                    <a href="#" class="social-link">🔗</a>
+                </div>
+            </div>
+            <div class="team-card">
+                <div class="team-avatar">👨‍🌾</div>
+                <h3>AYOUB GHARBI</h3>
+                <p class="team-role">Agronome en chef</p>
+                <p class="team-bio">15 ans d'expérience terrain</p>
+                <div class="team-social">
+                    <a href="#" class="social-link">🔗</a>
+                </div>
+            </div>
+            <div class="team-card">
+                <div class="team-avatar">📊</div>
+                <h3>SOULAIMA REBAII</h3>
+                <p class="team-role">Data Scientist</p>
+                <p class="team-bio">Big data & analytics</p>
+                <div class="team-social">
+                    <a href="#" class="social-link">💻</a>
+                    <a href="#" class="social-link">🔗</a>
+                </div>
+            </div>
+            <div class="team-card">
+                <div class="team-avatar">🤖</div>
+                <h3>ADEM BEN CHIBOUB</h3>
+                <p class="team-role">Data Scientist</p>
+                <p class="team-bio">Machine learning expert</p>
+                <div class="team-social">
+                    <a href="#" class="social-link">🔗</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Chiffres clés Section -->
+<section class="stats-highlight-section">
+    <div class="stats-pattern"></div>
+    <div class="container">
+        <div class="section-header light">
+            <div class="chip-white">📈 Impact</div>
+            <h2 class="section-title">FarmVision en chiffres</h2>
+        </div>
+        <div class="stats-grid">
+            <div class="stat-card-glass">
+                <div class="stat-number counter" data-target="2400">0</div>
+                <div class="stat-label">Agriculteurs actifs</div>
+                <div class="stat-trend positive">↑ +23%</div>
+            </div>
+            <div class="stat-card-glass">
+                <div class="stat-number counter" data-target="18000">0</div>
+                <div class="stat-label">Hectares surveillés</div>
+                <div class="stat-trend positive">↑ +15%</div>
+            </div>
+            <div class="stat-card-glass">
+                <div class="stat-number counter" data-target="34">0</div>
+                <div class="stat-label">Réduction d'intrants</div>
+                <div class="stat-trend positive">↑ +8%</div>
+            </div>
+            <div class="stat-card-glass">
+                <div class="stat-number">24/7</div>
+                <div class="stat-label">Support technique</div>
+                <div class="stat-rating">⭐⭐⭐⭐⭐</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Équipements récents Section -->
+<section class="equipments-section">
+    <div class="container">
+        <div class="section-header-row">
+            <div>
+                <div class="chip-mist">🆕 Dernières nouveautés</div>
+                <h2 class="section-title">Nos équipements récents</h2>
+            </div>
+            <div class="slider-controls">
+                <button class="slider-btn prev-btn">←</button>
+                <button class="slider-btn next-btn">→</button>
+            </div>
+        </div>
+        <div class="equipments-slider">
+            <div class="equipments-track">
+                {% for equipement in equipements %}
+                <div class="equipment-card">
+                    <div class="equipment-image">
+                        <div class="equipment-icon">
+                            {% if equipement.type == 'Tracteur' %}🚜
+                            {% elseif equipement.type == 'Moissonneuse' %}🌾
+                            {% elseif equipement.type == 'Pulvérisateur' %}💨
+                            {% elseif equipement.type == 'Charrue' %}🌍
+                            {% else %}🔧
+                            {% endif %}
+                        </div>
+                        <div class="equipment-status">
+                            <span class="badge 
+                                {% if equipement.etat == 'Fonctionnel' %}badge-success
+                                {% elseif equipement.etat == 'En panne' %}badge-danger
+                                else %}badge-warning{% endif %}">
+                                {{ equipement.etat }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="equipment-info">
+                        <h3>{{ equipement.nom }}</h3>
+                        <p class="equipment-type">{{ equipement.type }}</p>
+                        <div class="equipment-footer">
+                            <span class="equipment-date">📅 Ajouté récemment</span>
+                            <a href="{{ path('front_equipement_show', {'id': equipement.id}) }}" class="btn-link">Voir détails →</a>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="empty-state">Aucun équipement disponible pour le moment.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Maintenances Section -->
+<section class="maintenances-section">
+    <div class="container">
+        <div class="section-header">
+            <div class="chip-white">🔧 Planification</div>
+            <h2 class="section-title">Maintenances à venir</h2>
+            <p class="section-subtitle">Ne manquez aucune intervention programmée</p>
+        </div>
+        <div class="timeline-container">
+            <div class="timeline-line"></div>
+            {% for maintenance in maintenances %}
+            <div class="timeline-item-card">
+                <div class="timeline-marker"></div>
+                <div class="timeline-date">
+                    <div class="date-day">{{ maintenance.dateMaintenance|date('d/m/Y') }}</div>
+                    <div class="date-remaining">Dans {{ maintenance.joursRestants }} jours</div>
+                </div>
+                <div class="timeline-content-card">
+                    <div class="content-header">
+                        <strong>{{ maintenance.equipement.nom }}</strong>
+                        <span class="maintenance-badge">{{ maintenance.typeMaintenance }}</span>
+                    </div>
+                    <p class="content-description">{{ maintenance.description|slice(0, 80) }}{% if maintenance.description|length > 80 %}...{% endif %}</p>
+                    <button class="reminder-btn" data-equipment="{{ maintenance.equipement.nom }}" data-date="{{ maintenance.dateMaintenance|date('d/m/Y') }}">🔔 Rappel</button>
+                </div>
+            </div>
+            {% else %}
+            <p class="empty-state">Aucune maintenance planifiée.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Contact CTA Section -->
+<section class="contact-cta-section">
+    <div class="container">
+        <div class="cta-glass-card">
+            <h2>Prêt à rejoindre l'aventure ?</h2>
+            <p>Contactez-nous pour une démo personnalisée</p>
+            <a href="#" class="btn-cta-primary">Nous contacter <span>→</span></a>
+        </div>
+    </div>
+</section>
+{% endblock %}

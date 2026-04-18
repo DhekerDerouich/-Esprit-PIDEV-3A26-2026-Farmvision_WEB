@@ -1,0 +1,409 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block page_title %}Gestion des stocks{% endblock %}
+
+{% block body %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+.page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;flex-wrap:wrap;gap:1rem}
+.page-header h1{font-size:1.5rem;font-weight:600;margin:0;color:#1a3a2a}
+.btn-primary{background:#4CAF50;color:white;padding:.5rem 1rem;border-radius:6px;text-decoration:none;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:.5rem}
+.btn-primary:hover{background:#45a049}
+.btn-secondary{background:#6c757d;color:white;padding:.5rem 1rem;border-radius:6px;text-decoration:none;border:none;cursor:pointer}
+.filter-card,.chart-card,.alert-card{background:white;border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.filter-form{display:flex;gap:1rem;align-items:flex-end;flex-wrap:wrap}
+.filter-group{flex:1;min-width:150px}
+.filter-group label{display:block;font-size:.85rem;font-weight:500;color:#666;margin-bottom:.25rem}
+.filter-group input,.filter-group select{width:100%;padding:.5rem;border:1px solid #ddd;border-radius:6px}
+.filter-actions{display:flex;gap:.5rem}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem}
+.stat-card{background:white;border-radius:12px;padding:1rem;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.stat-card .number{font-size:1.8rem;font-weight:bold;color:#4CAF50}
+.stat-card .label{font-size:.85rem;color:#666}
+.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem}
+.chart-card h3{margin:0 0 1rem 0;font-size:1rem;font-weight:600;color:#333}
+.alerts-row{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem}
+.alert-card h3{margin:0 0 1rem 0;font-size:1rem;font-weight:600}
+.alert-item{display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid #f0f0f0;font-size:.85rem}
+.alert-item:last-child{border-bottom:none}
+.table-card{background:white;border-radius:12px;overflow-x:auto;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+table{width:100%;border-collapse:collapse;min-width:700px}
+th{text-align:left;padding:1rem;background:#f8f9fa;font-weight:600;border-bottom:1px solid #eee}
+td{padding:1rem;border-bottom:1px solid #eee;vertical-align:middle}
+tr:hover{background:#f8f9fa}
+.badge{padding:.25rem .5rem;border-radius:20px;font-size:.75rem;font-weight:500;display:inline-block}
+.badge-success{background:#d4edda;color:#155724}
+.badge-danger{background:#f8d7da;color:#721c24}
+.badge-warning{background:#fff3cd;color:#856404}
+.actions{display:flex;gap:.5rem;flex-wrap:wrap}
+.btn-icon{background:#f0f0f0;border:none;cursor:pointer;font-size:.8rem;padding:.4rem .7rem;transition:all .2s;border-radius:6px;font-weight:500}
+.btn-icon:hover{transform:scale(1.02);opacity:.85}
+.btn-view{background:#e3f2fd;color:#1976d2}
+.btn-edit{background:#fff3e0;color:#f57c00}
+.btn-ai{background:#f3e5f5;color:#7b1fa2}
+.btn-sms{background:#e8f5e9;color:#388e3c}
+.btn-forecast{background:#e0f2f1;color:#00695c}
+.btn-delete{background:#ffebee;color:#d32f2f}
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:1000;justify-content:center;align-items:center}
+.modal-box{background:white;border-radius:12px;padding:1.5rem;width:90%;max-width:500px;max-height:80vh;overflow-y:auto}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;padding-bottom:.5rem;border-bottom:1px solid #eee}
+.modal-header h3{margin:0}
+.modal-close{cursor:pointer;font-size:1.5rem;background:none;border:none}
+.form-group{margin-bottom:1rem}
+.form-group label{display:block;font-weight:500;margin-bottom:.3rem;font-size:.85rem}
+.form-control{width:100%;padding:.5rem;border:1px solid #ddd;border-radius:6px;box-sizing:border-box}
+@media(max-width:768px){.stats-grid{grid-template-columns:repeat(2,1fr)}.filter-form{flex-direction:column}.charts-row,.alerts-row{grid-template-columns:1fr}}
+</style>
+
+{# ===== HEADER ===== #}
+<div class="page-header">
+    <h1>📦 Gestion des stocks</h1>
+    <a href="{{ path('admin_stock_new') }}" class="btn-primary">➕ Ajouter un produit</a>
+</div>
+
+{# ===== STATS ===== #}
+<div class="stats-grid">
+    <div class="stat-card"><div class="number">{{ stats.total }}</div><div class="label">Total produits</div></div>
+    <div class="stat-card"><div class="number" style="color:#28a745">{{ stats.disponibles }}</div><div class="label">Disponibles</div></div>
+    <div class="stat-card"><div class="number" style="color:#dc3545">{{ stats.epuises }}</div><div class="label">Épuisés</div></div>
+    <div class="stat-card"><div class="number" style="color:#ffc107">{{ stats.valeurTotale|number_format(0) }}</div><div class="label">Quantité totale</div></div>
+</div>
+
+{# ===== CHARTS ===== #}
+<div class="charts-row">
+    <div class="chart-card">
+        <h3>📊 Répartition par type</h3>
+        <canvas id="typeChart" height="220"></canvas>
+    </div>
+    <div class="chart-card">
+        <h3>📈 Statut des stocks</h3>
+        <canvas id="statutChart" height="220"></canvas>
+    </div>
+</div>
+
+{# ===== ALERTS ===== #}
+{% if expiringSoon|length > 0 or lowStock|length > 0 %}
+<div class="alerts-row">
+    {% if expiringSoon|length > 0 %}
+    <div class="alert-card" style="border-left:4px solid #ffc107">
+        <h3 style="color:#856404">⚠️ Expiration dans 30 jours ({{ expiringSoon|length }})</h3>
+        {% for s in expiringSoon|slice(0,5) %}
+        <div class="alert-item">
+            <span>{{ s.nomProduit }}</span>
+            <span class="badge badge-warning">{{ s.joursAvantExpiration }}j</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% if lowStock|length > 0 %}
+    <div class="alert-card" style="border-left:4px solid #dc3545">
+        <h3 style="color:#721c24">🔴 Stock bas ≤ 10 unités ({{ lowStock|length }})</h3>
+        {% for s in lowStock|slice(0,5) %}
+        <div class="alert-item">
+            <span>{{ s.nomProduit }}</span>
+            <span class="badge badge-danger">{{ s.quantite }} {{ s.unite }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+{# ===== FILTERS ===== #}
+<div class="filter-card">
+    <form method="get" action="{{ path('admin_stock_index') }}" class="filter-form">
+        <div class="filter-group">
+            <label>🔍 Rechercher</label>
+            <input type="text" name="search" value="{{ search }}" placeholder="Nom ou type...">
+        </div>
+        <div class="filter-group">
+            <label>📂 Type</label>
+            <select name="type">
+                <option value="all" {% if selectedType == 'all' %}selected{% endif %}>Tous</option>
+                {% for type in types %}
+                <option value="{{ type }}" {% if selectedType == type %}selected{% endif %}>{{ type }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>📌 Statut</label>
+            <select name="statut">
+                <option value="all" {% if selectedStatut == 'all' %}selected{% endif %}>Tous</option>
+                <option value="Disponible" {% if selectedStatut == 'Disponible' %}selected{% endif %}>Disponible</option>
+                <option value="Épuisé" {% if selectedStatut == 'Épuisé' %}selected{% endif %}>Épuisé</option>
+            </select>
+        </div>
+        <div class="filter-actions">
+            <button type="submit" class="btn-primary">🔍 Filtrer</button>
+            <a href="{{ path('admin_stock_index') }}" class="btn-secondary">🔄 Reset</a>
+        </div>
+    </form>
+</div>
+
+{# ===== TABLE ===== #}
+<div class="table-card">
+    <table>
+        <thead>
+            <tr>
+                <th>Produit</th><th>Type</th><th>Quantité</th><th>Unité</th>
+                <th>Expiration</th><th>Statut</th><th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for stock in stocks %}
+            <tr>
+                <td>
+                    {% if stock.imageUrl %}
+                    <img src="{{ stock.imageUrl }}" alt="{{ stock.nomProduit }}" style="width:40px;height:40px;object-fit:cover;border-radius:6px;margin-right:.5rem;vertical-align:middle">
+                    {% endif %}
+                    <strong>{{ stock.nomProduit }}</strong>
+                    {% if stock.barcode %}<br><small style="color:#888">🔖 {{ stock.barcode }}</small>{% endif %}
+                </td>
+                <td>{{ stock.typeProduit ?: '-' }}</td>
+                <td><strong>{{ stock.quantite }}</strong></td>
+                <td>{{ stock.unite ?: '-' }}</td>
+                <td>
+                    {% if stock.dateExpiration %}
+                        {{ stock.dateExpiration|date('d/m/Y') }}
+                        {% if stock.isExpired %}
+                            <span class="badge badge-danger">Expiré</span>
+                        {% elseif stock.joursAvantExpiration <= 30 %}
+                            <span class="badge badge-warning">{{ stock.joursAvantExpiration }}j</span>
+                        {% endif %}
+                    {% else %}-{% endif %}
+                </td>
+                <td>
+                    {% if stock.statut == 'Disponible' %}
+                        <span class="badge badge-success">✅ Disponible</span>
+                    {% else %}
+                        <span class="badge badge-danger">❌ Épuisé</span>
+                    {% endif %}
+                </td>
+                <td class="actions">
+                    <a href="{{ path('admin_stock_show', {'id': stock.idStock}) }}" class="btn-icon btn-view">👁️</a>
+                    <a href="{{ path('admin_stock_edit', {'id': stock.idStock}) }}" class="btn-icon btn-edit">✏️</a>
+                    <button type="button" class="btn-icon btn-ai" onclick="openAiModal({{ stock.idStock }})">🤖 AI</button>
+                    <button type="button" class="btn-icon btn-sms" onclick="openSmsModal({{ stock.idStock }}, '{{ stock.nomProduit|e('js') }}', {{ stock.quantite }}, {{ stock.joursAvantExpiration }})">📱 SMS</button>
+                    <button type="button" class="btn-icon btn-forecast" onclick="openForecastModal('{{ stock.nomProduit|e('js') }}')">📈</button>
+                    <form method="post" action="{{ path('admin_stock_delete', {'id': stock.idStock}) }}" onsubmit="return confirm('Supprimer ce stock ?');" style="display:inline">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ stock.idStock) }}">
+                        <button type="submit" class="btn-icon btn-delete">🗑️</button>
+                    </form>
+                </td>
+            </tr>
+        {% else %}
+            <tr><td colspan="7" style="text-align:center;padding:2rem;color:#888">
+                Aucun stock trouvé. <a href="{{ path('admin_stock_new') }}">➕ Ajouter</a>
+            </td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{# ===== MODALS ===== #}
+<div id="aiModal" class="modal">
+    <div class="modal-box">
+        <div class="modal-header"><h3>🤖 Analyse AI du produit</h3><button class="modal-close" onclick="closeModal('aiModal')">&times;</button></div>
+        <div id="aiModalBody" style="min-height:120px;text-align:center;padding:1rem">Chargement...</div>
+    </div>
+</div>
+
+<div id="smsModal" class="modal">
+    <div class="modal-box">
+        <div class="modal-header"><h3>📱 Envoyer une alerte SMS</h3><button class="modal-close" onclick="closeModal('smsModal')">&times;</button></div>
+        <div class="form-group"><label>📞 Numéro de téléphone</label><input type="tel" id="smsPhone" class="form-control" placeholder="+216 XX XXX XXX"></div>
+        <div class="form-group">
+            <label>⚠️ Type d'alerte</label>
+            <select id="smsType" class="form-control">
+                <option value="low_stock">📉 Stock bas</option>
+                <option value="expired">📅 Expiration proche</option>
+                <option value="restock">📦 Réapprovisionnement</option>
+            </select>
+        </div>
+        <div class="form-group"><label>💬 Message personnalisé (optionnel)</label><textarea id="smsMessage" class="form-control" rows="3" placeholder="Laissez vide pour message automatique..."></textarea></div>
+        <button type="button" class="btn-primary" onclick="sendSms()" style="width:100%">📤 Envoyer le SMS</button>
+        <div id="smsResult" style="margin-top:1rem"></div>
+    </div>
+</div>
+
+<div id="forecastModal" class="modal">
+    <div class="modal-box" style="max-width:580px">
+        <div class="modal-header"><h3>📈 Prévisions de ventes AI</h3><button class="modal-close" onclick="closeModal('forecastModal')">&times;</button></div>
+        <div class="form-group"><label>📦 Produit analysé</label><input type="text" id="forecastProductName" class="form-control" readonly style="background:#f5f5f5"></div>
+        <button type="button" class="btn-primary" onclick="generateForecast()" style="width:100%;margin-bottom:1rem">🤖 Générer les prévisions</button>
+        <div id="forecastResult"></div>
+        <div id="forecastChartContainer" style="margin-top:1rem;display:none"><canvas id="forecastChart"></canvas></div>
+    </div>
+</div>
+
+{# ===== SCRIPTS ===== #}
+<script>
+(function() {
+    const typeLabels = {{ chartLabels|raw }};
+    const typeData   = {{ chartData|raw }};
+
+    if (typeLabels.length > 0) {
+        const colors = ['#4CAF50','#2196F3','#FF9800','#9C27B0','#F44336','#00BCD4','#8BC34A','#FF5722'];
+        new Chart(document.getElementById('typeChart'), {
+            type: 'doughnut',
+            data: {
+                labels: typeLabels,
+                datasets: [{ data: typeData, backgroundColor: colors.slice(0, typeLabels.length), borderWidth: 2 }]
+            },
+            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+        });
+    }
+
+    new Chart(document.getElementById('statutChart'), {
+        type: 'bar',
+        data: {
+            labels: ['Disponibles', 'Épuisés'],
+            datasets: [{
+                label: 'Produits',
+                data: [{{ stats.disponibles }}, {{ stats.epuises }}],
+                backgroundColor: ['#4CAF50', '#F44336'],
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+    });
+})();
+
+let currentSmsStockName = '', currentSmsQuantity = 0, currentSmsExpiry = 0;
+let forecastChart = null;
+
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+window.addEventListener('click', function(e) {
+    ['aiModal','smsModal','forecastModal'].forEach(function(id) {
+        if (e.target === document.getElementById(id)) closeModal(id);
+    });
+});
+
+function openAiModal(id) {
+    const modal = document.getElementById('aiModal');
+    const body  = document.getElementById('aiModalBody');
+    modal.style.display = 'flex';
+    body.innerHTML = '<div>🤖 Analyse en cours...</div>';
+    fetch('/admin/stocks/api/analyze/' + id)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                body.innerHTML = '<div style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;border-radius:12px;padding:1.25rem;line-height:1.8">'
+                    + '<div style="font-size:1.1rem;font-weight:600;margin-bottom:.75rem">📦 ' + data.product_name + '</div>'
+                    + '<div>⭐ <strong>Qualité:</strong> ' + data.quality + '</div>'
+                    + '<div>🏷️ <strong>Catégorie:</strong> ' + data.category + '</div>'
+                    + '<div>💰 <strong>Prix recommandé:</strong> ' + data.recommended_price + ' DT</div>'
+                    + '<div>📈 <strong>Potentiel:</strong> ' + data.sales_potential + '%</div>'
+                    + '<div>📉 <strong>Tendance:</strong> ' + data.trend + '</div>'
+                    + '<div style="margin-top:.75rem"><strong>💡 Suggestions:</strong><ul style="margin:.5rem 0 0 1rem;padding:0">'
+                    + data.suggestions.map(function(s) { return '<li>' + s + '</li>'; }).join('')
+                    + '</ul></div></div>';
+            } else {
+                body.innerHTML = '<div style="background:#f8d7da;color:#721c24;padding:1rem;border-radius:8px">❌ ' + (data.error || 'Erreur') + '</div>';
+            }
+        })
+        .catch(function(e) { body.innerHTML = '<div style="background:#f8d7da;color:#721c24;padding:1rem;border-radius:8px">❌ ' + e.message + '</div>'; });
+}
+
+function openSmsModal(id, name, qty, expiry) {
+    currentSmsStockName = name;
+    currentSmsQuantity  = qty;
+    currentSmsExpiry    = expiry;
+    document.getElementById('smsModal').style.display = 'flex';
+    document.getElementById('smsPhone').value   = '';
+    document.getElementById('smsMessage').value = '';
+    document.getElementById('smsResult').innerHTML = '';
+}
+
+function sendSms() {
+    var phone  = document.getElementById('smsPhone').value.trim();
+    var type   = document.getElementById('smsType').value;
+    var custom = document.getElementById('smsMessage').value.trim();
+    var result = document.getElementById('smsResult');
+    if (!phone) { alert('📞 Entrez un numéro de téléphone'); return; }
+    var message = custom;
+    if (!message) {
+        if (type === 'low_stock') message = "⚠️ ALERTE STOCK: '" + currentSmsStockName + "' presque épuisé! Stock: " + currentSmsQuantity + " unités.";
+        else if (type === 'expired') message = "⚠️ ALERTE EXPIRATION: '" + currentSmsStockName + "' expire dans " + currentSmsExpiry + " jours.";
+        else message = "✅ RÉAPPROVISIONNEMENT: '" + currentSmsStockName + "' réapprovisionné. Stock: " + currentSmsQuantity + " unités.";
+    }
+    result.innerHTML = '<div style="text-align:center;padding:.5rem">📱 Envoi en cours...</div>';
+    var fd = new URLSearchParams();
+    fd.append('phone', phone);
+    fd.append('message', message);
+    fetch('/admin/stocks/api/send-sms', { method: 'POST', headers: {'Content-Type':'application/x-www-form-urlencoded'}, body: fd })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                result.innerHTML = '<div style="background:#d4edda;color:#155724;padding:.75rem;border-radius:6px">✅ ' + data.message + '</div>';
+                setTimeout(function() { closeModal('smsModal'); }, 2500);
+            } else {
+                result.innerHTML = '<div style="background:#f8d7da;color:#721c24;padding:.75rem;border-radius:6px">❌ ' + data.error + '</div>';
+            }
+        })
+        .catch(function(e) { result.innerHTML = '<div style="background:#f8d7da;color:#721c24;padding:.75rem;border-radius:6px">❌ ' + e.message + '</div>'; });
+}
+
+function openForecastModal(name) {
+    document.getElementById('forecastProductName').value = name;
+    document.getElementById('forecastModal').style.display = 'flex';
+    document.getElementById('forecastResult').innerHTML = '';
+    document.getElementById('forecastChartContainer').style.display = 'none';
+}
+
+function generateForecast() {
+    var name      = document.getElementById('forecastProductName').value;
+    var resultDiv = document.getElementById('forecastResult');
+    var chartDiv  = document.getElementById('forecastChartContainer');
+    if (!name) { alert('Produit non spécifié'); return; }
+    resultDiv.innerHTML = '<div style="text-align:center;padding:.5rem">📊 Génération des prévisions...</div>';
+    chartDiv.style.display = 'none';
+    fetch('/admin/stocks/api/forecast', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ product_name: name })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.success) {
+            var icon  = data.tendances === 'hausse' ? '📈' : (data.tendances === 'baisse' ? '📉' : '➡️');
+            var color = data.tendances === 'hausse' ? '#28a745' : (data.tendances === 'baisse' ? '#dc3545' : '#ffc107');
+            resultDiv.innerHTML = '<div style="background:linear-gradient(135deg,#1a3a2a,#2d6a4f);color:white;border-radius:12px;padding:1.25rem;line-height:1.8">'
+                + '<div style="font-size:1rem;font-weight:600;margin-bottom:.75rem">📊 Prévisions — ' + data.product_name + '</div>'
+                + '<div>📅 Mois 1: <strong>' + data.predictions[0] + ' unités</strong></div>'
+                + '<div>📅 Mois 2: <strong>' + data.predictions[1] + ' unités</strong></div>'
+                + '<div>📅 Mois 3: <strong>' + data.predictions[2] + ' unités</strong></div>'
+                + '<div>🎯 Confiance: <strong>' + Math.round(data.confidence * 100) + '%</strong></div>'
+                + '<div>Tendance: <strong style="color:' + color + '">' + icon + ' ' + data.tendances + '</strong></div>'
+                + '</div>';
+            chartDiv.style.display = 'block';
+            if (forecastChart) forecastChart.destroy();
+            forecastChart = new Chart(document.getElementById('forecastChart'), {
+                type: 'line',
+                data: {
+                    labels: data.periods,
+                    datasets: [{
+                        label: 'Prévisions (unités)',
+                        data: data.predictions,
+                        borderColor: '#4CAF50',
+                        backgroundColor: 'rgba(76,175,80,0.15)',
+                        borderWidth: 3, pointRadius: 6, pointBackgroundColor: '#4CAF50',
+                        fill: true, tension: 0.3
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: false } } }
+            });
+        } else {
+            resultDiv.innerHTML = '<div style="background:#f8d7da;color:#721c24;padding:.75rem;border-radius:6px">❌ ' + (data.error || 'Erreur') + '</div>';
+        }
+    })
+    .catch(function(e) { resultDiv.innerHTML = '<div style="background:#f8d7da;color:#721c24;padding:.75rem;border-radius:6px">❌ ' + e.message + '</div>'; });
+}
+</script>
+
+{% endblock %}

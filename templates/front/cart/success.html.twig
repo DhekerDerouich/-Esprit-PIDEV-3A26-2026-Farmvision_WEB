@@ -1,0 +1,81 @@
+{% extends 'front/base.html.twig' %}
+
+{% block body %}
+<div class="container" style="padding: 3rem 0; max-width: 700px; margin: 0 auto;">
+
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">✅</div>
+        <h1 style="color: #4CAF50; font-size: 2rem; margin-bottom: .5rem;">Paiement réussi !</h1>
+        <p style="color: #666;">Merci pour votre commande. Votre facture a été envoyée par email.</p>
+    </div>
+
+    <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,.1); margin-bottom: 2rem;">
+        <h2 style="font-size: 1.2rem; margin-bottom: 1.5rem; color: #333;">📄 Détails de la facture</h2>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+            <div>
+                <div style="font-size: .8rem; color: #888; margin-bottom: .25rem;">Numéro de facture</div>
+                <div style="font-weight: 600;">{{ invoice.invoiceNumber }}</div>
+            </div>
+            <div>
+                <div style="font-size: .8rem; color: #888; margin-bottom: .25rem;">Date</div>
+                <div style="font-weight: 600;">{{ invoice.createdAt|date('d/m/Y H:i') }}</div>
+            </div>
+            <div>
+                <div style="font-size: .8rem; color: #888; margin-bottom: .25rem;">Client</div>
+                <div style="font-weight: 600;">{{ invoice.customerName ?: invoice.customerEmail }}</div>
+            </div>
+            <div>
+                <div style="font-size: .8rem; color: #888; margin-bottom: .25rem;">Statut</div>
+                <div><span style="background: #d4edda; color: #155724; padding: .25rem .75rem; border-radius: 20px; font-size: .85rem; font-weight: 600;">✅ Payé</span></div>
+            </div>
+        </div>
+
+        {% set items = invoice.itemsDecoded %}
+        {% if items|length > 0 %}
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 1rem;">
+            <thead>
+                <tr style="background: #f8f9fa;">
+                    <th style="padding: .75rem; text-align: left; font-size: .85rem;">Produit</th>
+                    <th style="padding: .75rem; text-align: right; font-size: .85rem;">Qté</th>
+                    <th style="padding: .75rem; text-align: right; font-size: .85rem;">Prix</th>
+                    <th style="padding: .75rem; text-align: right; font-size: .85rem;">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: .75rem;">{{ item.product_name }}</td>
+                    <td style="padding: .75rem; text-align: right;">{{ item.quantity }}</td>
+                    <td style="padding: .75rem; text-align: right;">{{ item.price|number_format(2) }} DT</td>
+                    <td style="padding: .75rem; text-align: right; font-weight: 600;">{{ item.total|number_format(2) }} DT</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3" style="padding: .75rem; text-align: right; font-weight: 700;">Total</td>
+                    <td style="padding: .75rem; text-align: right; font-weight: 700; font-size: 1.1rem; color: #4CAF50;">
+                        {{ invoice.amount|number_format(2) }} {{ invoice.currency }}
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+        {% endif %}
+
+        <div style="background: #e8f5e9; border-radius: 8px; padding: 1rem; font-size: .9rem; color: #2e7d32;">
+            📧 Une facture PDF a été envoyée à <strong>{{ invoice.customerEmail }}</strong>
+        </div>
+    </div>
+
+    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <a href="{{ path('front_marketplace_index') }}" style="background: #4CAF50; color: white; padding: .75rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 500;">
+            🛒 Continuer les achats
+        </a>
+        <a href="{{ path('front_cart_index') }}" style="background: #6c757d; color: white; padding: .75rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 500;">
+            🏠 Retour
+        </a>
+    </div>
+
+</div>
+{% endblock %}

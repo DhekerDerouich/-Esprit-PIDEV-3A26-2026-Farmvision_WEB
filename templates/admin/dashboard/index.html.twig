@@ -1,0 +1,314 @@
+{# templates/admin/dashboard/index.html.twig #}
+{% extends 'admin/base.html.twig' %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block body %}
+<style>
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card-modern {
+        background: linear-gradient(135deg, #1a3a2a 0%, #2d6a4f 100%);
+        border-radius: 20px;
+        padding: 1.5rem;
+        color: white;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .stat-card-modern:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+    }
+
+    .stat-card-modern::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        opacity: 0;
+        transition: opacity 0.5s;
+    }
+
+    .stat-card-modern:hover::before {
+        opacity: 1;
+    }
+
+    .stat-icon-modern {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        opacity: 0.9;
+    }
+
+    .stat-value-modern {
+        font-size: 2.5rem;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .stat-label-modern {
+        font-size: 0.8rem;
+        opacity: 0.8;
+        margin-top: 0.5rem;
+    }
+
+    .stat-sub {
+        margin-top: 0.75rem;
+        font-size: 0.7rem;
+        opacity: 0.7;
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .dashboard-card {
+        background: white;
+        border-radius: 20px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        transition: all 0.3s;
+    }
+
+    .dashboard-card:hover {
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.25rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .card-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #1a3a2a;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card-link {
+        color: #2d6a4f;
+        text-decoration: none;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 2rem;
+        color: #999;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .btn-action {
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-action-primary {
+        background: linear-gradient(135deg, #2d6a4f, #1a3a2a);
+        color: white;
+    }
+
+    .btn-action-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(45,106,79,0.3);
+    }
+
+    .btn-action-secondary {
+        background: #f0f0f0;
+        color: #333;
+    }
+
+    .btn-action-secondary:hover {
+        background: #e0e0e0;
+    }
+
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="stats-grid">
+    <div class="stat-card-modern">
+        <div class="stat-icon-modern">🚜</div>
+        <div class="stat-value-modern">{{ statsEquipements.total|default(0) }}</div>
+        <div class="stat-label-modern">Total équipements</div>
+        <div class="stat-sub">
+            <span>✓ {{ statsEquipements.fonctionnels|default(0) }} fonctionnels</span>
+            <span>🔧 {{ statsEquipements.enMaintenance|default(0) }} maintenance</span>
+            <span>⚠️ {{ statsEquipements.enPanne|default(0) }} panne</span>
+        </div>
+    </div>
+
+    <div class="stat-card-modern">
+        <div class="stat-icon-modern">🛠️</div>
+        <div class="stat-value-modern">{{ statsMaintenances.total|default(0) }}</div>
+        <div class="stat-label-modern">Total maintenances</div>
+        <div class="stat-sub">
+            <span>⏰ {{ statsMaintenances.planifiees|default(0) }} planifiées</span>
+            <span>✅ {{ statsMaintenances.realisees|default(0) }} réalisées</span>
+        </div>
+    </div>
+
+    <div class="stat-card-modern">
+        <div class="stat-icon-modern">💰</div>
+        <div class="stat-value-modern">{{ statsMaintenances.coutTotal|default(0)|number_format(0) }} DT</div>
+        <div class="stat-label-modern">Coût total maintenances</div>
+        <div class="stat-sub">
+            {% set totalMaintenances = statsMaintenances.total|default(0) %}
+            {% set coutTotal = statsMaintenances.coutTotal|default(0) %}
+            {% set coutMoyen = (totalMaintenances > 0) ? (coutTotal / totalMaintenances)|round : 0 %}
+            <span>📊 Coût moyen: {{ coutMoyen|number_format(0) }} DT</span>
+        </div>
+    </div>
+
+    <div class="stat-card-modern">
+        <div class="stat-icon-modern">👥</div>
+        <div class="stat-value-modern">{{ statsUtilisateurs.total|default(0) }}</div>
+        <div class="stat-label-modern">Utilisateurs</div>
+        <div class="stat-sub">
+            <span>👑 {{ statsUtilisateurs.admins|default(0) }} admins</span>
+            <span>📋 {{ statsUtilisateurs.responsables|default(0) }} responsables</span>
+            <span>🌾 {{ statsUtilisateurs.agriculteurs|default(0) }} agriculteurs</span>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-grid">
+    <!-- Maintenances à venir -->
+    <div class="dashboard-card">
+        <div class="card-header">
+            <div class="card-title">
+                <span>📅</span> Maintenances à venir
+            </div>
+            <a href="{{ path('admin_maintenance_index') }}" class="card-link">Voir tout →</a>
+        </div>
+        {% if upcomingMaintenances|length > 0 %}
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                {% for maintenance in upcomingMaintenances %}
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: #f8f9fa; border-radius: 12px;">
+                        <div>
+                            <strong style="color: #1a3a2a;">{{ maintenance.equipement.nom }}</strong>
+                            <p style="font-size: 0.75rem; color: #666; margin-top: 0.25rem;">{{ maintenance.typeMaintenance }}</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 0.8rem; font-weight: 600; color: #2d6a4f;">{{ maintenance.dateMaintenance|date('d/m/Y') }}</div>
+                            {% if maintenance.joursRestants <= 3 %}
+                                <span style="background: #fee2e2; color: #991b1b; padding: 0.2rem 0.5rem; border-radius: 10px; font-size: 0.7rem;">⚠️ Urgent</span>
+                            {% else %}
+                                <span style="font-size: 0.7rem; color: #666;">Dans {{ maintenance.joursRestants }} jours</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div style="font-size: 3rem; opacity: 0.5;">✅</div>
+                <p>Aucune maintenance planifiée</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Derniers équipements -->
+    <div class="dashboard-card">
+        <div class="card-header">
+            <div class="card-title">
+                <span>🆕</span> Derniers équipements ajoutés
+            </div>
+            <a href="{{ path('admin_equipement_index') }}" class="card-link">Voir tout →</a>
+        </div>
+        {% if derniersEquipements|length > 0 %}
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                {% for equipement in derniersEquipements %}
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #f0f0f0;">
+                        <div>
+                            <strong style="color: #1a3a2a;">{{ equipement.nom }}</strong>
+                            <p style="font-size: 0.7rem; color: #666;">{{ equipement.type }}</p>
+                        </div>
+                        <div>
+                            <span style="padding: 0.2rem 0.5rem; border-radius: 10px; font-size: 0.7rem; 
+                                {% if equipement.etat == 'Fonctionnel' %}background: #d1fae5; color: #065f46;
+                                {% elseif equipement.etat == 'En panne' %}background: #fee2e2; color: #991b1b;
+                                {% else %}background: #fed7aa; color: #92400e;{% endif %}">
+                                {{ equipement.etat }}
+                            </span>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div style="font-size: 3rem; opacity: 0.5;">🚜</div>
+                <p>Aucun équipement enregistré</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Actions rapides -->
+<div class="dashboard-card">
+    <div class="card-header">
+        <div class="card-title">
+            <span>⚡</span> Actions rapides
+        </div>
+    </div>
+    <div class="action-buttons">
+        <a href="{{ path('admin_equipement_new') }}" class="btn-action btn-action-primary">
+            🚜 + Ajouter un équipement
+        </a>
+        <a href="{{ path('admin_maintenance_new') }}" class="btn-action btn-action-primary">
+            🛠️ + Planifier maintenance
+        </a>
+        <a href="{{ path('admin_stock_new') }}" class="btn-action btn-action-primary">
+            📦 + Ajouter un produit
+        </a>
+        <a href="{{ path('admin_marketplace_new') }}" class="btn-action btn-action-secondary">
+            🛒 + Mettre en vente
+        </a>
+        <a href="{{ path('admin_user_new') }}" class="btn-action btn-action-secondary">
+            👥 + Ajouter un utilisateur
+        </a>
+    </div>
+</div>
+{% endblock %}

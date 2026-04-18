@@ -1,0 +1,42 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block page_title %}Détail de la dépense{% endblock %}
+
+{% block body %}
+<div class="card fade-in">
+    <div class="card-header">
+        <h3>📄 Détail de la dépense #{{ depense.idDepense }}</h3>
+        <div>
+            <a href="{{ path('admin_depense_edit', {'idDepense': depense.idDepense}) }}" class="btn btn-primary">✏️ Modifier</a>
+            <a href="{{ path('admin_depense_index') }}" class="btn btn-outline">← Retour</a>
+        </div>
+    </div>
+    
+    <table style="width: 100%;">
+        <tr>
+            <th style="width: 200px; background: var(--gray-lighter); padding: 0.75rem;">ID</th>
+            <td style="padding: 0.75rem;">{{ depense.idDepense }}</td>
+        </tr>
+        <tr>
+            <th style="background: var(--gray-lighter); padding: 0.75rem;">Type</th>
+            <td style="padding: 0.75rem;"><span class="badge badge-warning">{{ depense.typeDepense }}</span></td>
+        </tr>
+        <tr>
+            <th style="background: var(--gray-lighter); padding: 0.75rem;">Montant</th>
+            <td style="padding: 0.75rem;" class="text-danger">{{ depense.montant|number_format(2) }} DT</td>
+        </tr>
+        <tr>
+            <th style="background: var(--gray-lighter); padding: 0.75rem;">Date</th>
+            <td style="padding: 0.75rem;">{{ depense.dateDepense|date('d/m/Y') }}</td>
+        </tr>
+        <tr>
+            <th style="background: var(--gray-lighter); padding: 0.75rem;">Description</th>
+            <td style="padding: 0.75rem;">{{ depense.description|default('-') }}</td>
+        </tr>
+        <tr>
+            <th style="background: var(--gray-lighter); padding: 0.75rem;">Créé le</th>
+            <td style="padding: 0.75rem;">{{ depense.createdAt|date('d/m/Y H:i') }}</td>
+        </tr>
+    </table>
+</div>
+{% endblock %}
