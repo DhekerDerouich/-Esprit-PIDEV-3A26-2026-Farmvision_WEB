@@ -23,6 +23,13 @@ class StripeService
         return $this->publicKey;
     }
 
+    public function isConfigured(): bool
+    {
+        return !empty($this->secretKey)
+            && $this->secretKey !== 'your_stripe_secret_key'
+            && str_starts_with($this->secretKey, 'sk_');
+    }
+
     public function createCheckoutSession(array $items, string $successUrl, string $cancelUrl): Session
     {
         $lineItems = [];
@@ -34,21 +41,23 @@ class StripeService
                         'name' => $item['name'],
                         'description' => $item['description'] ?? '',
                     ],
-                    'unit_amount' => (int)($item['price'] * 100), // Stripe utilise les cents
+                    'unit_amount' => (int) round($item['price'] * 100),
                 ],
-                'quantity' => (int)$item['quantity'],
+                'quantity' => (int) $item['quantity'],
             ];
         }
 
+        // Stripe requires {CHECKOUT_SESSION_ID} placeholder in success_url
+        $successUrlWithSession = $successUrl
+            . (str_contains($successUrl, '?') ? '&' : '?')
+            . 'session_id={CHECKOUT_SESSION_ID}';
+
         return Session::create([
             'payment_method_types' => ['card'],
-            'line_items' => $lineItems,
-            'mode' => 'payment',
-            'success_url' => $successUrl,
-            'cancel_url' => $cancelUrl,
-            'metadata' => [
-                'cart_id' => $item['cart_id'] ?? '',
-            ],
+            'line_items'           => $lineItems,
+            'mode'                 => 'payment',
+            'success_url'          => $successUrlWithSession,
+            'cancel_url'           => $cancelUrl,
         ]);
     }
 

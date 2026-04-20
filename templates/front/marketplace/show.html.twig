@@ -45,10 +45,22 @@
         </div>
 
         {% if marketplace.statut == 'En vente' %}
-        <div style="margin-top: 1.5rem; text-align: center;">
-            <button class="btn btn-primary" style="width: 100%;" onclick="alert('Fonctionnalité d\'achat à venir')">
-                🛒 Acheter maintenant
-            </button>
+        <div style="margin-top: 1.5rem;">
+            <form method="post" action="{{ path('front_cart_add', {'id': marketplace.id}) }}">
+                <div style="display: flex; gap: 1rem; align-items: flex-end; margin-bottom: 1rem;">
+                    <div style="flex: 1;">
+                        <label style="display: block; font-size: .85rem; font-weight: 500; margin-bottom: .4rem; color: #555;">Quantité</label>
+                        <input type="number" name="quantity" value="1" min="1" max="{{ marketplace.quantiteEnVente }}"
+                               style="width: 100%; padding: .5rem; border: 1px solid #ddd; border-radius: 8px; font-size: .95rem;">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="padding: .6rem 1.5rem; white-space: nowrap;">
+                        🛒 Ajouter au panier
+                    </button>
+                </div>
+            </form>
+            <a href="{{ path('front_cart_index') }}" class="btn btn-outline" style="width: 100%; justify-content: center;">
+                🛒 Voir mon panier
+            </a>
         </div>
         {% endif %}
     </div>
