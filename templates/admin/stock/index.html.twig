@@ -1,0 +1,154 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block page_title %}Gestion des stocks{% endblock %}
+
+{% block body %}
+<style>
+    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+    .page-header h1 { font-size: 1.5rem; font-weight: 600; margin: 0; }
+    .btn-primary { background: #4CAF50; color: white; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; }
+    .btn-primary:hover { background: #45a049; }
+    .btn-secondary { background: #6c757d; color: white; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; border: none; cursor: pointer; }
+    .filter-card { background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .filter-form { display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap; }
+    .filter-group { flex: 1; min-width: 150px; }
+    .filter-group label { display: block; font-size: 0.85rem; font-weight: 500; color: #666; margin-bottom: 0.25rem; }
+    .filter-group input, .filter-group select { width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem; }
+    .filter-actions { display: flex; gap: 0.5rem; }
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+    .stat-card { background: white; border-radius: 12px; padding: 1rem; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .stat-card .number { font-size: 1.8rem; font-weight: bold; color: #4CAF50; }
+    .stat-card .label { font-size: 0.85rem; color: #666; }
+    .table-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; padding: 1rem; background: #f8f9fa; font-weight: 600; font-size: 0.85rem; color: #666; border-bottom: 1px solid #eee; }
+    td { padding: 1rem; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+    tr:hover { background: #f8f9fa; }
+    .badge { padding: 0.25rem 0.5rem; border-radius: 20px; font-size: 0.75rem; font-weight: 500; }
+    .badge-success { background: #d4edda; color: #155724; }
+    .badge-danger { background: #f8d7da; color: #721c24; }
+    .badge-warning { background: #fff3cd; color: #856404; }
+    .actions { display: flex; gap: 0.5rem; }
+    .btn-icon { background: none; border: none; cursor: pointer; font-size: 1.1rem; padding: 0.25rem; }
+    .btn-edit { color: #ffc107; }
+    .btn-delete { color: #dc3545; }
+    .btn-view { color: #17a2b8; }
+    .flash-success { background: #d4edda; color: #155724; padding: 0.75rem; border-radius: 6px; margin-bottom: 1rem; border: 1px solid #c3e6cb; }
+    .flash-error { background: #f8d7da; color: #721c24; padding: 0.75rem; border-radius: 6px; margin-bottom: 1rem; border: 1px solid #f5c6cb; }
+</style>
+
+{% for message in app.flashes('success') %}
+    <div class="flash-success">{{ message }}</div>
+{% endfor %}
+
+{% for message in app.flashes('error') %}
+    <div class="flash-error">{{ message }}</div>
+{% endfor %}
+
+<div class="page-header">
+    <h1>📦 Gestion des stocks</h1>
+    <a href="{{ path('admin_stock_new') }}" class="btn-primary">+ Ajouter un produit</a>
+</div>
+
+<div class="filter-card">
+    <form method="get" action="{{ path('admin_stock_index') }}" class="filter-form">
+        <div class="filter-group">
+            <label>🔍 Rechercher</label>
+            <input type="text" name="search" value="{{ search }}" placeholder="Nom ou type...">
+        </div>
+        <div class="filter-group">
+            <label>📂 Type</label>
+            <select name="type">
+                <option value="all" {% if selectedType == 'all' %}selected{% endif %}>Tous</option>
+                {% for type in types %}
+                    <option value="{{ type }}" {% if selectedType == type %}selected{% endif %}>{{ type }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>📌 Statut</label>
+            <select name="statut">
+                <option value="all" {% if selectedStatut == 'all' %}selected{% endif %}>Tous</option>
+                <option value="Disponible" {% if selectedStatut == 'Disponible' %}selected{% endif %}>Disponible</option>
+                <option value="Épuisé" {% if selectedStatut == 'Épuisé' %}selected{% endif %}>Épuisé</option>
+            </select>
+        </div>
+        <div class="filter-actions">
+            <button type="submit" class="btn-primary">Rechercher</button>
+            <a href="{{ path('admin_stock_index') }}" class="btn-secondary">Réinitialiser</a>
+        </div>
+    </form>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="number">{{ stats.total }}</div>
+        <div class="label">Total produits</div>
+    </div>
+    <div class="stat-card">
+        <div class="number" style="color: #28a745;">{{ stats.disponibles }}</div>
+        <div class="label">Disponibles</div>
+    </div>
+    <div class="stat-card">
+        <div class="number" style="color: #dc3545;">{{ stats.epuises }}</div>
+        <div class="label">Épuisés</div>
+    </div>
+    <div class="stat-card">
+        <div class="number">{{ stats.valeurTotale|number_format(0) }}</div>
+        <div class="label">Quantité totale</div>
+    </div>
+</div>
+
+<div class="table-card">
+    <table>
+        <thead>
+            <tr>
+                <th>Produit</th>
+                <th>Type</th>
+                <th>Quantité</th>
+                <th>Unité</th>
+                <th>Date expiration</th>
+                <th>Statut</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for stock in stocks %}
+            <tr>
+                <td><strong>{{ stock.nomProduit }}</strong></td>
+                <td>{{ stock.typeProduit ?: '-' }}</td>
+                <td>{{ stock.quantite }}</td>
+                <td>{{ stock.unite ?: '-' }}</td>
+                <td>
+                    {{ stock.dateExpiration ? stock.dateExpiration|date('d/m/Y') : '-' }}
+                    {% if stock.isExpired %}
+                        <span class="badge badge-danger">Expiré</span>
+                    {% elseif stock.joursAvantExpiration <= 30 %}
+                        <span class="badge badge-warning">{{ stock.joursAvantExpiration }}j</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if stock.statut == 'Disponible' %}
+                        <span class="badge badge-success">✓ Disponible</span>
+                    {% else %}
+                        <span class="badge badge-danger">✗ Épuisé</span>
+                    {% endif %}
+                </td>
+                <td class="actions">
+                    <a href="{{ path('admin_stock_show', {'id': stock.id}) }}" class="btn-icon btn-view" title="Voir">👁️</a>
+                    <a href="{{ path('admin_stock_edit', {'id': stock.id}) }}" class="btn-icon btn-edit" title="Modifier">✏️</a>
+                    <form method="post" action="{{ path('admin_stock_delete', {'id': stock.id}) }}" onsubmit="return confirm('Supprimer ?');" style="display: inline;">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ stock.id) }}">
+                        <button type="submit" class="btn-icon btn-delete" title="Supprimer">🗑️</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 2rem;">Aucun stock trouvé</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

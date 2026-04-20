@@ -1,0 +1,154 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block page_title %}Nouveau rapport{% endblock %}
+
+{% block body %}
+<style>
+.form-container {
+    max-width: 700px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.form-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1a3a2a;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: all 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.date-range {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+    cursor: pointer;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary), #059669);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+}
+
+.btn-secondary {
+    background: #f1f5f9;
+    color: #333;
+}
+
+.btn-secondary:hover {
+    background: #e2e8f0;
+}
+</style>
+
+<div class="form-container">
+    <div class="form-title">
+        <i class="fas fa-file-alt"></i> Créer un nouveau rapport
+    </div>
+
+    <form method="POST">
+        <div class="form-group">
+            <label for="titre">Titre du rapport *</label>
+            <input type="text" id="titre" name="titre" required placeholder="Ex: Bilan financier Q1 2026">
+        </div>
+
+        <div class="form-group">
+            <label for="type">Type de rapport *</label>
+            <select id="type" name="type" required>
+                <option value="global">Global (toutes les données)</option>
+                <option value="finance">Finance (revenus/dépenses)</option>
+                <option value="equipement">Équipements</option>
+                <option value="maintenance">Maintenances</option>
+                <option value="utilisateur">Utilisateurs</option>
+            </select>
+        </div>
+
+        <div class="date-range">
+            <div class="form-group">
+                <label for="date_debut">Date début (optionnel)</label>
+                <input type="date" id="date_debut" name="date_debut">
+            </div>
+            <div class="form-group">
+                <label for="date_fin">Date fin (optionnel)</label>
+                <input type="date" id="date_fin" name="date_fin">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="description">Description (optionnel)</label>
+            <textarea id="description" name="description" placeholder="Description du rapport..."></textarea>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-check"></i> Générer le rapport
+            </button>
+            <a href="{{ path('admin_rapport_index') }}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Annuler
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

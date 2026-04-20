@@ -1,0 +1,44 @@
+{% extends 'front/base.html.twig' %}
+
+{% block body %}
+<div class="container" style="padding: 3rem 0; max-width: 800px; margin: 0 auto; padding: 3rem 2rem;">
+    <div style="margin-bottom: 2rem;">
+        <a href="{{ path('front_finance_revenus') }}" class="btn-outline btn" style="text-decoration: none;">← Retour</a>
+    </div>
+
+    <div class="card">
+        <h1 style="font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 1.5rem;">✏️ Modifier le revenu</h1>
+        
+        <form method="post">
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Source du revenu *</label>
+                <select name="source" class="form-control" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px;" required>
+                    <option value="Vente récoltes" {% if revenu.source == 'Vente récoltes' %}selected{% endif %}>🌾 Vente de récoltes</option>
+                    <option value="Vente animaux" {% if revenu.source == 'Vente animaux' %}selected{% endif %}>🐄 Vente d'animaux</option>
+                    <option value="Subventions" {% if revenu.source == 'Subventions' %}selected{% endif %}>💰 Subventions</option>
+                    <option value="Prestations" {% if revenu.source == 'Prestations' %}selected{% endif %}>🚜 Prestations de services</option>
+                    <option value="Location matériel" {% if revenu.source == 'Location matériel' %}selected{% endif %}>📦 Location de matériel</option>
+                    <option value="Autre" {% if revenu.source == 'Autre' %}selected{% endif %}>📋 Autre</option>
+                </select>
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Montant (DT) *</label>
+                <input type="number" name="montant" class="form-control" step="0.01" min="0.01" value="{{ revenu.montant }}" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px;" required>
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Date de revenu *</label>
+                <input type="date" name="date_revenu" class="form-control" value="{{ revenu.dateRevenu|date('Y-m-d') }}" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px;" required>
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Description</label>
+                <textarea name="description" class="form-control" rows="3" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px;">{{ revenu.description }}</textarea>
+            </div>
+            
+            <button type="submit" class="btn-primary" style="padding: 0.75rem 2rem; border: none; border-radius: 8px; cursor: pointer; background: var(--green-mid);">💾 Mettre à jour</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

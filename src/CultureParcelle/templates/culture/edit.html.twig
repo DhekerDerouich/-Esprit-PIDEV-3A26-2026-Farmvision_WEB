@@ -1,0 +1,66 @@
+{% extends 'front/base.html.twig' %}
+
+{% block body %}
+<div class="container" style="padding: 3rem 2rem; max-width: 600px; margin: 0 auto;">
+    <div style="margin-bottom: 2rem;">
+        <a href="{{ path('front_culture_index') }}" class="btn btn-outline">← Retour</a>
+    </div>
+
+    <h1 style="font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 2rem;">✏️ Modifier la culture</h1>
+
+    {% if errors is not empty %}
+    <div style="padding: 1rem; background: #fdecea; border: 1px solid #e74c3c; border-radius: 8px; margin-bottom: 1.5rem;">
+        <p style="color: #e74c3c; font-weight: 600; margin-bottom: 0.5rem;">⚠️ Veuillez corriger les erreurs suivantes :</p>
+        <ul style="margin: 0; padding-left: 1.25rem; color: #e74c3c;">
+            {% for error in errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <form method="post" action="{{ path('front_culture_edit', {'idCulture': culture.idCulture}) }}">
+            <div style="margin-bottom: 1.25rem;">
+                <label style="display: block; margin-bottom: 0.5rem;">Nom de la culture *</label>
+                <input type="text" name="nomCulture" value="{{ culture.nomCulture }}"
+                    style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid {{ errors.nomCulture is defined ? '#e74c3c' : 'var(--border)' }}; background: var(--bg-card); color: var(--text);">
+                {% if errors.nomCulture is defined %}
+                    <p style="color: #e74c3c; font-size: 0.8rem; margin-top: 0.25rem;">{{ errors.nomCulture }}</p>
+                {% endif %}
+            </div>
+
+            <div style="margin-bottom: 1.25rem;">
+                <label style="display: block; margin-bottom: 0.5rem;">Type de culture *</label>
+                <input type="text" name="typeCulture" value="{{ culture.typeCulture }}"
+                    style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid {{ errors.typeCulture is defined ? '#e74c3c' : 'var(--border)' }}; background: var(--bg-card); color: var(--text);">
+                {% if errors.typeCulture is defined %}
+                    <p style="color: #e74c3c; font-size: 0.8rem; margin-top: 0.25rem;">{{ errors.typeCulture }}</p>
+                {% endif %}
+            </div>
+
+            <div style="margin-bottom: 1.25rem;">
+                <label style="display: block; margin-bottom: 0.5rem;">Date de semis *</label>
+                <input type="date" name="dateSemis" value="{{ culture.dateSemis ? culture.dateSemis|date('Y-m-d') : '' }}"
+                    style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid {{ errors.dateSemis is defined ? '#e74c3c' : 'var(--border)' }}; background: var(--bg-card); color: var(--text);">
+                {% if errors.dateSemis is defined %}
+                    <p style="color: #e74c3c; font-size: 0.8rem; margin-top: 0.25rem;">{{ errors.dateSemis }}</p>
+                {% endif %}
+            </div>
+
+            <div style="margin-bottom: 1.75rem;">
+                <label style="display: block; margin-bottom: 0.5rem;">Date de récolte <span style="color: var(--text-muted); font-size: 0.8rem;">(optionnelle)</span></label>
+                <input type="date" name="dateRecolte" value="{{ culture.dateRecolte ? culture.dateRecolte|date('Y-m-d') : '' }}"
+                    style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid {{ errors.dateRecolte is defined ? '#e74c3c' : 'var(--border)' }}; background: var(--bg-card); color: var(--text);">
+                {% if errors.dateRecolte is defined %}
+                    <p style="color: #e74c3c; font-size: 0.8rem; margin-top: 0.25rem;">{{ errors.dateRecolte }}</p>
+                {% endif %}
+            </div>
+
+            <button type="submit" style="width: 100%; background: var(--green-mid); color: white; padding: 0.75rem; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem;">
+                💾 Enregistrer les modifications
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,174 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block page_title %}Gestion des maintenances{% endblock %}
+
+{% block body %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h1 style="font-size: 1.5rem;">Gestion des maintenances</h1>
+    <a href="{{ path('admin_maintenance_new') }}" class="btn btn-primary">+ Planifier une maintenance</a>
+</div>
+
+<!-- FORMULAIRE DE RECHERCHE -->
+<div class="card">
+    <form method="get" action="{{ path('admin_maintenance_index') }}">
+        <div style="display: grid; grid-template-columns: 1fr auto auto auto; gap: 1rem; align-items: end;">
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">🔍 Rechercher</label>
+                <input type="text" name="search" value="{{ search|default('') }}" placeholder="Description ou équipement..." class="form-control">
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">🛠️ Type</label>
+                <select name="type" class="form-control">
+                    <option value="all" {% if selectedType|default('all') == 'all' %}selected{% endif %}>Tous</option>
+                    <option value="Préventive" {% if selectedType|default('all') == 'Préventive' %}selected{% endif %}>Préventive</option>
+                    <option value="Corrective" {% if selectedType|default('all') == 'Corrective' %}selected{% endif %}>Corrective</option>
+                </select>
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">📌 Statut</label>
+                <select name="statut" class="form-control">
+                    <option value="all" {% if selectedStatut|default('all') == 'all' %}selected{% endif %}>Tous</option>
+                    <option value="Planifiée" {% if selectedStatut|default('all') == 'Planifiée' %}selected{% endif %}>Planifiée</option>
+                    <option value="Réalisée" {% if selectedStatut|default('all') == 'Réalisée' %}selected{% endif %}>Réalisée</option>
+                </select>
+            </div>
+            <div>
+                <button type="submit" class="btn btn-primary">Rechercher</button>
+                <a href="{{ path('admin_maintenance_index') }}" class="btn" style="background: var(--bg-panel);">Réinitialiser</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Statistiques -->
+<div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 1rem; margin-bottom: 2rem;">
+    <div class="card">
+        <div style="font-size: 0.7rem; color: var(--text-muted);">Total</div>
+        <div style="font-size: 1.75rem; font-weight: 600;">{{ stats.total|default(0) }}</div>
+    </div>
+    <div class="card">
+        <div style="font-size: 0.7rem; color: var(--text-muted);">Planifiées</div>
+        <div style="font-size: 1.75rem; font-weight: 600; color: var(--gold);">{{ stats.planifiees|default(0) }}</div>
+    </div>
+    <div class="card">
+        <div style="font-size: 0.7rem; color: var(--text-muted);">Réalisées</div>
+        <div style="font-size: 1.75rem; font-weight: 600; color: var(--green);">{{ stats.realisees|default(0) }}</div>
+    </div>
+    <div class="card">
+        <div style="font-size: 0.7rem; color: var(--text-muted);">Préventives</div>
+        <div style="font-size: 1.75rem; font-weight: 600;">{{ stats.preventives|default(0) }}</div>
+    </div>
+    <div class="card">
+        <div style="font-size: 0.7rem; color: var(--text-muted);">Correctives</div>
+        <div style="font-size: 1.75rem; font-weight: 600;">{{ stats.correctives|default(0) }}</div>
+    </div>
+    <div class="card">
+        <div style="font-size: 0.7rem; color: var(--text-muted);">Coût total</div>
+        <div style="font-size: 1.75rem; font-weight: 600;">{{ stats.coutTotal|default(0)|number_format(2) }} DT</div>
+    </div>
+</div>
+
+<!-- Résultats de recherche -->
+{% if search|default('') != '' or selectedType|default('all') != 'all' or selectedStatut|default('all') != 'all' %}
+    <div style="margin-bottom: 1rem; padding: 0.5rem 1rem; background: var(--green-glow); border-radius: 8px;">
+        🔍 Résultats pour : 
+        {% if search|default('') != '' %} "{{ search }}" {% endif %}
+        {% if selectedType|default('all') != 'all' %} | Type: {{ selectedType }} {% endif %}
+        {% if selectedStatut|default('all') != 'all' %} | Statut: {{ selectedStatut }} {% endif %}
+        ({{ maintenances|length }} maintenance(s) trouvée(s))
+    </div>
+{% endif %}
+
+<!-- Tableau des maintenances -->
+<div class="card" style="overflow-x: auto;">
+    <table>
+        <thead>
+            <tr>
+                <th>Équipement</th>
+                <th>Type</th>
+                <th>Description</th>
+                <th>Date</th>
+                <th>Coût</th>
+                <th>Statut</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for maintenance in maintenances %}
+            <tr>
+                <td><strong>{{ maintenance.equipement.nom }}</strong></td>
+                <td>
+                    {% if maintenance.typeMaintenance == 'Préventive' %}
+                        <span class="badge badge-success">🛡️ Préventive</span>
+                    {% else %}
+                        <span class="badge badge-danger">🔧 Corrective</span>
+                    {% endif %}
+                </td>
+                <td>{{ maintenance.description|slice(0, 50) }}{% if maintenance.description|length > 50 %}...{% endif %}</td>
+                <td>
+                    {{ maintenance.dateMaintenance|date('d/m/Y') }}
+                    {% if maintenance.statut == 'Planifiée' and maintenance.dateMaintenance < date() %}
+                        <span class="badge badge-danger" style="margin-left: 0.5rem;">Dépassée</span>
+                    {% elseif maintenance.statut == 'Planifiée' and maintenance.joursRestants <= 3 %}
+                        <span class="badge badge-warning" style="margin-left: 0.5rem;">Bientôt</span>
+                    {% endif %}
+                </td>
+                <td>{{ maintenance.cout|number_format(2) }} DT</td>
+                <td>
+                    {% if maintenance.statut == 'Réalisée' %}
+                        <span class="badge badge-success">✓ Réalisée</span>
+                    {% else %}
+                        <span class="badge badge-warning">⏰ Planifiée</span>
+                    {% endif %}
+                </td>
+                <td style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <a href="{{ path('admin_maintenance_show', {'id': maintenance.id}) }}" class="btn" style="background: var(--green-dim); color: var(--green); padding: 0.25rem 0.75rem;" title="Voir">👁️</a>
+                    <a href="{{ path('admin_maintenance_edit', {'id': maintenance.id}) }}" class="btn" style="background: var(--gold-dim); color: var(--gold); padding: 0.25rem 0.75rem;" title="Modifier">✏️</a>
+                    {% if maintenance.statut == 'Planifiée' %}
+                        <form method="post" action="{{ path('admin_maintenance_complete', {'id': maintenance.id}) }}" onsubmit="return confirm('Marquer cette maintenance comme réalisée ?');" style="display: inline;">
+                            <input type="hidden" name="_token" value="{{ csrf_token('complete' ~ maintenance.id) }}">
+                            <button type="submit" class="btn" style="background: var(--green-dim); color: var(--green); padding: 0.25rem 0.75rem;" title="Marquer comme réalisée">✓</button>
+                        </form>
+                    {% endif %}
+                    <form method="post" action="{{ path('admin_maintenance_delete', {'id': maintenance.id}) }}" onsubmit="return confirm('Supprimer cette maintenance ?');" style="display: inline;">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ maintenance.id) }}">
+                        <button type="submit" class="btn" style="background: var(--red-dim); color: var(--red); padding: 0.25rem 0.75rem;" title="Supprimer">🗑️</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 3rem;">
+                        📭 Aucune maintenance trouvée
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- JavaScript pour la confirmation et les filtres -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Confirmation avant suppression
+    const deleteForms = document.querySelectorAll('form[action*="delete"]');
+    deleteForms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            if (!confirm('⚠️ Êtes-vous sûr de vouloir supprimer cette maintenance ? Cette action est irréversible.')) {
+                e.preventDefault();
+            }
+        });
+    });
+    
+    // Confirmation avant complétion
+    const completeForms = document.querySelectorAll('form[action*="complete"]');
+    completeForms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            if (!confirm('✓ Marquer cette maintenance comme réalisée ?')) {
+                e.preventDefault();
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

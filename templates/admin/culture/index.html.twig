@@ -1,0 +1,108 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block page_title %}Cultures{% endblock %}
+
+{% block body %}
+<div class="fade-in">
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">🌾</div>
+            <div class="stat-value">{{ cultures|length }}</div>
+            <div class="stat-label">Total des cultures</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🌱</div>
+            <div class="stat-value">{{ cultures|filter(c => c.dateRecolte is null or c.dateRecolte > date())|length }}</div>
+            <div class="stat-label">En cours / À venir</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-value">{{ cultures|filter(c => c.dateRecolte is not null and c.dateRecolte <= date())|length }}</div>
+            <div class="stat-label">Récoltées</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3>🔍 Recherche et filtres</h3>
+            <a href="{{ path('admin_culture_new') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Ajouter une culture
+            </a>
+        </div>
+        <form method="get" class="search-bar">
+            <input type="text" name="search" class="search-input" value="{{ app.request.query.get('search') }}" placeholder="Rechercher par nom ou type...">
+            
+            <select name="type" class="search-input">
+                <option value="">Tous les types</option>
+                <option value="Céréale" {{ app.request.query.get('type') == 'Céréale' ? 'selected' : '' }}>Céréale</option>
+                <option value="Légumineuse" {{ app.request.query.get('type') == 'Légumineuse' ? 'selected' : '' }}>Légumineuse</option>
+                <option value="Fruit" {{ app.request.query.get('type') == 'Fruit' ? 'selected' : '' }}>Fruit</option>
+                <option value="Légume" {{ app.request.query.get('type') == 'Légume' ? 'selected' : '' }}>Légume</option>
+            </select>
+            
+            <select name="statut" class="search-input">
+                <option value="">Tous les statuts</option>
+                <option value="en_cours" {{ app.request.query.get('statut') == 'en_cours' ? 'selected' : '' }}>En cours</option>
+                <option value="a_venir" {{ app.request.query.get('statut') == 'a_venir' ? 'selected' : '' }}>Récolte prévue</option>
+                <option value="recoltee" {{ app.request.query.get('statut') == 'recoltee' ? 'selected' : '' }}>Récoltée</option>
+            </select>
+            
+            <button type="submit" class="btn btn-primary">🔍 Filtrer</button>
+            <a href="{{ path('admin_culture_index') }}" class="btn btn-outline">🔄 Réinitialiser</a>
+        </form>
+    </div>
+
+    <div class="card">
+        <h3>📋 Liste des cultures</h3>
+        
+        {% if cultures is empty %}
+            <p style="text-align: center; color: var(--gray); padding: 2rem;">Aucune culture enregistrée</p>
+        {% else %}
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Type</th>
+                        <th>Date semis</th>
+                        <th>Date récolte</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for culture in cultures %}
+                    <tr>
+                        <td><strong>{{ culture.nomCulture }}</strong></td>
+                        <td><span class="badge badge-info">{{ culture.typeCulture }}</span></td>
+                        <td>{{ culture.dateSemis ? culture.dateSemis|date('d/m/Y') : '-' }}</td>
+                        <td>{{ culture.dateRecolte ? culture.dateRecolte|date('d/m/Y') : '-' }}</td>
+                        <td>
+                            {% if culture.dateRecolte and culture.dateRecolte <= date() %}
+                                <span class="badge badge-success">✅ Récoltée</span>
+                            {% elseif culture.dateRecolte and culture.dateRecolte > date() %}
+                                <span class="badge badge-info">📅 Récolte prévue</span>
+                            {% else %}
+                                <span class="badge badge-warning">🌱 En cours</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ path('admin_culture_show', {idCulture: culture.idCulture}) }}" class="btn btn-sm btn-outline" title="Voir">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{{ path('admin_culture_edit', {idCulture: culture.idCulture}) }}" class="btn btn-sm btn-outline" title="Modifier">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form method="post" action="{{ path('admin_culture_delete', {idCulture: culture.idCulture}) }}" style="display: inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette culture ?');">
+                                <button type="submit" class="btn btn-sm btn-outline" style="color: var(--danger); border-color: var(--danger);" title="Supprimer">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

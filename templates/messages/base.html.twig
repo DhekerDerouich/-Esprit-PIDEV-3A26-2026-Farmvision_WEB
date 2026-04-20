@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}FarmVision - Messages{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/farmvision.css') }}">
+    <style>
+        :root {
+            --green-deep: #1a3a2a;
+            --green-mid: #2d6a4f;
+            --green-light: #52b788;
+            --green-pale: #b7e4c7;
+            --green-mist: #d8f3dc;
+            --cream: #faf7f2;
+            --text: #1a1a18;
+            --text-muted: #5a6b5e;
+            --gold: #c8a84b;
+            --border: rgba(45, 106, 79, 0.15);
+        }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: linear-gradient(135deg, var(--green-mist) 0%, var(--cream) 100%);
+            margin: 0;
+            min-height: 100vh;
+        }
+        .msg-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .msg-header {
+            background: linear-gradient(135deg, var(--green-deep) 0%, var(--green-mid) 100%);
+            border-radius: 16px;
+            padding: 1.5rem 2rem;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 20px rgba(45, 106, 79, 0.2);
+        }
+        .msg-header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            margin: 0;
+        }
+        .msg-btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .msg-btn-primary {
+            background: var(--green-light);
+            color: white;
+        }
+        .msg-btn-primary:hover {
+            background: var(--green-mid);
+        }
+        .msg-btn-secondary {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+        .msg-btn-secondary:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        .msg-list {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+        .msg-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            text-decoration: none;
+            color: var(--text);
+            transition: background 0.2s;
+        }
+        .msg-item:hover {
+            background: var(--green-mist);
+        }
+        .msg-item:last-child {
+            border-bottom: none;
+        }
+        .msg-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--green-light);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-right: 1rem;
+            overflow: hidden;
+        }
+        .msg-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .msg-info {
+            flex: 1;
+        }
+        .msg-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        .msg-preview {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+        .msg-time {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+        .msg-empty {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+        }
+        .msg-form {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+        .msg-label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+        .msg-select, .msg-input, .msg-textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+            margin-bottom: 1rem;
+            transition: border-color 0.2s;
+        }
+        .msg-select:focus, .msg-input:focus, .msg-textarea:focus {
+            outline: none;
+            border-color: var(--green-light);
+        }
+        .msg-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        .msg-actions {
+            display: flex;
+            gap: 1rem;
+        }
+        .msg-chat {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            max-height: 500px;
+            display: flex;
+            flex-direction: column;
+        }
+        .msg-chat-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+        }
+        .msg-chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            max-height: 400px;
+        }
+        .msg-bubble {
+            max-width: 70%;
+            padding: 0.75rem 1rem;
+            border-radius: 16px;
+            margin-bottom: 0.75rem;
+        }
+        .msg-bubble-sent {
+            background: var(--green-light);
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+        .msg-bubble-received {
+            background: #f1f1f1;
+            border-bottom-left-radius: 4px;
+        }
+        .msg-bubble-header {
+            font-size: 0.75rem;
+            opacity: 0.8;
+            margin-bottom: 0.25rem;
+        }
+        .msg-bubble-time {
+            font-size: 0.7rem;
+            opacity: 0.6;
+            text-align: right;
+        }
+        .msg-chat-form {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 1rem;
+        }
+        .msg-chat-form input {
+            flex: 1;
+        }
+        .alert-error {
+            background: #fee;
+            color: #c00;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+{% for label, messages in app.flashes %}
+    {% for message in messages %}
+        <div class="alert-{{ label }}" style="background: var(--green-mist); color: var(--green-deep); padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem;">{{ message }}</div>
+    {% endfor %}
+{% endfor %}
+
+{% block body %}{% endblock %}
+</body>
+</html>

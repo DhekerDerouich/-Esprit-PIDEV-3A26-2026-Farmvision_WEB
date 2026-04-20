@@ -1,0 +1,263 @@
+{% extends 'front/base.html.twig' %}
+
+{% block body %}
+<style>
+    .edit-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 3rem 2rem;
+    }
+    
+    .edit-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: var(--green-deep);
+    }
+    
+    .form-group label .required {
+        color: #e05c5c;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        transition: all 0.3s;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: var(--green-mid);
+        box-shadow: 0 0 0 3px rgba(45,106,79,0.1);
+    }
+    
+    .form-control.error {
+        border-color: #e05c5c;
+        background: #fff5f5;
+    }
+    
+    .error-message {
+        color: #e05c5c;
+        font-size: 0.75rem;
+        margin-top: 0.25rem;
+        display: block;
+    }
+    
+    .success-message {
+        color: #10b981;
+        font-size: 0.75rem;
+        margin-top: 0.25rem;
+        display: block;
+    }
+    
+    .input-hint {
+        color: #94a3b8;
+        font-size: 0.7rem;
+        margin-top: 0.25rem;
+        display: block;
+    }
+    
+    .btn-save {
+        background: linear-gradient(135deg, var(--green-mid), var(--green-deep));
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        width: 100%;
+        transition: all 0.3s;
+    }
+    
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(45,106,79,0.3);
+    }
+
+    .photo-section {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        border-radius: 16px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+    }
+
+    .photo-preview {
+        width: 84px;
+        height: 84px;
+        border-radius: 50%;
+        overflow: hidden;
+        background: linear-gradient(135deg, var(--green-mid), var(--green-deep));
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .photo-input-wrap {
+        flex: 1;
+    }
+    
+    .password-section {
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid #e2e8f0;
+    }
+    
+    .password-section h4 {
+        margin-bottom: 1rem;
+        color: var(--green-deep);
+    }
+</style>
+
+<div class="edit-container">
+    <div class="edit-card">
+        <h1 style="font-size: 1.8rem; margin-bottom: 0.5rem;">✏️ Modifier mon profil</h1>
+        <p style="color: #666; margin-bottom: 2rem;">Mettez à jour vos informations personnelles</p>
+        
+        <form method="post" enctype="multipart/form-data" novalidate>
+            <div class="photo-section">
+                {{ include('profile/_avatar.html.twig', {
+                    user: user,
+                    wrapperClass: 'photo-preview',
+                    fallbackText: user.prenom|first ~ user.nom|first,
+                    alt: 'Photo de profil de ' ~ user.prenom ~ ' ' ~ user.nom
+                }) }}
+
+<div class="photo-input-wrap">
+                    <label>Photo de profil</label>
+                    <input type="file" name="photo_profil" accept="image/png,image/jpeg,image/webp,image/gif" class="form-control {% if errors.photo_profil is defined %}error{% endif %}">
+                    {% if errors.photo_profil is defined %}
+                        <span class="error-message">{{ errors.photo_profil }}</span>
+                    {% endif %}
+                    <span class="input-hint">Laissez vide pour avatar auto • 🖼️ JPG, PNG, WEBP ou GIF, 2 Mo max</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Nom <span class="required">*</span></label>
+                <input type="text" name="nom" value="{{ user.nom }}" 
+                       class="form-control {% if errors.nom is defined %}error{% endif %}">
+                {% if errors.nom is defined %}
+                    <span class="error-message">{{ errors.nom }}</span>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label>Prénom <span class="required">*</span></label>
+                <input type="text" name="prenom" value="{{ user.prenom }}" 
+                       class="form-control {% if errors.prenom is defined %}error{% endif %}">
+                {% if errors.prenom is defined %}
+                    <span class="error-message">{{ errors.prenom }}</span>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label>Email <span class="required">*</span></label>
+                <input type="email" name="email" value="{{ user.email }}" 
+                       class="form-control {% if errors.email is defined %}error{% endif %}">
+                {% if errors.email is defined %}
+                    <span class="error-message">{{ errors.email }}</span>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label>Téléphone</label>
+                <input type="tel" name="telephone" value="{{ user.telephone }}" 
+                       class="form-control {% if errors.telephone is defined %}error{% endif %}" 
+                       placeholder="12345678">
+                {% if errors.telephone is defined %}
+                    <span class="error-message">{{ errors.telephone }}</span>
+                {% endif %}
+                <span class="input-hint">📱 8 chiffres</span>
+            </div>
+            
+            <div class="form-group">
+                <label>Adresse</label>
+                <input type="text" name="adresse" value="{{ user.adresse }}" 
+                       class="form-control {% if errors.adresse is defined %}error{% endif %}" 
+                       placeholder="Votre adresse">
+                {% if errors.adresse is defined %}
+                    <span class="error-message">{{ errors.adresse }}</span>
+                {% endif %}
+            </div>
+            
+            <!-- Section changement de mot de passe -->
+            <div class="password-section">
+                <h4>🔐 Changer mon mot de passe</h4>
+                {% if hasLocalPassword %}
+                    <p style="font-size: 0.8rem; color: #666; margin-bottom: 1rem;">Laissez vide si vous ne souhaitez pas modifier</p>
+
+                    <div class="form-group">
+                        <label>Mot de passe actuel</label>
+                        <input type="password" name="current_password" 
+                               class="form-control {% if errors.current_password is defined %}error{% endif %}" 
+                               placeholder="••••••••">
+                        {% if errors.current_password is defined %}
+                            <span class="error-message">{{ errors.current_password }}</span>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <p style="font-size: 0.8rem; color: #666; margin-bottom: 1rem;">Votre compte est connecté via Google. Vous pouvez définir un mot de passe local sans saisir d'ancien mot de passe.</p>
+                {% endif %}
+                
+                <div class="form-group">
+                    <label>Nouveau mot de passe</label>
+                    <input type="password" name="new_password" 
+                           class="form-control {% if errors.new_password is defined %}error{% endif %}" 
+                           placeholder="••••••••">
+                    {% if errors.new_password is defined %}
+                        <span class="error-message">{{ errors.new_password }}</span>
+                    {% endif %}
+                    <span class="input-hint">🔒 Minimum 6 caractères (majuscule, minuscule, chiffre)</span>
+                </div>
+                
+                <div class="form-group">
+                    <label>Confirmer le nouveau mot de passe</label>
+                    <input type="password" name="confirm_password" 
+                           class="form-control {% if errors.confirm_password is defined %}error{% endif %}" 
+                           placeholder="••••••••">
+                    {% if errors.confirm_password is defined %}
+                        <span class="error-message">{{ errors.confirm_password }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="form-group" style="background: var(--green-pale); padding: 1rem; border-radius: 8px;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                    <input type="checkbox" name="two_factor_enabled" value="1" {% if user.twoFactorEnabled %}checked{% endif %}>
+                    <span>🔐 Activer l'authentification à deux facteurs (2FA)</span>
+                </label>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">
+                    Un code de vérification sera envoyé par email lors de chaque connexion.
+                </p>
+            </div>
+            
+            <button type="submit" class="btn-save">💾 Enregistrer les modifications</button>
+            
+            <div style="text-align: center; margin-top: 1.5rem;">
+                <a href="{{ path('profile_show') }}" style="color: var(--green-mid); text-decoration: none;">← Annuler et retourner au profil</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,162 @@
+{# templates/admin/maintenance/new.html.twig #}
+{% extends 'admin/base.html.twig' %}
+
+{% block body %}
+<div style="margin-bottom: 2rem;">
+    <a href="{{ path('admin_maintenance_index') }}" class="btn" style="background: var(--bg-panel);">← Retour</a>
+</div>
+
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <h1 style="font-size: 1.5rem; margin-bottom: 1.5rem;">Planifier une maintenance</h1>
+    
+    {# Affichage des erreurs de validation PHP #}
+    {% if errors is defined and errors|length > 0 %}
+        <div style="background: var(--red-dim); border: 1px solid var(--red); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+            <strong style="color: var(--red);">❌ Veuillez corriger les erreurs suivantes :</strong>
+            <ul style="margin-top: 0.5rem; margin-left: 1.5rem; color: var(--red);">
+                {% for field, error in errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+    
+    <form method="post">
+        <!-- Équipement -->
+        <div class="form-group" style="margin-bottom: 1rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
+                🔧 Équipement <span style="color: var(--red);">*</span>
+            </label>
+            <select name="equipement_id" class="form-control {% if errors.equipement_id is defined %}error{% endif %}" style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);">
+                <option value="">-- Sélectionner un équipement --</option>
+                {% for equipement in equipements %}
+                    <option value="{{ equipement.id }}" 
+                        {% if maintenance.equipement is defined and maintenance.equipement and maintenance.equipement.id == equipement.id %}
+                            selected
+                        {% elseif old.equipement_id is defined and old.equipement_id == equipement.id %}
+                            selected
+                        {% endif %}>
+                        {{ equipement.nom }} ({{ equipement.type }}) - {{ equipement.etat }}
+                    </option>
+                {% endfor %}
+            </select>
+            {% if errors.equipement_id is defined %}
+                <small style="color: var(--red); display: block; margin-top: 0.25rem;">❌ {{ errors.equipement_id }}</small>
+            {% endif %}
+        </div>
+        
+        <!-- Type de maintenance -->
+        <div class="form-group" style="margin-bottom: 1rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
+                🛠️ Type de maintenance <span style="color: var(--red);">*</span>
+            </label>
+            <select name="type_maintenance" class="form-control {% if errors.type_maintenance is defined %}error{% endif %}" style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);">
+                <option value="Préventive" 
+                    {% if maintenance.typeMaintenance is defined and maintenance.typeMaintenance == 'Préventive' %}
+                        selected
+                    {% elseif old.type_maintenance is defined and old.type_maintenance == 'Préventive' %}
+                        selected
+                    {% endif %}>
+                    🛡️ Préventive
+                </option>
+                <option value="Corrective" 
+                    {% if maintenance.typeMaintenance is defined and maintenance.typeMaintenance == 'Corrective' %}
+                        selected
+                    {% elseif old.type_maintenance is defined and old.type_maintenance == 'Corrective' %}
+                        selected
+                    {% endif %}>
+                    🔧 Corrective
+                </option>
+            </select>
+            {% if errors.type_maintenance is defined %}
+                <small style="color: var(--red); display: block; margin-top: 0.25rem;">❌ {{ errors.type_maintenance }}</small>
+            {% endif %}
+        </div>
+        
+        <!-- Description -->
+        <div class="form-group" style="margin-bottom: 1rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">📝 Description</label>
+            <textarea name="description" class="form-control {% if errors.description is defined %}error{% endif %}" rows="4" style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);">{% if maintenance.description is defined %}{{ maintenance.description }}{% elseif old.description is defined %}{{ old.description }}{% endif %}</textarea>
+            {% if errors.description is defined %}
+                <small style="color: var(--red); display: block; margin-top: 0.25rem;">❌ {{ errors.description }}</small>
+            {% else %}
+                <small style="color: var(--text-muted); display: block; margin-top: 0.25rem;">Maximum 1000 caractères</small>
+            {% endif %}
+        </div>
+        
+        <!-- Date de maintenance -->
+        <div class="form-group" style="margin-bottom: 1rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
+                📅 Date de maintenance <span style="color: var(--red);">*</span>
+            </label>
+            <input type="date" name="date_maintenance" class="form-control {% if errors.date_maintenance is defined %}error{% endif %}" style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);"
+                value="{% if maintenance.dateMaintenance is defined and maintenance.dateMaintenance %}{{ maintenance.dateMaintenance|date('Y-m-d') }}{% elseif old.date_maintenance is defined %}{{ old.date_maintenance }}{% endif %}">
+            {% if errors.date_maintenance is defined %}
+                <small style="color: var(--red); display: block; margin-top: 0.25rem;">❌ {{ errors.date_maintenance }}</small>
+            {% else %}
+                <small style="color: var(--text-muted); display: block; margin-top: 0.25rem;">Pour une maintenance planifiée, la date doit être aujourd'hui ou dans le futur</small>
+            {% endif %}
+        </div>
+        
+        <!-- Coût -->
+        <div class="form-group" style="margin-bottom: 1rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">💰 Coût (DT)</label>
+            <input type="number" step="0.01" name="cout" class="form-control {% if errors.cout is defined %}error{% endif %}" style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);"
+                value="{% if maintenance.cout is defined %}{{ maintenance.cout }}{% elseif old.cout is defined %}{{ old.cout }}{% endif %}" 
+                placeholder="0.00">
+            {% if errors.cout is defined %}
+                <small style="color: var(--red); display: block; margin-top: 0.25rem;">❌ {{ errors.cout }}</small>
+            {% else %}
+                <small style="color: var(--text-muted); display: block; margin-top: 0.25rem;">Maximum 100 000 DT</small>
+            {% endif %}
+        </div>
+        
+        <!-- Statut -->
+        <div class="form-group" style="margin-bottom: 1rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
+                📌 Statut <span style="color: var(--red);">*</span>
+            </label>
+            <select name="statut" class="form-control {% if errors.statut is defined %}error{% endif %}" style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);">
+                <option value="Planifiée" 
+                    {% if maintenance.statut is defined and maintenance.statut == 'Planifiée' %}
+                        selected
+                    {% elseif old.statut is defined and old.statut == 'Planifiée' %}
+                        selected
+                    {% else %}
+                        selected
+                    {% endif %}>
+                    ⏰ Planifiée
+                </option>
+                <option value="Réalisée" 
+                    {% if maintenance.statut is defined and maintenance.statut == 'Réalisée' %}
+                        selected
+                    {% elseif old.statut is defined and old.statut == 'Réalisée' %}
+                        selected
+                    {% endif %}>
+                    ✅ Réalisée
+                </option>
+            </select>
+            {% if errors.statut is defined %}
+                <small style="color: var(--red); display: block; margin-top: 0.25rem;">❌ {{ errors.statut }}</small>
+            {% endif %}
+        </div>
+        
+        <hr style="border-color: var(--border); margin: 1.5rem 0;">
+        
+        <div style="display: flex; gap: 1rem; margin-top: 1.5rem; justify-content: flex-end;">
+            <a href="{{ path('admin_maintenance_index') }}" class="btn" style="background: var(--bg-panel);">Annuler</a>
+            <button type="submit" class="btn btn-primary">💾 Planifier</button>
+        </div>
+    </form>
+</div>
+
+<style>
+    .error {
+        border-color: var(--red) !important;
+    }
+    .form-control:focus {
+        outline: none;
+        border-color: var(--green);
+    }
+</style>
+{% endblock %}

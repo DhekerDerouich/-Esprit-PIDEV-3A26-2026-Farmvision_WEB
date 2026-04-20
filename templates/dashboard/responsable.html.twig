@@ -1,0 +1,184 @@
+{% extends 'front/base.html.twig' %}
+
+{% block body %}
+<style>
+    .dash-wrap { max-width: 1100px; margin: 0 auto; padding: 3rem 2rem; }
+
+    .dash-hero {
+        background: linear-gradient(135deg, #1a3a2a 0%, #2d6a4f 100%);
+        border-radius: 20px;
+        padding: 2.5rem 3rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2.5rem;
+        color: white;
+    }
+    .dash-hero-left h1 { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; margin-bottom: 0.4rem; }
+    .dash-hero-left p { opacity: 0.8; font-size: 0.95rem; }
+    .dash-hero-avatar {
+        width: 56px; height: 56px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 50%;
+        overflow: hidden;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.5rem; font-weight: 700;
+        border: 2px solid rgba(255,255,255,0.4);
+    }
+
+    .dash-section-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 1rem; }
+
+    .dash-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-bottom: 2.5rem; }
+
+    .dash-card {
+        background: #fff; border-radius: 16px; border: 1px solid #e8f0eb;
+        box-shadow: 0 2px 16px rgba(45,106,79,0.06); overflow: hidden;
+        transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column;
+    }
+    .dash-card:hover { transform: translateY(-3px); box-shadow: 0 10px 36px rgba(45,106,79,0.13); }
+
+    .dash-card-header { padding: 1.5rem 1.5rem 1rem; display: flex; align-items: center; gap: 1rem; }
+    .dash-card-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; }
+    .icon-green { background: var(--green-mist); }
+    .icon-gold  { background: #fef9ec; }
+    .icon-earth { background: #e8f5e9; }
+    .dash-card-header h3 { font-size: 1rem; font-weight: 700; color: var(--green-deep); margin: 0; }
+    .dash-card-header p  { font-size: 0.8rem; color: var(--text-muted); margin: 0.2rem 0 0; }
+
+    .dash-divider { height: 1px; background: #f0f4f2; margin: 0 1.5rem; }
+    .dash-card-body { padding: 1rem 1.5rem 1.5rem; flex: 1; }
+    .dash-card-body .desc { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.5; }
+
+    .dash-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+    .dash-btn-primary { display: inline-flex; align-items: center; gap: 0.4rem; background: var(--green-mid); color: #fff; padding: 0.5rem 1.1rem; border-radius: 8px; text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: background 0.2s; white-space: nowrap; }
+    .dash-btn-primary:hover { background: var(--green-deep); }
+    .dash-btn-outline { display: inline-flex; align-items: center; gap: 0.4rem; background: transparent; color: var(--green-mid); border: 1.5px solid var(--green-mid); padding: 0.5rem 1rem; border-radius: 8px; text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: background 0.2s; white-space: nowrap; }
+    .dash-btn-outline:hover { background: var(--green-mist); }
+
+    .dash-info-card {
+        background: #fff; border-radius: 16px; border: 1px solid #e8f0eb;
+        box-shadow: 0 2px 16px rgba(45,106,79,0.06);
+        padding: 1.5rem 2rem;
+        display: flex; gap: 1.25rem; align-items: flex-start;
+    }
+    .dash-info-icon { font-size: 1.75rem; flex-shrink: 0; margin-top: 0.1rem; }
+    .dash-info-card h4 { font-size: 0.95rem; font-weight: 700; color: var(--green-deep); margin-bottom: 0.4rem; }
+    .dash-info-card p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; margin: 0; }
+    .dash-badge-readonly { display: inline-block; background: #fef9ec; color: #c8a84b; border: 1px solid #f0d98a; border-radius: 20px; font-size: 0.75rem; font-weight: 600; padding: 0.2rem 0.7rem; margin-bottom: 0.5rem; }
+    
+    .dash-profile-link {
+        margin-top: 2rem;
+        text-align: center;
+        padding: 1rem;
+        border-top: 1px solid #e8f0eb;
+    }
+    .btn-profile {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: var(--green-mist);
+        color: var(--green-deep);
+        padding: 0.6rem 1.5rem;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+    .btn-profile:hover {
+        background: var(--green-pale);
+        transform: translateY(-2px);
+    }
+</style>
+
+<div class="dash-wrap">
+
+    <div class="dash-hero">
+        <div class="dash-hero-left">
+            <h1>📊 Dashboard Responsable</h1>
+            <p>Consultez et supervisez les données de l'exploitation</p>
+        </div>
+        <div style="text-align:right; display:flex; flex-direction:column; align-items:flex-end; gap:0.75rem;">
+            {{ include('profile/_avatar.html.twig', {
+                user: app.user,
+                wrapperClass: 'dash-hero-avatar',
+                fallbackText: app.user.prenom|first ~ app.user.nom|first,
+                alt: 'Photo de profil de ' ~ app.user.prenom ~ ' ' ~ app.user.nom
+            }) }}
+            <div style="font-size:0.9rem; opacity:0.9;">{{ app.user.prenom }} {{ app.user.nom }}</div>
+        </div>
+    </div>
+
+    <div class="dash-section-title">Consultation des modules</div>
+
+    <div class="dash-grid">
+
+        <div class="dash-card">
+            <div class="dash-card-header">
+                <div class="dash-card-icon icon-green">🚜</div>
+                <div>
+                    <h3>Équipements</h3>
+                    <p>Consultation</p>
+                </div>
+            </div>
+            <div class="dash-divider"></div>
+            <div class="dash-card-body">
+                <p class="desc">Consultez la liste et l'état de tous les équipements agricoles.</p>
+                <div class="dash-actions">
+                    <a href="{{ path('front_equipement_index') }}" class="dash-btn-primary">Voir →</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="dash-card">
+            <div class="dash-card-header">
+                <div class="dash-card-icon icon-gold">🛠️</div>
+                <div>
+                    <h3>Maintenances</h3>
+                    <p>Consultation</p>
+                </div>
+            </div>
+            <div class="dash-divider"></div>
+            <div class="dash-card-body">
+                <p class="desc">Consultez l'historique et le planning des maintenances.</p>
+                <div class="dash-actions">
+                    <a href="{{ path('front_maintenance_index') }}" class="dash-btn-primary">Voir →</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="dash-card">
+            <div class="dash-card-header">
+                <div class="dash-card-icon icon-earth">👥</div>
+                <div>
+                    <h3>Mon profil</h3>
+                    <p>Gestion du compte</p>
+                </div>
+            </div>
+            <div class="dash-divider"></div>
+            <div class="dash-card-body">
+                <p class="desc">Consultez et modifiez vos informations personnelles.</p>
+                <div class="dash-actions">
+                    <a href="{{ path('profile_show') }}" class="dash-btn-primary">👤 Mon profil →</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="dash-info-card">
+        <div class="dash-info-icon">🔒</div>
+        <div>
+            <div class="dash-badge-readonly">Accès lecture seule</div>
+            <h4>Accès en consultation uniquement</h4>
+            <p>En tant que responsable d'exploitation, vous pouvez consulter toutes les données mais ne pouvez pas les modifier. Pour toute modification, veuillez contacter un administrateur.</p>
+        </div>
+    </div>
+
+    <div class="dash-profile-link">
+        <a href="{{ path('profile_show') }}" class="btn-profile">
+            👤 Voir mon profil
+        </a>
+    </div>
+
+</div>
+{% endblock %}

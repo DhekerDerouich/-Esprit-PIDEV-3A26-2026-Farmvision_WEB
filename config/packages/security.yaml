@@ -1,0 +1,77 @@
+security:
+    password_hashers:
+        App\Entity\Utilisateur:
+            algorithm: auto
+
+    providers:
+        app_user_provider:
+            entity:
+                class: App\Entity\Utilisateur
+                property: email
+
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+        main:
+            lazy: true
+            provider: app_user_provider
+            user_checker: App\Security\UserChecker
+            form_login:
+                login_path: app_login
+                check_path: app_login
+                enable_csrf: true
+                always_use_default_target_path: false
+                use_referer: true
+                success_handler: App\Security\TwoFactorAuthenticationSuccessHandler
+            logout:
+                path: app_logout
+                target: app_login
+            remember_me:
+                secret: '%kernel.secret%'
+                lifetime: 31536000
+                path: /
+                always_remember_me: true
+                remember_me_parameter: _remember_me
+
+    access_control:
+        - { path: ^/$, roles: PUBLIC_ACCESS }
+        - { path: ^/about, roles: PUBLIC_ACCESS }
+        - { path: ^/login, roles: PUBLIC_ACCESS }
+        - { path: ^/register, roles: PUBLIC_ACCESS }
+        - { path: ^/connect/google, roles: PUBLIC_ACCESS }
+        - { path: ^/complete-google-signup, roles: PUBLIC_ACCESS }
+        - { path: ^/forgot-password, roles: PUBLIC_ACCESS }
+        - { path: ^/reset-password, roles: PUBLIC_ACCESS }
+        - { path: ^/2fa, roles: PUBLIC_ACCESS }
+        - { path: ^/marketplace, roles: PUBLIC_ACCESS }
+        - { path: ^/admin, roles: ROLE_ADMIN }
+        - { path: ^/admin/stocks, roles: ROLE_ADMIN }
+        - { path: ^/admin/marketplace, roles: ROLE_ADMIN }
+        - { path: ^/responsable, roles: ROLE_RESPONSABLE }
+        - { path: ^/equipements/new, roles: ROLE_AGRICULTEUR }
+        - { path: ^/equipements/\d+/edit, roles: ROLE_AGRICULTEUR }
+        - { path: ^/equipements/\d+/delete, roles: ROLE_AGRICULTEUR }
+        - { path: ^/maintenances/new, roles: ROLE_AGRICULTEUR }
+        - { path: ^/maintenances/\d+/edit, roles: ROLE_AGRICULTEUR }
+        - { path: ^/maintenances/\d+/delete, roles: ROLE_AGRICULTEUR }
+        - { path: ^/maintenances/\d+/complete, roles: ROLE_AGRICULTEUR }
+        - { path: ^/equipements, roles: ROLE_USER }
+        - { path: ^/maintenances, roles: ROLE_USER }
+        - { path: ^/stocks, roles: ROLE_USER }
+        - { path: ^/finance, roles: ROLE_USER }
+        - { path: ^/dashboard, roles: ROLE_USER }
+        - { path: ^/agriculteur, roles: ROLE_AGRICULTEUR }
+
+    role_hierarchy:
+        ROLE_ADMIN: [ROLE_RESPONSABLE, ROLE_AGRICULTEUR, ROLE_USER]
+        ROLE_RESPONSABLE: [ROLE_AGRICULTEUR, ROLE_USER]
+
+when@test:
+    security:
+        password_hashers:
+            App\Entity\Utilisateur:
+                algorithm: auto
+                cost: 4
+                time_cost: 3
+                memory_cost: 10

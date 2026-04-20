@@ -1,0 +1,86 @@
+{% extends 'front/base.html.twig' %}
+
+{% block body %}
+<div class="container" style="padding: 3rem 0;">
+    <h1 style="font-family: 'Playfair Display', serif; font-size: 2.5rem; margin-bottom: 0.5rem;">📦 Nos produits</h1>
+    <p style="color: var(--text-muted); margin-bottom: 2rem;">Découvrez tous nos produits disponibles</p>
+
+    <!-- Formulaire de recherche -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <form method="get" action="{{ path('front_stock_index') }}">
+            <div style="display: grid; grid-template-columns: 1fr auto auto; gap: 1rem; align-items: end;">
+                <div>
+                    <label>🔍 Rechercher</label>
+                    <input type="text" name="search" value="{{ search }}" placeholder="Nom du produit..." class="form-control">
+                </div>
+                <div>
+                    <label>📂 Type</label>
+                    <select name="type" class="form-control">
+                        <option value="all" {% if selectedType == 'all' %}selected{% endif %}>Tous</option>
+                        {% for type in types %}
+                            <option value="{{ type }}" {% if selectedType == type %}selected{% endif %}>{{ type }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <button type="submit" class="btn btn-primary">Rechercher</button>
+                    <a href="{{ path('front_stock_index') }}" class="btn btn-outline">Réinitialiser</a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Statistiques -->
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 3rem;">
+        <div class="card" style="text-align: center;">
+            <div style="font-size: 2rem;">📦</div>
+            <div style="font-size: 1.5rem; font-weight: 600;">{{ stats.total }}</div>
+            <div>Total produits</div>
+        </div>
+        <div class="card" style="text-align: center;">
+            <div style="font-size: 2rem;">✅</div>
+            <div style="font-size: 1.5rem; font-weight: 600; color: var(--green-mid);">{{ stats.disponibles }}</div>
+            <div>Disponibles</div>
+        </div>
+        <div class="card" style="text-align: center;">
+            <div style="font-size: 2rem;">💰</div>
+            <div style="font-size: 1.5rem; font-weight: 600;">{{ stats.valeurTotale|number_format(0) }}</div>
+            <div>Quantité totale</div>
+        </div>
+    </div>
+
+    <!-- Liste des produits -->
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem;">
+        {% for stock in stocks %}
+        <div class="card">
+            <div style="font-size: 2.5rem; margin-bottom: 1rem;">
+                {% if stock.typeProduit == 'Légumes' %}🥕
+                {% elseif stock.typeProduit == 'Fruits' %}🍎
+                {% elseif stock.typeProduit == 'Céréales' %}🌾
+                {% elseif stock.typeProduit == 'Engrais' %}🧪
+                {% elseif stock.typeProduit == 'Semences' %}🌱
+                {% else %}📦
+                {% endif %}
+            </div>
+            <h3 style="margin-bottom: 0.5rem;">{{ stock.nomProduit }}</h3>
+            <p style="color: var(--text-muted); margin-bottom: 0.5rem;">{{ stock.typeProduit ?: 'Produit' }}</p>
+            <p style="font-size: 0.9rem; margin-bottom: 1rem;">
+                Quantité: {{ stock.quantite }} {{ stock.unite ?: 'unité' }}
+            </p>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="badge 
+                    {% if stock.statut == 'Disponible' %}badge-success
+                    else %}badge-danger{% endif %}">
+                    {{ stock.statut }}
+                </span>
+                <a href="{{ path('front_stock_show', {'id': stock.id}) }}" class="btn-outline btn">Détails →</a>
+            </div>
+        </div>
+        {% else %}
+        <div style="grid-column: span 3; text-align: center; padding: 3rem;">
+            Aucun produit disponible pour le moment.
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
