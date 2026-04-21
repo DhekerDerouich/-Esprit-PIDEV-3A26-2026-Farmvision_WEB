@@ -167,6 +167,125 @@
             background-clip: text;
         }
 
+        /* Alertes notification bell */
+        .alert-bell {
+            position: relative;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+
+        .alert-bell:hover {
+            background: var(--gray-lighter);
+        }
+
+        .alert-bell i {
+            font-size: 1.25rem;
+            color: var(--gray);
+        }
+
+        .alert-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: var(--danger);
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 0.15rem 0.4rem;
+            border-radius: 999px;
+            min-width: 18px;
+            text-align: center;
+        }
+
+        .alert-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 0.5rem;
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            width: 400px;
+            max-height: 500px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: 100;
+            border: 1px solid var(--gray-lighter);
+            overflow: hidden;
+        }
+
+        .alert-bell.active .alert-dropdown {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .alert-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--gray-lighter);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .alert-header h3 {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .alert-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .alert-item {
+            padding: 1rem;
+            border-bottom: 1px solid var(--gray-lighter);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .alert-item:hover {
+            background: var(--light);
+        }
+
+        .alert-item.unread {
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .alert-item-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .alert-item-title {
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--dark);
+        }
+
+        .alert-item-message {
+            font-size: 0.8rem;
+            color: var(--gray);
+            margin-top: 0.25rem;
+        }
+
+        .alert-item-time {
+            font-size: 0.7rem;
+            color: var(--gray-light);
+            margin-top: 0.25rem;
+        }
+
+        .alert-empty {
+            padding: 3rem 1rem;
+            text-align: center;
+            color: var(--gray);
+        }
+
         /* User menu dropdown */
         .user-menu {
             position: relative;
@@ -564,6 +683,110 @@
             border-left: 4px solid var(--warning);
         }
 
+        /* Alert Toast Notifications */
+        .alert-toast-container {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 400px;
+        }
+
+        .alert-toast {
+            background: #ef4444;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            animation: slideInRight 0.3s ease;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            min-width: 350px;
+        }
+
+        .alert-toast.warning {
+            background: #f59e0b;
+        }
+
+        .alert-toast.info {
+            background: #10b981;
+        }
+
+        .alert-toast-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .alert-toast-content {
+            flex: 1;
+        }
+
+        .alert-toast-title {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .alert-toast-message {
+            font-size: 0.875rem;
+            opacity: 0.95;
+            line-height: 1.4;
+        }
+
+        .alert-toast-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+            flex-shrink: 0;
+        }
+
+        .alert-toast-close:hover {
+            opacity: 1;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+
+        .alert-toast.removing {
+            animation: slideOutRight 0.3s ease forwards;
+        }
+
         @keyframes slideIn {
             from {
                 transform: translateX(100%);
@@ -668,6 +891,17 @@
                 <a href="{{ path('admin_marketplace_index') }}"><i class="fas fa-store"></i> Marketplace</a>
             </li>
             
+            <!-- SECTION OUTILS INTELLIGENTS -->
+            <li style="margin-top: 1rem; margin-bottom: 0.5rem;">
+                <span style="padding: 0.5rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--gray); display: block;">🤖 Outils IA</span>
+            </li>
+            <li class="{{ app.request.get('_route') starts with 'admin_voice_chat' ? 'active' : '' }}">
+                <a href="{{ path('admin_voice_chat') }}"><i class="fas fa-microphone"></i> Assistant Vocal</a>
+            </li>
+            <li class="{{ app.request.get('_route') starts with 'admin_carbone' ? 'active' : '' }}">
+                <a href="{{ path('admin_carbone_index') }}"><i class="fas fa-leaf"></i> Empreinte Carbone</a>
+            </li>
+            
             <!-- SECTION UTILISATEURS -->
             <li style="margin-top: 1rem; margin-bottom: 0.5rem;">
                 <span style="padding: 0.5rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--gray); display: block;">👥 Administration</span>
@@ -682,41 +916,64 @@
         <div class="top-bar">
             <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
             
-            <!-- Menu utilisateur déroulant -->
-            <div class="user-menu" id="userMenu">
-                <div class="user-info">
-                    <span class="user-name">{{ app.user.prenom }} {{ app.user.nom }}</span>
-                    <div class="user-avatar">{{ app.user.prenom|first }}{{ app.user.nom|first }}</div>
-                    <span class="dropdown-arrow">▼</span>
-                </div>
-                
-                <div class="user-dropdown">
-                    <div class="dropdown-header">
-                        <div class="name">{{ app.user.prenom }} {{ app.user.nom }}</div>
-                        <div class="email">{{ app.user.email }}</div>
-                    </div>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <!-- Alertes notification bell -->
+                <div class="alert-bell" id="alertBell">
+                    <i class="fas fa-bell"></i>
+                    <span class="alert-badge" id="alertBadge" style="display: none;">0</span>
                     
-                    <a href="{{ path('profile_show') }}" class="dropdown-item">
-                        <i class="fas fa-user"></i> Mon profil
-                    </a>
-                    
-                    <a href="{{ path('profile_edit') }}" class="dropdown-item">
-                        <i class="fas fa-cog"></i> Paramètres
-                    </a>
-                    
-                    <div class="theme-switch">
-                        <span><i class="fas fa-moon"></i> Thème</span>
-                        <div class="theme-buttons">
-                            <button onclick="setTheme('light')" class="theme-btn">☀️</button>
-                            <button onclick="setTheme('dark')" class="theme-btn">🌙</button>
+                    <div class="alert-dropdown">
+                        <div class="alert-header">
+                            <h3>🔔 Notifications</h3>
+                            <button onclick="markAllRead()" style="background: none; border: none; color: var(--primary); cursor: pointer; font-size: 0.8rem;">
+                                Tout marquer lu
+                            </button>
+                        </div>
+                        <div class="alert-list" id="alertList">
+                            <div class="alert-empty">
+                                <i class="fas fa-check-circle" style="font-size: 2rem; color: var(--success); margin-bottom: 0.5rem;"></i>
+                                <p>Aucune alerte</p>
+                            </div>
                         </div>
                     </div>
+                </div>
+                
+                <!-- Menu utilisateur déroulant -->
+                <div class="user-menu" id="userMenu">
+                    <div class="user-info">
+                        <span class="user-name">{{ app.user.prenom }} {{ app.user.nom }}</span>
+                        <div class="user-avatar">{{ app.user.prenom|first }}{{ app.user.nom|first }}</div>
+                        <span class="dropdown-arrow">▼</span>
+                    </div>
                     
-                    <div class="dropdown-divider"></div>
-                    
-                    <a href="{{ path('app_logout') }}" class="dropdown-item logout">
-                        <i class="fas fa-sign-out-alt"></i> Déconnexion
-                    </a>
+                    <div class="user-dropdown">
+                        <div class="dropdown-header">
+                            <div class="name">{{ app.user.prenom }} {{ app.user.nom }}</div>
+                            <div class="email">{{ app.user.email }}</div>
+                        </div>
+                        
+                        <a href="{{ path('profile_show') }}" class="dropdown-item">
+                            <i class="fas fa-user"></i> Mon profil
+                        </a>
+                        
+                        <a href="{{ path('profile_edit') }}" class="dropdown-item">
+                            <i class="fas fa-cog"></i> Paramètres
+                        </a>
+                        
+                        <div class="theme-switch">
+                            <span><i class="fas fa-moon"></i> Thème</span>
+                            <div class="theme-buttons">
+                                <button onclick="setTheme('light')" class="theme-btn">☀️</button>
+                                <button onclick="setTheme('dark')" class="theme-btn">🌙</button>
+                            </div>
+                        </div>
+                        
+                        <div class="dropdown-divider"></div>
+                        
+                        <a href="{{ path('app_logout') }}" class="dropdown-item logout">
+                            <i class="fas fa-sign-out-alt"></i> Déconnexion
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -732,6 +989,9 @@
                 {% endfor %}
             {% endfor %}
             
+            <!-- Alert Toast Container -->
+            <div class="alert-toast-container" id="alertToastContainer"></div>
+            
             {% block body %}{% endblock %}
         </div>
     </div>
@@ -742,12 +1002,179 @@
         userMenu.addEventListener('click', function(e) {
             e.stopPropagation();
             this.classList.toggle('active');
+            // Fermer les alertes si ouvertes
+            document.getElementById('alertBell').classList.remove('active');
         });
         
-        // Fermer le dropdown en cliquant ailleurs
-        document.addEventListener('click', function() {
+        // Toggle alert bell
+        const alertBell = document.getElementById('alertBell');
+        alertBell.addEventListener('click', function(e) {
+            e.stopPropagation();
+            this.classList.toggle('active');
+            // Fermer le menu utilisateur si ouvert
             userMenu.classList.remove('active');
         });
+        
+        // Fermer les dropdowns en cliquant ailleurs
+        document.addEventListener('click', function() {
+            userMenu.classList.remove('active');
+            alertBell.classList.remove('active');
+        });
+        
+        // Charger les alertes
+        function loadAlertes() {
+            fetch('/admin/alertes/notifications')
+                .then(response => response.json())
+                .then(data => {
+                    const alertList = document.getElementById('alertList');
+                    const alertBadge = document.getElementById('alertBadge');
+                    
+                    if (data.non_lues > 0) {
+                        alertBadge.textContent = data.non_lues;
+                        alertBadge.style.display = 'block';
+                    } else {
+                        alertBadge.style.display = 'none';
+                    }
+                    
+                    if (data.alertes.length === 0) {
+                        alertList.innerHTML = `
+                            <div class="alert-empty">
+                                <i class="fas fa-check-circle" style="font-size: 2rem; color: var(--success); margin-bottom: 0.5rem;"></i>
+                                <p>Aucune alerte</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    alertList.innerHTML = data.alertes.map(alerte => {
+                        const typeColors = {
+                            'URGENT': '#dc2626',
+                            'WARNING': '#f59e0b',
+                            'INFO': '#10b981'
+                        };
+                        const color = typeColors[alerte.type] || '#10b981';
+                        const unreadClass = alerte.read ? '' : 'unread';
+                        
+                        return `
+                            <div class="alert-item ${unreadClass}" onclick="handleAlertClick('${alerte.id}', '${alerte.lien}')">
+                                <div class="alert-item-header">
+                                    <span style="font-size: 1.2rem;">${alerte.icone}</span>
+                                    <span class="alert-item-title">${alerte.titre}</span>
+                                    <span style="margin-left: auto; padding: 0.15rem 0.5rem; background: ${color}; color: white; font-size: 0.65rem; border-radius: 999px; font-weight: 600;">${alerte.type}</span>
+                                </div>
+                                <div class="alert-item-message">${alerte.message}</div>
+                                <div class="alert-item-time">${formatDate(alerte.date)}</div>
+                            </div>
+                        `;
+                    }).join('');
+                })
+                .catch(error => console.error('Erreur chargement alertes:', error));
+        }
+        
+        // Afficher les alertes en toast
+        function showAlertToasts() {
+            fetch('/admin/alertes/notifications')
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById('alertToastContainer');
+                    
+                    // Afficher seulement les alertes urgentes non lues
+                    const urgentesNonLues = data.alertes.filter(a => a.type === 'URGENT' && !a.read);
+                    
+                    urgentesNonLues.slice(0, 4).forEach((alerte, index) => {
+                        setTimeout(() => {
+                            showToast(alerte);
+                        }, index * 500); // Décalage de 500ms entre chaque toast
+                    });
+                })
+                .catch(error => console.error('Erreur chargement toasts:', error));
+        }
+        
+        function showToast(alerte) {
+            const container = document.getElementById('alertToastContainer');
+            
+            const typeClass = alerte.type === 'URGENT' ? '' : (alerte.type === 'WARNING' ? 'warning' : 'info');
+            
+            const toast = document.createElement('div');
+            toast.className = `alert-toast ${typeClass}`;
+            toast.innerHTML = `
+                <div class="alert-toast-icon">⚠️</div>
+                <div class="alert-toast-content">
+                    <div class="alert-toast-title">
+                        ${alerte.icone} ${alerte.titre}
+                    </div>
+                    <div class="alert-toast-message">${alerte.message}</div>
+                </div>
+                <button class="alert-toast-close" onclick="closeToast(this)">×</button>
+            `;
+            
+            // Clic sur le toast pour marquer comme lu et rediriger
+            toast.addEventListener('click', (e) => {
+                if (!e.target.classList.contains('alert-toast-close')) {
+                    handleAlertClick(alerte.id, alerte.lien);
+                    closeToast(toast.querySelector('.alert-toast-close'));
+                }
+            });
+            
+            container.appendChild(toast);
+            
+            // Auto-fermeture après 10 secondes
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    closeToast(toast.querySelector('.alert-toast-close'));
+                }
+            }, 10000);
+        }
+        
+        function closeToast(button) {
+            const toast = button.closest('.alert-toast');
+            toast.classList.add('removing');
+            setTimeout(() => {
+                toast.remove();
+            }, 300);
+        }
+        
+        function handleAlertClick(alertId, lien) {
+            // Marquer comme lu
+            fetch('/admin/alertes/mark-read', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({id: alertId})
+            }).then(() => {
+                loadAlertes();
+                if (lien && lien !== '#') {
+                    window.location.href = lien;
+                }
+            });
+        }
+        
+        function markAllRead() {
+            fetch('/admin/alertes/mark-all-read', {
+                method: 'POST'
+            }).then(() => {
+                loadAlertes();
+            });
+        }
+        
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            const now = new Date();
+            const diff = Math.floor((now - date) / 1000);
+            
+            if (diff < 60) return 'À l\'instant';
+            if (diff < 3600) return Math.floor(diff / 60) + ' min';
+            if (diff < 86400) return Math.floor(diff / 3600) + ' h';
+            return Math.floor(diff / 86400) + ' j';
+        }
+        
+        // Charger les alertes au démarrage
+        loadAlertes();
+        
+        // Afficher les toasts au démarrage
+        showAlertToasts();
+        
+        // Recharger toutes les 30 secondes
+        setInterval(loadAlertes, 30000);
         
         // Thème Dark/Light
         function setTheme(theme) {

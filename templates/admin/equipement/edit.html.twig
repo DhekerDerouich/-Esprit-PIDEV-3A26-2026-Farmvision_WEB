@@ -3,17 +3,21 @@
 
 {% block body %}
 <div style="margin-bottom: 2rem;">
-    <a href="{{ path('admin_equipement_index') }}" class="btn" style="background: var(--bg-panel);">← Retour</a>
+    <a href="{{ path('admin_equipement_index') }}" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: var(--gray-lighter); color: var(--dark); text-decoration: none; border-radius: var(--radius); font-weight: 500; transition: all 0.2s;">
+        <i class="fas fa-arrow-left"></i> Retour
+    </a>
 </div>
 
 <div class="card" style="max-width: 600px; margin: 0 auto;">
-    <h1 style="font-size: 1.5rem; margin-bottom: 1.5rem;">Modifier l'équipement</h1>
+    <div class="card-header">
+        <h3 style="margin: 0;">✏️ Modifier l'équipement</h3>
+    </div>
     
-    {# Affichage des erreurs de validation PHP #}
+    {# Affichage des erreurs #}
     {% if errors is defined and errors|length > 0 %}
-        <div style="background: var(--red-dim); border: 1px solid var(--red); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
-            <strong style="color: var(--red);;">❌ Veuillez corriger les erreurs suivantes :</strong>
-            <ul style="margin-top: 0.5rem; margin-left: 1.5rem; color: var(--red);">
+        <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); border-radius: var(--radius); padding: 1rem; margin-bottom: 1.5rem;">
+            <strong style="color: var(--danger);">❌ Erreurs de validation :</strong>
+            <ul style="margin-top: 0.5rem; margin-left: 1.5rem; color: var(--danger);">
                 {% for field, error in errors %}
                     <li>{{ error }}</li>
                 {% endfor %}
@@ -22,78 +26,164 @@
     {% endif %}
     
     <form method="post">
-        <div class="form-group" style="margin-bottom: 1rem;">
-            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Nom <span style="color: var(--red);">*</span></label>
-            <input type="text" name="nom" value="{{ equipement.nom|default('') }}" class="form-control {% if errors.nom is defined %}error{% endif %}" style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);">
+        <div style="margin-bottom: 1.5rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--dark);">Nom <span style="color: var(--danger);">*</span></label>
+            <input type="text" name="nom" value="{{ equipement.nom|default('') }}"
+                   class="form-control {% if errors.nom is defined %}is-invalid{% endif %}"
+                   style="width: 100%;" placeholder="Ex: Tracteur John Deere 6120">
             {% if errors.nom is defined %}
-                <small style="color: var(--red); display: block; margin-top: 0.25rem;">❌ {{ errors.nom }}</small>
+                <div style="color: var(--danger); font-size: 0.8rem; margin-top: 0.25rem;">❌ {{ errors.nom }}</div>
             {% endif %}
         </div>
         
-        <div class="form-group" style="margin-bottom: 1rem;">
-            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Type <span style="color: var(--red);">*</span></label>
-            <select name="type" class="form-control {% if errors.type is defined %}error{% endif %}" style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);">
+        <div style="margin-bottom: 1.5rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--dark);">Type <span style="color: var(--danger);">*</span></label>
+            <select name="type" class="form-control {% if errors.type is defined %}is-invalid{% endif %}" style="width: 100%;">
                 <option value="">-- Sélectionner un type --</option>
-                <option value="Tracteur" {% if equipement.type|default('') == 'Tracteur' %}selected{% endif %}>Tracteur</option>
-                <option value="Moissonneuse" {% if equipement.type|default('') == 'Moissonneuse' %}selected{% endif %}>Moissonneuse</option>
-                <option value="Pulvérisateur" {% if equipement.type|default('') == 'Pulvérisateur' %}selected{% endif %}>Pulvérisateur</option>
-                <option value="Charrue" {% if equipement.type|default('') == 'Charrue' %}selected{% endif %}>Charrue</option>
-                <option value="Semoir" {% if equipement.type|default('') == 'Semoir' %}selected{% endif %}>Semoir</option>
-                <option value="Autre" {% if equipement.type|default('') == 'Autre' %}selected{% endif %}>Autre</option>
+                <option value="Tracteur" {% if equipement.type|default('') == 'Tracteur' %}selected{% endif %}>🚜 Tracteur</option>
+                <option value="Moissonneuse" {% if equipement.type|default('') == 'Moissonneuse' %}selected{% endif %}>🌾 Moissonneuse</option>
+                <option value="Pulvérisateur" {% if equipement.type|default('') == 'Pulvérisateur' %}selected{% endif %}>💧 Pulvérisateur</option>
+                <option value="Charrue" {% if equipement.type|default('') == 'Charrue' %}selected{% endif %}>🪓 Charrue</option>
+                <option value="Semoir" {% if equipement.type|default('') == 'Semoir' %}selected{% endif %}>🌱 Semoir</option>
+                <option value="Autre" {% if equipement.type|default('') == 'Autre' %}selected{% endif %}>🔧 Autre</option>
             </select>
             {% if errors.type is defined %}
-                <small style="color: var(--red); display: block; margin-top: 0.25rem;">❌ {{ errors.type }}</small>
+                <div style="color: var(--danger); font-size: 0.8rem; margin-top: 0.25rem;">❌ {{ errors.type }}</div>
             {% endif %}
         </div>
         
-        <div class="form-group" style="margin-bottom: 1rem;">
-            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">État <span style="color: var(--red);">*</span></label>
-            <select name="etat" class="form-control {% if errors.etat is defined %}error{% endif %}" style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);">
-                <option value="Fonctionnel" {% if equipement.etat|default('') == 'Fonctionnel' %}selected{% endif %}>Fonctionnel</option>
-                <option value="En panne" {% if equipement.etat|default('') == 'En panne' %}selected{% endif %}>En panne</option>
-                <option value="Maintenance" {% if equipement.etat|default('') == 'Maintenance' %}selected{% endif %}>Maintenance</option>
+        <div style="margin-bottom: 1.5rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--dark);">État <span style="color: var(--danger);">*</span></label>
+            <select name="etat" class="form-control {% if errors.etat is defined %}is-invalid{% endif %}" style="width: 100%;">
+                <option value="Fonctionnel" {% if equipement.etat|default('') == 'Fonctionnel' %}selected{% endif %}>✅ Fonctionnel</option>
+                <option value="En panne" {% if equipement.etat|default('') == 'En panne' %}selected{% endif %}>⚠️ En panne</option>
+                <option value="Maintenance" {% if equipement.etat|default('') == 'Maintenance' %}selected{% endif %}>🔧 Maintenance</option>
             </select>
             {% if errors.etat is defined %}
-                <small style="color: var(--red); display: block; margin-top: 0.25rem;">❌ {{ errors.etat }}</small>
+                <div style="color: var(--danger); font-size: 0.8rem; margin-top: 0.25rem;">❌ {{ errors.etat }}</div>
             {% endif %}
         </div>
         
-        <div class="form-group" style="margin-bottom: 1rem;">
-            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Date d'achat</label>
-            <input type="text" name="date_achat" value="{{ equipement.dateAchat ? equipement.dateAchat|date('Y-m-d') : '' }}" class="form-control {% if errors.date_achat is defined %}error{% endif %}" placeholder="AAAA-MM-JJ" style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);">
-            {% if errors.date_achat is defined %}
-                <small style="color: var(--red); display: block; margin-top: 0.25rem;">❌ {{ errors.date_achat }}</small>
+        <div style="margin-bottom: 1.5rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--dark);">Date d'achat</label>
+            <input type="text" name="date_achat" value="{{ equipement.dateAchat ? equipement.dateAchat|date('Y-m-d') : '' }}"
+                   class="form-control {% if errors.dateAchat is defined %}is-invalid{% endif %}" 
+                   style="width: 100%;" placeholder="AAAA-MM-JJ (ex: 2024-01-15)">
+            {% if errors.dateAchat is defined %}
+                <div style="color: var(--danger); font-size: 0.8rem; margin-top: 0.25rem;">❌ {{ errors.dateAchat }}</div>
             {% else %}
-                <small style="color: var(--text-muted); display: block; margin-top: 0.25rem;">Format: AAAA-MM-JJ (ex: 2024-01-15)</small>
+                <div style="color: var(--gray); font-size: 0.8rem; margin-top: 0.25rem;">Format: AAAA-MM-JJ</div>
             {% endif %}
         </div>
         
-        <div class="form-group" style="margin-bottom: 1rem;">
-            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Durée de vie estimée (années)</label>
-            <input type="text" name="duree_vie_estimee" value="{{ equipement.dureeVieEstimee|default('') }}" class="form-control {% if errors.duree_vie_estimee is defined %}error{% endif %}" placeholder="Entre 1 et 50 ans" style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);">
-            {% if errors.duree_vie_estimee is defined %}
-                <small style="color: var(--red); display: block; margin-top: 0.25rem;">❌ {{ errors.duree_vie_estimee }}</small>
+        <div style="margin-bottom: 2rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--dark);">Durée de vie estimée (années)</label>
+            <input type="text" name="duree_vie_estimee"
+                   value="{{ equipement.dureeVieEstimee|default('') }}"
+                   class="form-control {% if errors.dureeVieEstimee is defined %}is-invalid{% endif %}"
+                   placeholder="Entre 1 et 50" style="width: 100%;">
+            {% if errors.dureeVieEstimee is defined %}
+                <div style="color: var(--danger); font-size: 0.8rem; margin-top: 0.25rem;">❌ {{ errors.dureeVieEstimee }}</div>
             {% else %}
-                <small style="color: var(--text-muted); display: block; margin-top: 0.25rem;">Nombre entier entre 1 et 50</small>
+                <div style="color: var(--gray); font-size: 0.8rem; margin-top: 0.25rem;">Nombre entier entre 1 et 50 ans</div>
             {% endif %}
         </div>
         
-        <hr style="border-color: var(--border); margin: 1.5rem 0;">
-        
-        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
-            <a href="{{ path('admin_equipement_index') }}" class="btn" style="background: var(--bg-panel);">Annuler</a>
-            <button type="submit" class="btn btn-primary">💾 Enregistrer</button>
+        <div style="display: flex; gap: 1rem; justify-content: flex-end; flex-wrap: wrap;">
+            <a href="{{ path('admin_equipement_index') }}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Annuler
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Enregistrer
+            </button>
         </div>
     </form>
 </div>
 
 <style>
-    .error {
-        border-color: var(--red) !important;
+    .form-control {
+        padding: 0.875rem 1rem;
+        border: 2px solid var(--gray-lighter);
+        border-radius: var(--radius);
+        background: var(--white);
+        color: var(--dark);
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+        width: 100%;
     }
+    
     .form-control:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
         outline: none;
-        border-color: var(--green);
+    }
+    
+    .form-control.is-invalid {
+        border-color: var(--danger);
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    }
+    
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius);
+        font-weight: 600;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: white !important;
+        box-shadow: var(--shadow);
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+    
+    .btn-secondary {
+        background: var(--gray-lighter);
+        color: var(--dark) !important;
+        border: 1px solid var(--gray-lighter);
+    }
+    
+    .btn-secondary:hover {
+        background: var(--gray);
+        color: var(--white) !important;
+        border-color: var(--gray);
+    }
+    
+    /* Dark theme */
+    body.dark-theme .form-control {
+        background: var(--darker);
+        border-color: var(--gray);
+        color: var(--light);
+    }
+    
+    body.dark-theme .form-control:focus {
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+    }
+    
+    body.dark-theme label {
+        color: var(--light);
+    }
+    
+    body.dark-theme .btn-secondary {
+        background: var(--gray);
+        color: var(--light) !important;
+        border-color: var(--gray);
+    }
+    
+    body.dark-theme .btn-secondary:hover {
+        background: var(--gray-light);
+        color: var(--dark) !important;
     }
 </style>
 {% endblock %}

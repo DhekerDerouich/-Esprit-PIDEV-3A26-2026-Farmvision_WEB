@@ -6,6 +6,7 @@ namespace App\Controller\Front;
 use App\Entity\Maintenance;
 use App\Repository\EquipementRepository;
 use App\Repository\MaintenanceRepository;
+use App\Service\MeteoService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,7 +17,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class MaintenanceController extends AbstractController
 {
     #[Route('/', name: 'front_maintenance_index', methods: ['GET'])]
-    public function index(Request $request, MaintenanceRepository $repository): Response
+    public function index(Request $request, MaintenanceRepository $repository, MeteoService $meteoService): Response
     {
         $keyword = $request->query->get('search', '');
         $type = $request->query->get('type', 'all');
@@ -36,23 +37,34 @@ class MaintenanceController extends AbstractController
             $maintenance->joursRestants = $maintenance->getJoursRestants();
         }
         
+        // Coordonnées de la Tunisie
+        $coordonnees = ['lat' => 36.8065, 'lng' => 10.1815];
+        $soleil = $meteoService->getSunriseSunset($coordonnees['lat'], $coordonnees['lng']);
+        $meteo = $meteoService->getWeatherForecast($coordonnees['lat'], $coordonnees['lng']);
+        
         return $this->render('front/maintenance/index.html.twig', [
             'maintenances' => $maintenances,
             'stats' => $stats,
             'search' => $keyword,
             'selectedType' => $type,
             'selectedStatut' => $statut,
+            'soleil' => $soleil,
+            'meteo' => $meteo,
         ]);
     }
     
     #[Route('/new', name: 'front_maintenance_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $em, EquipementRepository $equipementRepo): Response
+    public function new(Request $request, EntityManagerInterface $em, EquipementRepository $equipementRepo, MeteoService $meteoService): Response
     {
         // Seul l'agriculteur peut ajouter une maintenance
         $this->denyAccessUnlessGranted('ROLE_AGRICULTEUR');
         
         $equipements = $equipementRepo->findAll();
         $errors = [];
+        
+        // Données météo pour la planification
+        $coordonnees = ['lat' => 36.8065, 'lng' => 10.1815];
+        $soleil = $meteoService->getSunriseSunset($coordonnees['lat'], $coordonnees['lng']);
         
         if ($request->isMethod('POST')) {
             $equipementId = $request->request->get('equipement_id');
@@ -116,17 +128,21 @@ class MaintenanceController extends AbstractController
             'equipements' => $equipements,
             'errors' => $errors,
             'old' => $request->request->all(),
+            'soleil' => $soleil,
         ]);
     }
     
     #[Route('/{id}/edit', name: 'front_maintenance_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Maintenance $maintenance, EntityManagerInterface $em, EquipementRepository $equipementRepo): Response
+    public function edit(Request $request, Maintenance $maintenance, EntityManagerInterface $em, EquipementRepository $equipementRepo, MeteoService $meteoService): Response
     {
         // Seul l'agriculteur peut modifier une maintenance
         $this->denyAccessUnlessGranted('ROLE_AGRICULTEUR');
         
         $equipements = $equipementRepo->findAll();
         $errors = [];
+        
+        $coordonnees = ['lat' => 36.8065, 'lng' => 10.1815];
+        $soleil = $meteoService->getSunriseSunset($coordonnees['lat'], $coordonnees['lng']);
         
         if ($request->isMethod('POST')) {
             $equipementId = $request->request->get('equipement_id');
@@ -179,6 +195,7 @@ class MaintenanceController extends AbstractController
             'maintenance' => $maintenance,
             'equipements' => $equipements,
             'errors' => $errors,
+            'soleil' => $soleil,
         ]);
     }
     

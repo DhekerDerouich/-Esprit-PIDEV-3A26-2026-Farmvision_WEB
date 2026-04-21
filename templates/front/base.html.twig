@@ -487,6 +487,13 @@
                     class="{{ app.request.get('_route') starts with 'front_maintenance' ? 'active' : '' }}">Maintenances</a>
             </li>
             <li class="has-dropdown">
+                <a href="#">🤖 Outils IA</a>
+                <div class="nav-dropdown">
+                    <a href="{{ path('front_voice_chat') }}">🎤 Assistant Vocal</a>
+                    <a href="{{ path('front_carbone_index') }}">🌱 Empreinte Carbone</a>
+                </div>
+            </li>
+            <li class="has-dropdown">
             <a href="#">Finances</a>
             <div class="nav-dropdown">
                 <a href="{{ path('front_finance_dashboard') }}">📊 Dashboard</a>

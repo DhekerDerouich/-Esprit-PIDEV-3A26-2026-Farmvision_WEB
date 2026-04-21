@@ -2,77 +2,122 @@
 
 {% block body %}
 <div style="margin-bottom: 2rem;">
-    <a href="{{ path('admin_equipement_index') }}" class="btn" style="background: var(--bg-panel);">← Retour</a>
+    <a href="{{ path('admin_equipement_index') }}" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: var(--gray-lighter); color: var(--dark); text-decoration: none; border-radius: var(--radius); font-weight: 500; transition: all 0.2s;">
+        <i class="fas fa-arrow-left"></i> Retour
+    </a>
 </div>
 
 <div class="card" style="max-width: 800px; margin: 0 auto;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-        <h1 style="font-size: 1.5rem;">{{ equipement.nom }}</h1>
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="margin: 0;">🔧 {{ equipement.nom }}</h3>
         <div>
             {% if equipement.etat == 'Fonctionnel' %}
-                <span class="badge badge-success">✓ Fonctionnel</span>
+                <span class="badge badge-success" style="padding: 0.5rem 1rem; border-radius: var(--radius); background: var(--success); color: white; font-weight: 600;">✅ Fonctionnel</span>
             {% elseif equipement.etat == 'En panne' %}
-                <span class="badge badge-danger">⚠ En panne</span>
+                <span class="badge badge-danger" style="padding: 0.5rem 1rem; border-radius: var(--radius); background: var(--danger); color: white; font-weight: 600;">⚠️ En panne</span>
             {% else %}
-                <span class="badge badge-warning">🔧 Maintenance</span>
+                <span class="badge badge-warning" style="padding: 0.5rem 1rem; border-radius: var(--radius); background: var(--warning); color: white; font-weight: 600;">🔧 Maintenance</span>
             {% endif %}
         </div>
     </div>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
         <div>
-            <div class="form-group">
-                <label>ID</label>
-                <div class="form-control" style="background: var(--bg);">{{ equipement.id }}</div>
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--dark); font-size: 0.85rem; text-transform: uppercase;">ID</label>
+                <div style="padding: 0.875rem 1rem; border: 2px solid var(--gray-lighter); border-radius: var(--radius); background: var(--gray-lighter); color: var(--dark); font-size: 0.95rem;">{{ equipement.id }}</div>
             </div>
-            <div class="form-group">
-                <label>Type</label>
-                <div class="form-control" style="background: var(--bg);">{{ equipement.type }}</div>
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--dark); font-size: 0.85rem; text-transform: uppercase;">Type</label>
+                <div style="padding: 0.875rem 1rem; border: 2px solid var(--gray-lighter); border-radius: var(--radius); background: var(--gray-lighter); color: var(--dark); font-size: 0.95rem;">
+                    {% if equipement.type == 'Tracteur' %}🚜
+                    {% elseif equipement.type == 'Moissonneuse' %}🌾
+                    {% elseif equipement.type == 'Pulvérisateur' %}💧
+                    {% elseif equipement.type == 'Charrue' %}🪓
+                    {% elseif equipement.type == 'Semoir' %}🌱
+                    {% else %}🔧{% endif %} {{ equipement.type }}
+                </div>
             </div>
-            <div class="form-group">
-                <label>Date d'achat</label>
-                <div class="form-control" style="background: var(--bg);">{{ equipement.dateAchat ? equipement.dateAchat|date('d/m/Y') : '-' }}</div>
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--dark); font-size: 0.85rem; text-transform: uppercase;">Date d'achat</label>
+                <div style="padding: 0.875rem 1rem; border: 2px solid var(--gray-lighter); border-radius: var(--radius); background: var(--gray-lighter); color: var(--dark); font-size: 0.95rem;">📅 {{ equipement.dateAchat ? equipement.dateAchat|date('d/m/Y') : '-' }}</div>
             </div>
-            <div class="form-group">
-                <label>Durée de vie estimée</label>
-                <div class="form-control" style="background: var(--bg);">{{ equipement.dureeVieEstimee ? equipement.dureeVieEstimee ~ ' ans' : '-' }}</div>
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--dark); font-size: 0.85rem; text-transform: uppercase;">Durée de vie estimée</label>
+                <div style="padding: 0.875rem 1rem; border: 2px solid var(--gray-lighter); border-radius: var(--radius); background: var(--gray-lighter); color: var(--dark); font-size: 0.95rem;">⏳ {{ equipement.dureeVieEstimee ? equipement.dureeVieEstimee ~ ' ans' : '-' }}</div>
             </div>
         </div>
         <div>
-            <div class="form-group">
-                <label>Âge</label>
-                <div class="form-control" style="background: var(--bg);">{{ equipement.age }} an(s)</div>
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--dark); font-size: 0.85rem; text-transform: uppercase;">Âge</label>
+                <div style="padding: 0.875rem 1rem; border: 2px solid var(--gray-lighter); border-radius: var(--radius); background: var(--gray-lighter); color: var(--dark); font-size: 0.95rem;">🕐 {{ equipement.age }} an(s)</div>
             </div>
-            <div class="form-group">
-                <label>Fin de garantie</label>
-                <div class="form-control" style="background: var(--bg);">
-                    {{ equipement.finGarantie ? equipement.finGarantie|date('d/m/Y') : '-' }}
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--dark); font-size: 0.85rem; text-transform: uppercase;">Fin de garantie</label>
+                <div style="padding: 0.875rem 1rem; border: 2px solid var(--gray-lighter); border-radius: var(--radius); background: var(--gray-lighter); color: var(--dark); font-size: 0.95rem;">
+                    🛡️ {{ equipement.finGarantie ? equipement.finGarantie|date('d/m/Y') : '-' }}
                     {% if equipement.sousGarantie %}
-                        <span class="badge badge-success" style="margin-left: 0.5rem;">Active</span>
+                        <span style="margin-left: 0.5rem; padding: 0.25rem 0.75rem; border-radius: var(--radius); background: var(--success); color: white; font-size: 0.75rem; font-weight: 600;">Active</span>
                     {% elseif equipement.finGarantie %}
-                        <span class="badge badge-danger" style="margin-left: 0.5rem;">Expirée</span>
+                        <span style="margin-left: 0.5rem; padding: 0.25rem 0.75rem; border-radius: var(--radius); background: var(--danger); color: white; font-size: 0.75rem; font-weight: 600;">Expirée</span>
                     {% endif %}
                 </div>
             </div>
-            <div class="form-group">
-                <label>Date de création</label>
-                <div class="form-control" style="background: var(--bg);">{{ equipement.createdAt|date('d/m/Y H:i') }}</div>
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--dark); font-size: 0.85rem; text-transform: uppercase;">Date de création</label>
+                <div style="padding: 0.875rem 1rem; border: 2px solid var(--gray-lighter); border-radius: var(--radius); background: var(--gray-lighter); color: var(--dark); font-size: 0.95rem;">📝 {{ equipement.createdAt|date('d/m/Y H:i') }}</div>
             </div>
-            <div class="form-group">
-                <label>Dernière modification</label>
-                <div class="form-control" style="background: var(--bg);">{{ equipement.updatedAt|date('d/m/Y H:i') }}</div>
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--dark); font-size: 0.85rem; text-transform: uppercase;">Dernière modification</label>
+                <div style="padding: 0.875rem 1rem; border: 2px solid var(--gray-lighter); border-radius: var(--radius); background: var(--gray-lighter); color: var(--dark); font-size: 0.95rem;">✏️ {{ equipement.updatedAt|date('d/m/Y H:i') }}</div>
             </div>
         </div>
     </div>
 
-    <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: flex-end;">
-        <a href="{{ path('admin_equipement_edit', {'id': equipement.id}) }}" class="btn btn-warning">✏️ Modifier</a>
+    <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: flex-end; flex-wrap: wrap;">
+        <a href="{{ path('admin_equipement_qr', {'id': equipement.id}) }}" class="btn" style="padding: 0.75rem 1.5rem; border-radius: var(--radius); font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, #3b82f6, #1e40af); color: white; box-shadow: var(--shadow); transition: all 0.2s;">
+            <i class="fas fa-qrcode"></i> QR Code
+        </a>
+        <a href="{{ path('admin_equipement_edit', {'id': equipement.id}) }}" class="btn" style="padding: 0.75rem 1.5rem; border-radius: var(--radius); font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; box-shadow: var(--shadow); transition: all 0.2s;">
+            <i class="fas fa-edit"></i> Modifier
+        </a>
         <form method="post" action="{{ path('admin_equipement_delete', {'id': equipement.id}) }}" onsubmit="return confirm('Supprimer cet équipement ?');" style="display: inline;">
             <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ equipement.id) }}">
-            <button type="submit" class="btn btn-danger">🗑️ Supprimer</button>
+            <button type="submit" class="btn" style="padding: 0.75rem 1.5rem; border-radius: var(--radius); font-weight: 600; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; box-shadow: var(--shadow); transition: all 0.2s;">
+                <i class="fas fa-trash"></i> Supprimer
+            </button>
         </form>
     </div>
 </div>
+
+<!-- Empreinte Carbone -->
+{% if co2Data is defined %}
+<div class="card" style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border: 2px solid #10b981; margin-top: 2rem;">
+    <h2 style="font-size: 1.1rem; margin-bottom: 1rem; color: #065f46;">🌱 Empreinte Carbone</h2>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+        <div>
+            <div style="font-size: 0.7rem; color: #065f46;">CO₂ Total</div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: #047857;">{{ co2Data.total|number_format(2) }} kg</div>
+        </div>
+        <div>
+            <div style="font-size: 0.7rem; color: #065f46;">CO₂ Mensuel</div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: #047857;">{{ co2Data.monthly|number_format(2) }} kg</div>
+            <div style="font-size: 0.65rem; color: #065f46;">par mois</div>
+        </div>
+        <div>
+            <div style="font-size: 0.7rem; color: #065f46;">Niveau d'Impact</div>
+            <div style="font-size: 1.5rem; font-weight: 700; color: #047857;">
+                {% if co2Data.level == 'low' %}Faible 🟢
+                {% elseif co2Data.level == 'medium' %}Moyen 🟡
+                {% else %}Élevé 🔴{% endif %}
+            </div>
+        </div>
+    </div>
+    <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(255,255,255,0.5); border-radius: 8px; font-size: 0.8rem; color: #065f46;">
+        💡 <strong>Conseil:</strong> Un arbre absorbe environ 21.77 kg de CO₂ par an. Cet équipement nécessiterait {{ (co2Data.total / 21.77)|round(1) }} arbres pour compenser son empreinte carbone annuelle.
+    </div>
+</div>
+{% endif %}
 
 <!-- Historique des maintenances -->
 <div class="card" style="margin-top: 2rem;">
@@ -111,3 +156,16 @@
     {% endif %}
 </div>
 {% endblock %}
+
+
+<style>
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+    
+    /* Dark theme */
+    body.dark-theme label {
+        color: var(--light);
+    }
+</style>

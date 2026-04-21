@@ -6,6 +6,7 @@ namespace App\Controller\Admin;
 use App\Entity\Maintenance;
 use App\Repository\EquipementRepository;
 use App\Repository\MaintenanceRepository;
+use App\Service\MeteoService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,22 +18,35 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 class MaintenanceController extends AbstractController
 {
     #[Route('/', name: 'admin_maintenance_index')]
-    public function index(MaintenanceRepository $repository): Response
+    public function index(MaintenanceRepository $repository, MeteoService $meteoService): Response
     {
         $maintenances = $repository->findBy([], ['dateMaintenance' => 'DESC']);
-        foreach ($maintenances as $m) { $m->joursRestants = $m->getJoursRestants(); }
+        foreach ($maintenances as $m) { 
+            $m->joursRestants = $m->getJoursRestants(); 
+        }
+        
+        // Coordonnées de la Tunisie
+        $coordonnees = ['lat' => 36.8065, 'lng' => 10.1815];
+        $soleil = $meteoService->getSunriseSunset($coordonnees['lat'], $coordonnees['lng']);
+        $meteo = $meteoService->getWeatherForecast($coordonnees['lat'], $coordonnees['lng']);
         
         return $this->render('admin/maintenance/index.html.twig', [
             'maintenances' => $maintenances,
             'stats' => $repository->getStatistics(),
+            'soleil' => $soleil,
+            'meteo' => $meteo,
         ]);
     }
     
     #[Route('/new', name: 'admin_maintenance_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $em, EquipementRepository $equipementRepo, ValidatorInterface $validator): Response
+    public function new(Request $request, EntityManagerInterface $em, EquipementRepository $equipementRepo, ValidatorInterface $validator, MeteoService $meteoService): Response
     {
         $maintenance = new Maintenance();
         $errors = [];
+        
+        // Données météo pour la planification
+        $coordonnees = ['lat' => 36.8065, 'lng' => 10.1815];
+        $soleil = $meteoService->getSunriseSunset($coordonnees['lat'], $coordonnees['lng']);
         
         if ($request->isMethod('POST')) {
             $equipementId = $request->request->get('equipement_id');
@@ -77,13 +91,17 @@ class MaintenanceController extends AbstractController
             'equipements' => $equipementRepo->findAll(),
             'maintenance' => $maintenance,
             'errors' => $errors,
+            'soleil' => $soleil,
         ]);
     }
     
     #[Route('/{id}/edit', name: 'admin_maintenance_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Maintenance $maintenance, EntityManagerInterface $em, EquipementRepository $equipementRepo, ValidatorInterface $validator): Response
+    public function edit(Request $request, Maintenance $maintenance, EntityManagerInterface $em, EquipementRepository $equipementRepo, ValidatorInterface $validator, MeteoService $meteoService): Response
     {
         $errors = [];
+        
+        $coordonnees = ['lat' => 36.8065, 'lng' => 10.1815];
+        $soleil = $meteoService->getSunriseSunset($coordonnees['lat'], $coordonnees['lng']);
         
         if ($request->isMethod('POST')) {
             $equipementId = $request->request->get('equipement_id');
@@ -128,6 +146,7 @@ class MaintenanceController extends AbstractController
             'maintenance' => $maintenance,
             'equipements' => $equipementRepo->findAll(),
             'errors' => $errors,
+            'soleil' => $soleil,
         ]);
     }
     
@@ -143,10 +162,14 @@ class MaintenanceController extends AbstractController
     }
     
     #[Route('/{id}/show', name: 'admin_maintenance_show', methods: ['GET'])]
-    public function show(Maintenance $maintenance): Response
+    public function show(Maintenance $maintenance, MeteoService $meteoService): Response
     {
+        $coordonnees = ['lat' => 36.8065, 'lng' => 10.1815];
+        $soleil = $meteoService->getSunriseSunset($coordonnees['lat'], $coordonnees['lng'], $maintenance->getDateMaintenance()->format('Y-m-d'));
+        
         return $this->render('admin/maintenance/show.html.twig', [
             'maintenance' => $maintenance,
+            'soleil' => $soleil,
         ]);
     }
     

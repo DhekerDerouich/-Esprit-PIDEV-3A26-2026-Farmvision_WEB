@@ -5,6 +5,8 @@ namespace App\Controller\Front;
 
 use App\Entity\Equipement;
 use App\Repository\EquipementRepository;
+use App\Service\CarboneService;
+use App\Service\QRCodeService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,7 +17,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class EquipementController extends AbstractController
 {
     #[Route('/', name: 'front_equipement_index', methods: ['GET'])]
-    public function index(Request $request, EquipementRepository $repository): Response
+    public function index(Request $request, EquipementRepository $repository, CarboneService $carboneService): Response
     {
         $keyword = $request->query->get('search', '');
         $type = $request->query->get('type', 'all');
@@ -26,6 +28,12 @@ class EquipementController extends AbstractController
             $equipements = $repository->search($keyword, $type, $etat);
         } else {
             $equipements = $repository->findAll();
+        }
+        
+        // Ajouter les données CO2 pour chaque équipement
+        foreach ($equipements as $equipement) {
+            $co2Data = $carboneService->getCO2ByEquipement($equipement);
+            $equipement->co2Data = $co2Data;
         }
         
         $stats = $repository->getStatistics();
@@ -42,7 +50,7 @@ class EquipementController extends AbstractController
     }
     
     #[Route('/{id}', name: 'front_equipement_show', methods: ['GET'])]
-    public function show(int $id, EquipementRepository $repository): Response
+    public function show(int $id, EquipementRepository $repository, CarboneService $carboneService): Response
     {
         $equipement = $repository->find($id);
         
@@ -50,8 +58,11 @@ class EquipementController extends AbstractController
             throw $this->createNotFoundException('Équipement non trouvé');
         }
         
+        $co2Data = $carboneService->getCO2ByEquipement($equipement);
+        
         return $this->render('front/equipement/show.html.twig', [
             'equipement' => $equipement,
+            'co2Data' => $co2Data,
         ]);
     }
     
@@ -170,5 +181,28 @@ class EquipementController extends AbstractController
         }
         
         return $this->redirectToRoute('front_equipement_index');
+    }
+    
+    #[Route('/{id}/qr', name: 'front_equipement_qr', methods: ['GET'])]
+    public function showQR(Equipement $equipement, QRCodeService $qrService): Response
+    {
+        $qrCode = $qrService->generateBase64QR($equipement);
+        
+        return $this->render('front/equipement/qr.html.twig', [
+            'equipement' => $equipement,
+            'qrCode' => $qrCode,
+        ]);
+    }
+
+    #[Route('/{id}/qr/download', name: 'front_equipement_qr_download', methods: ['GET'])]
+    public function downloadQR(Equipement $equipement, QRCodeService $qrService): Response
+    {
+        $qrCode = $qrService->generateBase64QR($equipement);
+        $qrImageData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $qrCode));
+        
+        return new Response($qrImageData, 200, [
+            'Content-Type' => 'image/png',
+            'Content-Disposition' => sprintf('attachment; filename="qr_equipement_%d.png"', $equipement->getId())
+        ]);
     }
 }

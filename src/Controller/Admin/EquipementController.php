@@ -5,6 +5,8 @@ namespace App\Controller\Admin;
 
 use App\Entity\Equipement;
 use App\Repository\EquipementRepository;
+use App\Service\CarboneService;
+use App\Service\QRCodeService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,7 +18,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 class EquipementController extends AbstractController
 {
     #[Route('/', name: 'admin_equipement_index')]
-    public function index(Request $request, EquipementRepository $repository): Response
+    public function index(Request $request, EquipementRepository $repository, CarboneService $carboneService): Response
     {
         // Récupérer les paramètres de recherche
         $search = $request->query->get('search', '');
@@ -28,6 +30,12 @@ class EquipementController extends AbstractController
             $equipements = $repository->search($search, $type, $etat);
         } else {
             $equipements = $repository->findAll();
+        }
+        
+        // Ajouter les données CO2 pour chaque équipement
+        foreach ($equipements as $equipement) {
+            $co2Data = $carboneService->getCO2ByEquipement($equipement);
+            $equipement->co2Data = $co2Data;
         }
         
         $stats = $repository->getStatistics();
@@ -147,10 +155,36 @@ class EquipementController extends AbstractController
     }
     
     #[Route('/{id}', name: 'admin_equipement_show', methods: ['GET'])]
-    public function show(Equipement $equipement): Response
+    public function show(Equipement $equipement, CarboneService $carboneService): Response
     {
+        $co2Data = $carboneService->getCO2ByEquipement($equipement);
+        
         return $this->render('admin/equipement/show.html.twig', [
             'equipement' => $equipement,
+            'co2Data' => $co2Data,
+        ]);
+    }
+    
+    #[Route('/{id}/qr', name: 'admin_equipement_qr', methods: ['GET'])]
+    public function showQR(Equipement $equipement, QRCodeService $qrService): Response
+    {
+        $qrCode = $qrService->generateBase64QR($equipement);
+        
+        return $this->render('admin/equipement/qr.html.twig', [
+            'equipement' => $equipement,
+            'qrCode' => $qrCode,
+        ]);
+    }
+
+    #[Route('/{id}/qr/download', name: 'admin_equipement_qr_download', methods: ['GET'])]
+    public function downloadQR(Equipement $equipement, QRCodeService $qrService): Response
+    {
+        $qrCode = $qrService->generateBase64QR($equipement);
+        $qrImageData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $qrCode));
+        
+        return new Response($qrImageData, 200, [
+            'Content-Type' => 'image/png',
+            'Content-Disposition' => sprintf('attachment; filename="qr_equipement_%d.png"', $equipement->getId())
         ]);
     }
 }

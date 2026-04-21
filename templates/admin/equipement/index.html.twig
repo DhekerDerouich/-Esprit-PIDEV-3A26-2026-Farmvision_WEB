@@ -3,39 +3,53 @@
 
 {% block body %}
 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-    <h1 style="font-size: 1.5rem;">Gestion des équipements</h1>
-    <a href="{{ path('admin_equipement_new') }}" class="btn btn-primary">+ Ajouter un équipement</a>
+    <h1 style="font-size: 1.75rem; font-weight: 700; color: var(--dark); margin: 0;">
+        <i class="fas fa-tools" style="color: var(--primary);"></i> Gestion des équipements
+    </h1>
+    <a href="{{ path('admin_equipement_new') }}" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; text-decoration: none; border-radius: var(--radius); font-weight: 600; box-shadow: var(--shadow); transition: all 0.2s;">
+        <i class="fas fa-plus"></i> Ajouter un équipement
+    </a>
 </div>
 
 <!-- FORMULAIRE DE RECHERCHE -->
-<div class="card">
+<div class="card" style="background: var(--white); border: 2px solid var(--gray-lighter); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 2rem; box-shadow: var(--shadow);">
     <form method="get" action="{{ path('admin_equipement_index') }}">
-        <div style="display: grid; grid-template-columns: 1fr auto auto auto; gap: 1rem; align-items: end;">
+        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 1rem; align-items: end;">
             <div>
-                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">🔍 Rechercher</label>
-                <input type="text" name="search" value="{{ search|default('') }}" placeholder="Nom ou type..." class="form-control">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--dark); font-size: 0.85rem;">
+                    <i class="fas fa-search"></i> Rechercher
+                </label>
+                <input type="text" name="search" value="{{ search|default('') }}" placeholder="Nom ou type..." class="form-control" style="padding: 0.75rem 1rem; border: 2px solid var(--gray-lighter); border-radius: var(--radius); background: var(--white); color: var(--dark); font-size: 0.95rem; transition: all 0.2s;">
             </div>
             <div>
-                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">📂 Type</label>
-                <select name="type" class="form-control">
-                    <option value="all" {% if selectedType|default('all') == 'all' %}selected{% endif %}>Tous</option>
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--dark); font-size: 0.85rem;">
+                    <i class="fas fa-folder"></i> Type
+                </label>
+                <select name="type" class="form-control" style="padding: 0.75rem 1rem; border: 2px solid var(--gray-lighter); border-radius: var(--radius); background: var(--white); color: var(--dark); font-size: 0.95rem;">
+                    <option value="all" {% if selectedType|default('all') == 'all' %}selected{% endif %}>Tous les types</option>
                     {% for type in types|default([]) %}
                         <option value="{{ type }}" {% if selectedType|default('all') == type %}selected{% endif %}>{{ type }}</option>
                     {% endfor %}
                 </select>
             </div>
             <div>
-                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">📊 État</label>
-                <select name="etat" class="form-control">
-                    <option value="all" {% if selectedEtat|default('all') == 'all' %}selected{% endif %}>Tous</option>
-                    <option value="Fonctionnel" {% if selectedEtat|default('all') == 'Fonctionnel' %}selected{% endif %}>Fonctionnel</option>
-                    <option value="En panne" {% if selectedEtat|default('all') == 'En panne' %}selected{% endif %}>En panne</option>
-                    <option value="Maintenance" {% if selectedEtat|default('all') == 'Maintenance' %}selected{% endif %}>Maintenance</option>
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--dark); font-size: 0.85rem;">
+                    <i class="fas fa-chart-bar"></i> État
+                </label>
+                <select name="etat" class="form-control" style="padding: 0.75rem 1rem; border: 2px solid var(--gray-lighter); border-radius: var(--radius); background: var(--white); color: var(--dark); font-size: 0.95rem;">
+                    <option value="all" {% if selectedEtat|default('all') == 'all' %}selected{% endif %}>Tous les états</option>
+                    <option value="Fonctionnel" {% if selectedEtat|default('all') == 'Fonctionnel' %}selected{% endif %}>✅ Fonctionnel</option>
+                    <option value="En panne" {% if selectedEtat|default('all') == 'En panne' %}selected{% endif %}>⚠️ En panne</option>
+                    <option value="Maintenance" {% if selectedEtat|default('all') == 'Maintenance' %}selected{% endif %}>🔧 Maintenance</option>
                 </select>
             </div>
-            <div>
-                <button type="submit" class="btn btn-primary">Rechercher</button>
-                <a href="{{ path('admin_equipement_index') }}" class="btn" style="background: var(--bg-panel);">Réinitialiser</a>
+            <div style="display: flex; gap: 0.5rem;">
+                <button type="submit" class="btn btn-primary" style="padding: 0.75rem 1.5rem; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; border-radius: var(--radius); font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow);">
+                    <i class="fas fa-search"></i>
+                </button>
+                <a href="{{ path('admin_equipement_index') }}" class="btn" style="padding: 0.75rem 1rem; background: var(--gray-lighter); color: var(--dark); text-decoration: none; border-radius: var(--radius); font-weight: 600; transition: all 0.2s; display: inline-flex; align-items: center;">
+                    <i class="fas fa-redo"></i>
+                </a>
             </div>
         </div>
     </form>
@@ -43,89 +57,154 @@
 
 <!-- Statistiques -->
 <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; margin-bottom: 2rem;">
-    <div class="card">
-        <div style="font-size: 0.7rem; color: var(--text-muted);">Total</div>
-        <div style="font-size: 1.75rem; font-weight: 600;">{{ stats.total|default(0) }}</div>
+    <div class="stat-card" style="background: linear-gradient(135deg, #f3f4f6, #e5e7eb); border: 2px solid var(--gray-lighter); border-radius: var(--radius); padding: 1.25rem; text-align: center; box-shadow: var(--shadow);">
+        <div style="font-size: 0.75rem; font-weight: 600; color: var(--gray); text-transform: uppercase; margin-bottom: 0.5rem;">📊 Total</div>
+        <div style="font-size: 2rem; font-weight: 700; color: var(--dark);">{{ stats.total|default(0) }}</div>
     </div>
-    <div class="card">
-        <div style="font-size: 0.7rem; color: var(--text-muted);">Fonctionnels</div>
-        <div style="font-size: 1.75rem; font-weight: 600; color: var(--green);">{{ stats.fonctionnels|default(0) }}</div>
+    <div class="stat-card" style="background: linear-gradient(135deg, #d1fae5, #a7f3d0); border: 2px solid var(--success); border-radius: var(--radius); padding: 1.25rem; text-align: center; box-shadow: var(--shadow);">
+        <div style="font-size: 0.75rem; font-weight: 600; color: #065f46; text-transform: uppercase; margin-bottom: 0.5rem;">✅ Fonctionnels</div>
+        <div style="font-size: 2rem; font-weight: 700; color: #047857;">{{ stats.fonctionnels|default(0) }}</div>
     </div>
-    <div class="card">
-        <div style="font-size: 0.7rem; color: var(--text-muted);">En panne</div>
-        <div style="font-size: 1.75rem; font-weight: 600; color: var(--red);">{{ stats.enPanne|default(0) }}</div>
+    <div class="stat-card" style="background: linear-gradient(135deg, #fee2e2, #fecaca); border: 2px solid var(--danger); border-radius: var(--radius); padding: 1.25rem; text-align: center; box-shadow: var(--shadow);">
+        <div style="font-size: 0.75rem; font-weight: 600; color: #991b1b; text-transform: uppercase; margin-bottom: 0.5rem;">⚠️ En panne</div>
+        <div style="font-size: 2rem; font-weight: 700; color: #dc2626;">{{ stats.enPanne|default(0) }}</div>
     </div>
-    <div class="card">
-        <div style="font-size: 0.7rem; color: var(--text-muted);">En maintenance</div>
-        <div style="font-size: 1.75rem; font-weight: 600; color: var(--gold);">{{ stats.enMaintenance|default(0) }}</div>
+    <div class="stat-card" style="background: linear-gradient(135deg, #fef3c7, #fde68a); border: 2px solid var(--warning); border-radius: var(--radius); padding: 1.25rem; text-align: center; box-shadow: var(--shadow);">
+        <div style="font-size: 0.75rem; font-weight: 600; color: #92400e; text-transform: uppercase; margin-bottom: 0.5rem;">🔧 Maintenance</div>
+        <div style="font-size: 2rem; font-weight: 700; color: #d97706;">{{ stats.enMaintenance|default(0) }}</div>
     </div>
-    <div class="card">
-        <div style="font-size: 0.7rem; color: var(--text-muted);">Sous garantie</div>
-        <div style="font-size: 1.75rem; font-weight: 600;">{{ stats.sousGarantie|default(0) }}</div>
+    <div class="stat-card" style="background: linear-gradient(135deg, #dbeafe, #bfdbfe); border: 2px solid #3b82f6; border-radius: var(--radius); padding: 1.25rem; text-align: center; box-shadow: var(--shadow);">
+        <div style="font-size: 0.75rem; font-weight: 600; color: #1e40af; text-transform: uppercase; margin-bottom: 0.5rem;">🛡️ Garantie</div>
+        <div style="font-size: 2rem; font-weight: 700; color: #2563eb;">{{ stats.sousGarantie|default(0) }}</div>
     </div>
 </div>
 
+<!-- Empreinte Carbone Totale -->
+{% if co2Data is defined and co2Data.total_co2 is defined %}
+<div class="card" style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border: 2px solid #10b981; margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h3 style="font-size: 1.1rem; color: #065f46; margin-bottom: 0.5rem;">🌱 Empreinte Carbone du Parc</h3>
+            <div style="font-size: 2rem; font-weight: 700; color: #047857;">{{ co2Data.total_co2|number_format(2) }} kg CO₂</div>
+            <div style="font-size: 0.8rem; color: #065f46; margin-top: 0.5rem;">
+                📊 Moyenne par équipement: {{ co2Data.moyenne_co2|number_format(2) }} kg CO₂
+            </div>
+        </div>
+        <a href="{{ path('admin_carbone_index') }}" class="btn btn-primary" style="background: #10b981;">
+            <i class="fas fa-chart-line"></i> Voir détails
+        </a>
+    </div>
+</div>
+{% endif %}
+
 <!-- Résultats de recherche -->
 {% if search|default('') != '' or selectedType|default('all') != 'all' or selectedEtat|default('all') != 'all' %}
-    <div style="margin-bottom: 1rem; padding: 0.5rem 1rem; background: var(--green-glow); border-radius: 8px;">
-        🔍 Résultats pour : 
-        {% if search|default('') != '' %} "{{ search }}" {% endif %}
-        {% if selectedType|default('all') != 'all' %} | Type: {{ selectedType }} {% endif %}
-        {% if selectedEtat|default('all') != 'all' %} | État: {{ selectedEtat }} {% endif %}
-        ({{ equipements|length }} équipement(s) trouvé(s))
+    <div style="margin-bottom: 1.5rem; padding: 1rem 1.5rem; background: linear-gradient(135deg, #dbeafe, #bfdbfe); border: 2px solid #3b82f6; border-radius: var(--radius); color: #1e40af; font-weight: 600; box-shadow: var(--shadow);">
+        <i class="fas fa-filter"></i> Résultats filtrés : 
+        {% if search|default('') != '' %}<span style="background: white; padding: 0.25rem 0.75rem; border-radius: var(--radius); margin-left: 0.5rem;">"{{ search }}"</span>{% endif %}
+        {% if selectedType|default('all') != 'all' %}<span style="background: white; padding: 0.25rem 0.75rem; border-radius: var(--radius); margin-left: 0.5rem;">Type: {{ selectedType }}</span>{% endif %}
+        {% if selectedEtat|default('all') != 'all' %}<span style="background: white; padding: 0.25rem 0.75rem; border-radius: var(--radius); margin-left: 0.5rem;">État: {{ selectedEtat }}</span>{% endif %}
+        <span style="margin-left: 0.5rem;">({{ equipements|length }} équipement(s))</span>
     </div>
 {% endif %}
 
 <!-- Tableau des équipements -->
-<div class="card" style="overflow-x: auto;">
-    <table class="data-table">
+<div class="card" style="background: var(--white); border: 2px solid var(--gray-lighter); border-radius: var(--radius); padding: 0; overflow: hidden; box-shadow: var(--shadow);">
+    <table class="data-table" style="width: 100%; border-collapse: collapse;">
         <thead>
-            <tr>
-                <th>Nom</th>
-                <th>Type</th>
-                <th>État</th>
-                <th>Date d'achat</th>
-                <th>Âge</th>
-                <th>Garantie</th>
-                <th>Actions</th>
+            <tr style="background: linear-gradient(135deg, #f9fafb, #f3f4f6);">
+                <th style="text-align: left; padding: 1rem 1.5rem; color: var(--dark); font-size: 0.8rem; font-weight: 700; text-transform: uppercase; border-bottom: 2px solid var(--gray-lighter);">
+                    <i class="fas fa-tag"></i> Nom
+                </th>
+                <th style="text-align: left; padding: 1rem 1.5rem; color: var(--dark); font-size: 0.8rem; font-weight: 700; text-transform: uppercase; border-bottom: 2px solid var(--gray-lighter);">
+                    <i class="fas fa-folder"></i> Type
+                </th>
+                <th style="text-align: left; padding: 1rem 1.5rem; color: var(--dark); font-size: 0.8rem; font-weight: 700; text-transform: uppercase; border-bottom: 2px solid var(--gray-lighter);">
+                    <i class="fas fa-chart-bar"></i> État
+                </th>
+                <th style="text-align: left; padding: 1rem 1.5rem; color: var(--dark); font-size: 0.8rem; font-weight: 700; text-transform: uppercase; border-bottom: 2px solid var(--gray-lighter);">
+                    <i class="fas fa-calendar"></i> Date d'achat
+                </th>
+                <th style="text-align: left; padding: 1rem 1.5rem; color: var(--dark); font-size: 0.8rem; font-weight: 700; text-transform: uppercase; border-bottom: 2px solid var(--gray-lighter);">
+                    <i class="fas fa-clock"></i> Âge
+                </th>
+                <th style="text-align: left; padding: 1rem 1.5rem; color: var(--dark); font-size: 0.8rem; font-weight: 700; text-transform: uppercase; border-bottom: 2px solid var(--gray-lighter);">
+                    <i class="fas fa-shield-alt"></i> Garantie
+                </th>
+                <th style="text-align: center; padding: 1rem 1.5rem; color: var(--dark); font-size: 0.8rem; font-weight: 700; text-transform: uppercase; border-bottom: 2px solid var(--gray-lighter);">
+                    <i class="fas fa-cog"></i> Actions
+                </th>
             </tr>
         </thead>
         <tbody>
             {% for equipement in equipements %}
-            <tr>
-                <td><strong>{{ equipement.nom }}</strong></td>
-                <td>{{ equipement.type }}</td>
-                <td>
+            <tr style="transition: all 0.2s; border-bottom: 1px solid var(--gray-lighter);">
+                <td style="padding: 1rem 1.5rem; font-size: 0.9rem; color: var(--dark); font-weight: 600;">
+                    {{ equipement.nom }}
+                </td>
+                <td style="padding: 1rem 1.5rem; font-size: 0.9rem; color: var(--gray);">
+                    {% if equipement.type == 'Tracteur' %}🚜
+                    {% elseif equipement.type == 'Moissonneuse' %}🌾
+                    {% elseif equipement.type == 'Pulvérisateur' %}💧
+                    {% elseif equipement.type == 'Charrue' %}🪓
+                    {% elseif equipement.type == 'Semoir' %}🌱
+                    {% else %}🔧{% endif %} {{ equipement.type }}
+                </td>
+                <td style="padding: 1rem 1.5rem;">
                     {% if equipement.etat == 'Fonctionnel' %}
-                        <span class="badge badge-success">✓ Fonctionnel</span>
+                        <span style="display: inline-block; padding: 0.375rem 0.875rem; border-radius: var(--radius); font-size: 0.8rem; font-weight: 600; background: linear-gradient(135deg, #d1fae5, #a7f3d0); color: #047857; border: 1px solid #10b981;">
+                            ✅ Fonctionnel
+                        </span>
                     {% elseif equipement.etat == 'En panne' %}
-                        <span class="badge badge-danger">⚠ En panne</span>
+                        <span style="display: inline-block; padding: 0.375rem 0.875rem; border-radius: var(--radius); font-size: 0.8rem; font-weight: 600; background: linear-gradient(135deg, #fee2e2, #fecaca); color: #dc2626; border: 1px solid #ef4444;">
+                            ⚠️ En panne
+                        </span>
                     {% else %}
-                        <span class="badge badge-warning">🔧 Maintenance</span>
+                        <span style="display: inline-block; padding: 0.375rem 0.875rem; border-radius: var(--radius); font-size: 0.8rem; font-weight: 600; background: linear-gradient(135deg, #fef3c7, #fde68a); color: #d97706; border: 1px solid #f59e0b;">
+                            🔧 Maintenance
+                        </span>
                     {% endif %}
                 </td>
-                <td>{{ equipement.dateAchat ? equipement.dateAchat|date('d/m/Y') : '-' }}</td>
-                <td>{{ equipement.age }} an(s)</td>
-                <td>
+                <td style="padding: 1rem 1.5rem; font-size: 0.9rem; color: var(--gray);">
+                    {{ equipement.dateAchat ? equipement.dateAchat|date('d/m/Y') : '-' }}
+                </td>
+                <td style="padding: 1rem 1.5rem; font-size: 0.9rem; color: var(--gray);">
+                    {{ equipement.age }} an(s)
+                </td>
+                <td style="padding: 1rem 1.5rem;">
                     {% if equipement.sousGarantie %}
-                        <span class="badge badge-success">✓ Active</span>
+                        <span style="display: inline-block; padding: 0.375rem 0.875rem; border-radius: var(--radius); font-size: 0.8rem; font-weight: 600; background: linear-gradient(135deg, #dbeafe, #bfdbfe); color: #1e40af; border: 1px solid #3b82f6;">
+                            ✓ Active
+                        </span>
                     {% else %}
-                        <span class="badge badge-danger">Expirée</span>
+                        <span style="display: inline-block; padding: 0.375rem 0.875rem; border-radius: var(--radius); font-size: 0.8rem; font-weight: 600; background: var(--gray-lighter); color: var(--gray); border: 1px solid var(--gray-lighter);">
+                            Expirée
+                        </span>
                     {% endif %}
                 </td>
-                <td style="display: flex; gap: 0.5rem;">
-                    <a href="{{ path('admin_equipement_show', {'id': equipement.id}) }}" class="btn" style="background: var(--green-dim); color: var(--green); padding: 0.25rem 0.75rem;" title="Voir">👁️</a>
-                    <a href="{{ path('admin_equipement_edit', {'id': equipement.id}) }}" class="btn" style="background: var(--gold-dim); color: var(--gold); padding: 0.25rem 0.75rem;" title="Modifier">✏️</a>
-                    <form method="post" action="{{ path('admin_equipement_delete', {'id': equipement.id}) }}" onsubmit="return confirm('Supprimer cet équipement ?');" style="display: inline;">
-                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ equipement.id) }}">
-                        <button type="submit" class="btn" style="background: var(--red-dim); color: var(--red); padding: 0.25rem 0.75rem;" title="Supprimer">🗑️</button>
-                    </form>
+                <td style="padding: 1rem 1.5rem; text-align: center;">
+                    <div style="display: inline-flex; gap: 0.5rem;">
+                        <a href="{{ path('admin_equipement_show', {'id': equipement.id}) }}" class="action-btn" style="padding: 0.5rem 0.75rem; background: linear-gradient(135deg, #dbeafe, #bfdbfe); color: #1e40af; text-decoration: none; border-radius: var(--radius); font-weight: 600; transition: all 0.2s; display: inline-flex; align-items: center; border: 1px solid #3b82f6;" title="Voir">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <a href="{{ path('admin_equipement_edit', {'id': equipement.id}) }}" class="action-btn" style="padding: 0.5rem 0.75rem; background: linear-gradient(135deg, #fef3c7, #fde68a); color: #92400e; text-decoration: none; border-radius: var(--radius); font-weight: 600; transition: all 0.2s; display: inline-flex; align-items: center; border: 1px solid #f59e0b;" title="Modifier">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <form method="post" action="{{ path('admin_equipement_delete', {'id': equipement.id}) }}" onsubmit="return confirm('Supprimer cet équipement ?');" style="display: inline;">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ equipement.id) }}">
+                            <button type="submit" class="action-btn" style="padding: 0.5rem 0.75rem; background: linear-gradient(135deg, #fee2e2, #fecaca); color: #991b1b; border: 1px solid #ef4444; border-radius: var(--radius); font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center;" title="Supprimer">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
                 </td>
             </tr>
             {% else %}
             <tr>
-                <td colspan="8" style="text-align: center; padding: 3rem;">
-                    📭 Aucun équipement trouvé
+                <td colspan="7" style="text-align: center; padding: 3rem; color: var(--gray); font-size: 1.1rem;">
+                    <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 1rem; display: block; opacity: 0.3;"></i>
+                    <strong>Aucun équipement trouvé</strong>
+                    <div style="margin-top: 0.5rem; font-size: 0.9rem;">Ajoutez votre premier équipement pour commencer</div>
                 </td>
             </tr>
             {% endfor %}
@@ -134,103 +213,109 @@
 </div>
 
 <style>
-    .data-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    .data-table th {
-        text-align: left;
-        padding: 0.75rem 1rem;
-        background: rgba(82, 183, 136, 0.05);
-        color: var(--text-muted);
-        font-size: 0.7rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        border-bottom: 1px solid var(--border);
-    }
-    .data-table td {
-        padding: 0.75rem 1rem;
-        font-size: 0.8rem;
-        color: var(--text-muted);
-        border-bottom: 1px solid rgba(82, 183, 136, 0.06);
-    }
-    .data-table tr:hover td {
-        background: var(--bg-hover);
-        color: var(--text);
-    }
-    .badge {
-        display: inline-block;
-        padding: 0.25rem 0.75rem;
-        border-radius: 100px;
-        font-size: 0.7rem;
-        font-weight: 600;
-    }
-    .badge-success {
-        background: var(--green-glow);
-        color: var(--green);
-    }
-    .badge-warning {
-        background: var(--gold-dim);
-        color: var(--gold);
-    }
-    .badge-danger {
-        background: var(--red-dim);
-        color: var(--red);
-    }
-    .btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.5rem 1rem;
-        border-radius: 8px;
-        text-decoration: none;
-        font-size: 0.8rem;
-        font-weight: 500;
-        transition: all 0.15s;
-        cursor: pointer;
-        border: none;
-        background: none;
-    }
-    .btn-primary {
-        background: var(--green-dim);
-        color: var(--green-bright);
-        border: 1px solid var(--green-dim);
-    }
+    /* Hover effects */
     .btn-primary:hover {
-        background: var(--green);
-        color: var(--bg);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(16, 185, 129, 0.3);
     }
-    .card {
-        background: var(--bg-card);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 1.25rem;
-        margin-bottom: 1.25rem;
+    
+    .stat-card {
+        transition: all 0.2s ease;
     }
-    .form-control {
-        width: 100%;
-        padding: 0.5rem;
-        border-radius: 6px;
-        border: 1px solid var(--border);
-        background: var(--bg);
-        color: var(--text);
+    
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
     }
+    
+    .data-table tbody tr:hover {
+        background: linear-gradient(135deg, #f9fafb, #f3f4f6);
+    }
+    
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
     .form-control:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
         outline: none;
-        border-color: var(--green);
+    }
+    
+    /* Dark theme support */
+    body.dark-theme .card,
+    body.dark-theme .stat-card {
+        background: var(--darker);
+        border-color: var(--gray);
+    }
+    
+    body.dark-theme .data-table thead tr {
+        background: var(--darker);
+    }
+    
+    body.dark-theme .data-table tbody tr {
+        border-bottom-color: var(--gray);
+    }
+    
+    body.dark-theme .data-table tbody tr:hover {
+        background: var(--gray);
+    }
+    
+    body.dark-theme .form-control {
+        background: var(--darker);
+        border-color: var(--gray);
+        color: var(--light);
+    }
+    
+    body.dark-theme h1 {
+        color: var(--light);
+    }
+    
+    /* Responsive */
+    @media (max-width: 1200px) {
+        .stat-card {
+            font-size: 0.9rem;
+        }
+        .stat-card div:last-child {
+            font-size: 1.5rem;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .data-table {
+            font-size: 0.8rem;
+        }
+        .action-btn {
+            padding: 0.375rem 0.5rem;
+        }
     }
 </style>
 
 <script>
-    // Confirmation avant suppression
+    // Confirmation avant suppression avec style moderne
     document.addEventListener('DOMContentLoaded', function() {
         const deleteForms = document.querySelectorAll('form[action*="delete"]');
         deleteForms.forEach(function(form) {
             form.addEventListener('submit', function(e) {
-                if (!confirm('⚠️ Êtes-vous sûr de vouloir supprimer cet équipement ? Cette action est irréversible.')) {
+                if (!confirm('⚠️ Êtes-vous sûr de vouloir supprimer cet équipement ?\n\nCette action est irréversible et supprimera également :\n• Toutes les maintenances associées\n• L\'historique complet\n• Les données de carbone')) {
                     e.preventDefault();
                 }
             });
+        });
+        
+        // Animation au chargement des statistiques
+        const statCards = document.querySelectorAll('.stat-card');
+        statCards.forEach((card, index) => {
+            setTimeout(() => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = 'all 0.5s ease';
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, 50);
+            }, index * 100);
         });
     });
 </script>
