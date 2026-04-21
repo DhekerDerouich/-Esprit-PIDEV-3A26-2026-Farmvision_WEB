@@ -4,6 +4,7 @@
 namespace App\Service;
 
 use App\Entity\Equipement;
+use App\Entity\Utilisateur;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class QRCodeService
@@ -81,5 +82,55 @@ SVG;
     public function generateQRWithLogo(Equipement $equipement): string
     {
         return $this->generateQRCode($equipement);
+    }
+
+    /**
+     * Génère un QR Code en base64 pour un utilisateur
+     */
+    public function generateUserQrCodeBase64(Utilisateur $user): string
+    {
+        $contenu = sprintf(
+            "FARMVISION - Utilisateur\nID: %d\nNom: %s %s\nRole: %s\nEmail: %s",
+            $user->getId(),
+            $user->getPrenom(),
+            $user->getNom(),
+            $user->getTypeRole(),
+            $user->getEmail()
+        );
+
+        $url = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' . urlencode($contenu);
+
+        try {
+            $response = $this->httpClient->request('GET', $url, [
+                'timeout' => 5
+            ]);
+            $imageData = $response->getContent();
+            return 'data:image/png;base64,' . base64_encode($imageData);
+        } catch (\Exception $e) {
+            return $this->generateUserFallbackSVG($user);
+        }
+    }
+
+    /**
+     * Génère un SVG de secours pour un utilisateur
+     */
+    private function generateUserFallbackSVG(Utilisateur $user): string
+    {
+        $nom = htmlspecialchars($user->getPrenom() . ' ' . $user->getNom(), ENT_QUOTES, 'UTF-8');
+        $id = $user->getId();
+
+        $svg = <<<SVG
+<svg width="300" height="300" xmlns="http://www.w3.org/2000/svg">
+    <rect width="300" height="300" fill="#f3f4f6"/>
+    <rect x="50" y="50" width="200" height="200" fill="white" stroke="#d1d5db" stroke-width="2"/>
+    <text x="150" y="120" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="#374151">QR Code</text>
+    <text x="150" y="145" text-anchor="middle" font-family="Arial" font-size="12" fill="#6b7280">{$nom}</text>
+    <text x="150" y="165" text-anchor="middle" font-family="Arial" font-size="10" fill="#9ca3af">ID: {$id}</text>
+    <text x="150" y="190" text-anchor="middle" font-family="Arial" font-size="10" fill="#ef4444">Service temporairement</text>
+    <text x="150" y="205" text-anchor="middle" font-family="Arial" font-size="10" fill="#ef4444">indisponible</text>
+</svg>
+SVG;
+
+        return 'data:image/svg+xml;base64,' . base64_encode($svg);
     }
 }

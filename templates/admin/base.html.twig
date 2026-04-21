@@ -650,6 +650,15 @@
             <li class="{{ app.request.get('_route') starts with 'admin_maintenance' ? 'active' : '' }}">
                 <a href="{{ path('admin_maintenance_index') }}"><i class="fas fa-wrench"></i> Maintenances</a>
             </li>
+            <li style="margin-top: 1rem; margin-bottom: 0.5rem;">
+                <span style="padding: 0.5rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--gray); display: block;">🤖 Outils IA</span>
+            </li>
+            <li class="{{ app.request.get('_route') starts with 'admin_voice_chat' ? 'active' : '' }}">
+                <a href="{{ path('admin_voice_chat') }}"><i class="fas fa-microphone"></i> Assistant Vocal</a>
+            </li>
+            <li class="{{ app.request.get('_route') starts with 'admin_carbone' ? 'active' : '' }}">
+                <a href="{{ path('admin_carbone_index') }}"><i class="fas fa-leaf"></i> Empreinte Carbone</a>
+            </li>
             
             <!-- SECTION CULTURES & PARCELLES -->
             <li style="margin-top: 1rem; margin-bottom: 0.5rem;">

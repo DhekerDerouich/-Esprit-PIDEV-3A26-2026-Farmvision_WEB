@@ -522,6 +522,14 @@
             </div>
         </li>
             <li><a href="{{ path('front_marketplace_index') }}">Market</a></li>
+            <li><a href="{{ path('front_stock_index') }}">📦 Stocks</a></li>
+            <li class="has-dropdown">
+                <a href="#">🤖 Outils IA</a>
+                <div class="nav-dropdown">
+                    <a href="{{ path('front_voice_chat') }}">🎤 Assistant Vocal</a>
+                    <a href="{{ path('front_carbone_index') }}">🌱 Empreinte Carbone</a>
+                </div>
+            </li>
              
 
             {% endif %}

@@ -8,20 +8,18 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/admin/alertes')]
 class AlertesController extends AbstractController
 {
     #[Route('/notifications', name: 'admin_alertes_notifications', methods: ['GET'])]
-    public function getNotifications(AlertesService $alertesService): JsonResponse
+    public function getNotifications(AlertesService $alertesService, SessionInterface $session): JsonResponse
     {
-        // Récupérer toutes les alertes
         $alertes = $alertesService->getToutesLesAlertes();
         
-        // Transformer en format notification
         $notifications = [];
-        $session = $this->container->get('request_stack')->getSession();
         $readIds = $session->get('alertes_lues', []);
         
         foreach ($alertes as $alerte) {
@@ -46,13 +44,12 @@ class AlertesController extends AbstractController
     }
     
     #[Route('/mark-read', name: 'admin_alertes_mark_read', methods: ['POST'])]
-    public function markAsRead(Request $request): JsonResponse
+    public function markAsRead(Request $request, SessionInterface $session): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
         $alertId = $data['id'] ?? null;
         
         if ($alertId) {
-            $session = $this->container->get('request_stack')->getSession();
             $readIds = $session->get('alertes_lues', []);
             if (!in_array($alertId, $readIds)) {
                 $readIds[] = $alertId;
@@ -64,10 +61,8 @@ class AlertesController extends AbstractController
     }
     
     #[Route('/mark-all-read', name: 'admin_alertes_mark_all_read', methods: ['POST'])]
-    public function markAllRead(Request $request): JsonResponse
+    public function markAllRead(AlertesService $alertesService, SessionInterface $session): JsonResponse
     {
-        $session = $this->container->get('request_stack')->getSession();
-        $alertesService = $this->container->get(AlertesService::class);
         $alertes = $alertesService->getToutesLesAlertes();
         
         $allIds = array_column($alertes, 'id');
