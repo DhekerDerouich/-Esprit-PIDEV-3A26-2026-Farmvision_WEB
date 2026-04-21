@@ -24,5 +24,36 @@ services:
         arguments:
             $projectDir: '%kernel.project_dir%'
 
+    App\Service\SmsService:
+        arguments:
+            $accountSid: '%env(TWILIO_ACCOUNT_SID)%'
+            $authToken: '%env(TWILIO_AUTH_TOKEN)%'
+            $fromNumber: '%env(TWILIO_FROM_NUMBER)%'
+            $enabled: '%env(bool:TWILIO_ENABLED)%'
+
+    App\Service\ImageAnalysisService:
+        arguments:
+            $apiKey: '%env(OPENAI_API_KEY)%'
+
+    App\Service\OpenFoodFactsService:
+        autowire: true
+
+    App\CultureParcelle\Service\WeatherService:
+        arguments:
+            $apiKey: '%env(OPENWEATHER_API_KEY)%'
+
+    App\Service\InvoiceService:
+        arguments:
+            $invoiceDir: '%kernel.project_dir%/var/invoices'
+
+    App\Service\StripeService:
+        arguments:
+            $secretKey: '%env(STRIPE_SECRET_KEY)%'
+            $publicKey: '%env(STRIPE_PUBLIC_KEY)%'
+
+    App\Command\CheckStockAlertCommand:
+        tags:
+            - { name: console.command }
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
