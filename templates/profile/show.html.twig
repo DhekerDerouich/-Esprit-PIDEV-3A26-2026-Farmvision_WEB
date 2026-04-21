@@ -274,18 +274,12 @@
             <span>📱</span> Mon QR Code
         </h3>
 
-        {% if profileQrCode is defined and profileQrCode %}
+        {% if vcardQrCode is defined and vcardQrCode %}
         <div class="qrcode-section">
             <div class="qrcode-card">
-                <img src="{{ profileQrCode }}" alt="QR Code Profil" class="qrcode-image">
-                <div class="qrcode-title">QR Code Profil</div>
-                <div class="qrcode-desc">Scannez pour accéder à votre profil public</div>
-            </div>
-
-            <div class="qrcode-card">
-                <img src="{{ vcardQrCode }}" alt="QR Code VCard" class="qrcode-image">
-                <div class="qrcode-title">QR Code Contact (vCard)</div>
-                <div class="qrcode-desc">Scannez pour ajouter vos coordonnées</div>
+                <img src="{{ vcardQrCode }}" alt="QR Code Contact" class="qrcode-image">
+                <div class="qrcode-title">📱 Mon QR Code</div>
+                <div class="qrcode-desc">Scannez pour sauvegarder mes coordonnées</div>
                 <a href="{{ path('profile_qrcode_download') }}" class="btn-download">
                     ⬇️ Télécharger
                 </a>

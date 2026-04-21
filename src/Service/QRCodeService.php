@@ -12,10 +12,12 @@ use Symfony\Component\HttpFoundation\RequestStack;
 class QRCodeService
 {
     private RequestStack $requestStack;
+    private string $baseUrl;
 
-    public function __construct(RequestStack $requestStack)
+    public function __construct(RequestStack $requestStack, string $appBaseUrl = 'http://localhost:8000')
     {
         $this->requestStack = $requestStack;
+        $this->baseUrl = $appBaseUrl;
     }
 
     private function getBaseUrl(): string
@@ -24,7 +26,7 @@ class QRCodeService
         if ($request) {
             return $request->getSchemeAndHttpHost();
         }
-        return 'http://localhost:8000';
+        return $this->baseUrl;
     }
 
     public function generateBase64QR(Equipement $equipement): string
