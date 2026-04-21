@@ -1,0 +1,177 @@
+{% extends 'front/base.html.twig' %}
+
+{% block body %}
+<style>
+    .complete-wrap {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4rem 1.5rem;
+    }
+
+    .complete-card {
+        width: 100%;
+        max-width: 620px;
+        background: white;
+        border-radius: 24px;
+        padding: 2rem;
+        box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.12);
+    }
+
+    .complete-header {
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .profile-summary {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        display: grid;
+        gap: 0.75rem;
+    }
+
+    .summary-row strong {
+        color: var(--green-deep);
+        display: block;
+        margin-bottom: 0.15rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        color: var(--green-deep);
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.8rem 1rem;
+        border-radius: 12px;
+        border: 2px solid #e2e8f0;
+        background: #f8fafc;
+    }
+
+    .form-control.error {
+        border-color: #e05c5c;
+        background: #fff5f5;
+    }
+
+    .error-message {
+        color: #e05c5c;
+        font-size: 0.75rem;
+        margin-top: 0.35rem;
+        display: block;
+    }
+
+    .input-hint {
+        color: #94a3b8;
+        font-size: 0.75rem;
+        margin-top: 0.35rem;
+        display: block;
+    }
+
+    .btn-submit {
+        width: 100%;
+        padding: 0.9rem;
+        border: none;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--green-mid), var(--green-deep));
+        color: white;
+        font-weight: 700;
+        cursor: pointer;
+    }
+</style>
+
+<div class="complete-wrap">
+    <div class="complete-card">
+        <div class="complete-header">
+            <div style="font-size: 2.8rem;">🔗</div>
+            <h1 style="font-size: 1.85rem; margin-bottom: 0.5rem;">Finaliser votre compte Google</h1>
+            <p style="color: #667085;">Il ne manque plus que votre rôle et quelques informations métier.</p>
+        </div>
+
+        <div class="profile-summary">
+            <div class="summary-row">
+                <strong>Nom complet</strong>
+                <span>{{ googleProfile.prenom }} {{ googleProfile.nom }}</span>
+            </div>
+            <div class="summary-row">
+                <strong>Email Google</strong>
+                <span>{{ googleProfile.email }}</span>
+            </div>
+        </div>
+
+        <form method="post" novalidate>
+            <div class="form-group">
+                <label>Rôle</label>
+                <select name="role" id="roleSelect" class="form-control {% if errors.role is defined %}error{% endif %}">
+                    <option value="AGRICULTEUR" {% if old.role|default('AGRICULTEUR') == 'AGRICULTEUR' %}selected{% endif %}>🌾 Agriculteur</option>
+                    <option value="RESPONSABLE_EXPLOITATION" {% if old.role|default('') == 'RESPONSABLE_EXPLOITATION' %}selected{% endif %}>📋 Responsable d'exploitation</option>
+                </select>
+                {% if errors.role is defined %}
+                    <span class="error-message">{{ errors.role }}</span>
+                {% endif %}
+            </div>
+
+            <div id="agriculteurFields">
+                <div class="form-group">
+                    <label>Téléphone</label>
+                    <input type="tel" name="telephone" value="{{ old.telephone|default('') }}" class="form-control {% if errors.telephone is defined %}error{% endif %}" placeholder="12345678">
+                    {% if errors.telephone is defined %}
+                        <span class="error-message">{{ errors.telephone }}</span>
+                    {% endif %}
+                    <span class="input-hint">8 chiffres, optionnel</span>
+                </div>
+
+                <div class="form-group">
+                    <label>Adresse</label>
+                    <input type="text" name="adresse" value="{{ old.adresse|default('') }}" class="form-control {% if errors.adresse is defined %}error{% endif %}" placeholder="Votre adresse">
+                    {% if errors.adresse is defined %}
+                        <span class="error-message">{{ errors.adresse }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div id="responsableFields" style="display: none;">
+                <div class="form-group">
+                    <label>Matricule</label>
+                    <input type="text" name="matricule" value="{{ old.matricule|default('') }}" class="form-control {% if errors.matricule is defined %}error{% endif %}" placeholder="RES-001">
+                    {% if errors.matricule is defined %}
+                        <span class="error-message">{{ errors.matricule }}</span>
+                    {% endif %}
+                    <span class="input-hint">Format attendu: RES-001</span>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-submit">Créer mon compte FarmVision</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    const roleSelect = document.getElementById('roleSelect');
+    const agriculteurFields = document.getElementById('agriculteurFields');
+    const responsableFields = document.getElementById('responsableFields');
+
+    function toggleGoogleFields() {
+        if (roleSelect.value === 'RESPONSABLE_EXPLOITATION') {
+            agriculteurFields.style.display = 'none';
+            responsableFields.style.display = 'block';
+        } else {
+            agriculteurFields.style.display = 'block';
+            responsableFields.style.display = 'none';
+        }
+    }
+
+    roleSelect.addEventListener('change', toggleGoogleFields);
+    toggleGoogleFields();
+</script>
+{% endblock %}

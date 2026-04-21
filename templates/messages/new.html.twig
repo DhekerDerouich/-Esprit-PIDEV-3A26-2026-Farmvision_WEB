@@ -1,0 +1,31 @@
+{% extends 'messages/base.html.twig' %}
+
+{% block body %}
+<div class="msg-container">
+    <div class="msg-header">
+        <h1>✉️ Nouveau message</h1>
+    </div>
+
+    {% for error in errors %}
+        <div class="alert-error">{{ error }}</div>
+    {% endfor %}
+
+    <form method="post" class="msg-form">
+        <label class="msg-label">Destinataire</label>
+        <select name="receiver_id" class="msg-select" required>
+            <option value="">-- Sélectionner --</option>
+            {% for contact in contacts %}
+                <option value="{{ contact.id }}">{{ contact.prenom }} {{ contact.nom }}</option>
+            {% endfor %}
+        </select>
+
+        <label class="msg-label">Message</label>
+        <textarea name="content" class="msg-textarea" required></textarea>
+
+        <div class="msg-actions">
+            <button type="submit" class="msg-btn msg-btn-primary">Envoyer</button>
+            <a href="{{ path('messages_index') }}" class="msg-btn" style="background: #f1f1f1; color: var(--text);">Annuler</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

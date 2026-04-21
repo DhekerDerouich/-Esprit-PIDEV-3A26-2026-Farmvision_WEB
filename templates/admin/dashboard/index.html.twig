@@ -1,314 +1,464 @@
-{# templates/admin/dashboard/index.html.twig #}
 {% extends 'admin/base.html.twig' %}
-
 {% block page_title %}Dashboard{% endblock %}
 
 {% block body %}
+<div id="dash-data"
+     data-insc-labels="{{ inscriptionsMoisLabels|json_encode }}"
+     data-insc-values="{{ inscriptionsMoisValues|json_encode }}"
+     data-pred-labels="{{ predictionsLabels|json_encode }}"
+     data-pred-values="{{ predictionsValues|json_encode }}"
+     data-genres="{{ genresValues|json_encode }}"
+     data-age-labels="{{ tranchesLabels|json_encode }}"
+     data-age-values="{{ tranchesValues|json_encode }}"
+     data-finance-labels="{{ chartDataFinance.labels|json_encode }}"
+     data-finance-revenus="{{ chartDataFinance.revenus|json_encode }}"
+     data-finance-depenses="{{ chartDataFinance.depenses|json_encode }}"
+     style="display:none"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 1.5rem;
-        margin-bottom: 2rem;
-    }
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem}
+.kpi-card{background:linear-gradient(135deg,#1a3a2a,#2d6a4f);border-radius:16px;padding:1.25rem;color:white;position:relative;overflow:hidden;transition:.3s}
+.kpi-card:hover{transform:translateY(-4px);box-shadow:0 12px 24px rgba(0,0,0,.2)}
+.kpi-card.danger{background:linear-gradient(135deg,#7f1d1d,#ef4444)}
+.kpi-card.warning{background:linear-gradient(135deg,#78350f,#f59e0b)}
+.kpi-card.info{background:linear-gradient(135deg,#1e3a5f,#3b82f6)}
+.kpi-icon{font-size:2rem;margin-bottom:.5rem;opacity:.9}
+.kpi-val{font-size:2.2rem;font-weight:800;line-height:1}
+.kpi-lbl{font-size:.75rem;opacity:.8;margin-top:.35rem}
+.kpi-sub{font-size:.68rem;opacity:.65;margin-top:.5rem;display:flex;gap:.5rem;flex-wrap:wrap}
 
-    .stat-card-modern {
-        background: linear-gradient(135deg, #1a3a2a 0%, #2d6a4f 100%);
-        border-radius: 20px;
-        padding: 1.5rem;
-        color: white;
-        position: relative;
-        overflow: hidden;
-        transition: transform 0.3s, box-shadow 0.3s;
-    }
+.section-title{font-size:1rem;font-weight:700;color:#1a3a2a;display:flex;align-items:center;gap:.5rem;margin-bottom:1rem}
+.card{background:white;border-radius:16px;padding:1.25rem;box-shadow:0 2px 10px rgba(0,0,0,.06);margin-bottom:1.25rem}
+.card:hover{box-shadow:0 6px 20px rgba(0,0,0,.1)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.25rem;margin-bottom:1.25rem}
+.chart-wrap{height:220px;position:relative}
 
-    .stat-card-modern:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 30px rgba(0,0,0,0.2);
-    }
+/* Ban modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal-box{background:white;border-radius:16px;padding:1.5rem;width:420px;max-width:95vw}
+.modal-title{font-size:1rem;font-weight:700;margin-bottom:1rem;color:#1a3a2a;display:flex;align-items:center;gap:.5rem}
+.form-group{margin-bottom:.75rem}
+.form-group label{display:block;font-size:.8rem;font-weight:600;color:#64748b;margin-bottom:.3rem}
+.form-group select,.form-group textarea,.form-group input{width:100%;padding:.5rem .75rem;border:1px solid #e2e8f0;border-radius:8px;font-size:.875rem}
+.form-group textarea{resize:vertical;min-height:70px}
+.btn-row{display:flex;gap:.75rem;justify-content:flex-end;margin-top:1rem}
+.btn-ban{background:#ef4444;color:white;border:none;padding:.5rem 1.25rem;border-radius:8px;font-weight:600;cursor:pointer;font-size:.875rem}
+.btn-ban:hover{background:#dc2626}
+.btn-cancel{background:#f1f5f9;color:#475569;border:none;padding:.5rem 1.25rem;border-radius:8px;font-weight:600;cursor:pointer;font-size:.875rem}
 
-    .stat-card-modern::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        right: -50%;
-        width: 200%;
-        height: 200%;
-        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-        opacity: 0;
-        transition: opacity 0.5s;
-    }
+/* User table */
+.user-table{width:100%;border-collapse:collapse;font-size:.82rem}
+.user-table th{text-align:left;padding:.6rem .75rem;background:#f8fafc;font-size:.72rem;font-weight:600;color:#64748b;text-transform:uppercase}
+.user-table td{padding:.6rem .75rem;border-bottom:1px solid #f1f5f9}
+.user-table tr:hover td{background:#fafafa}
+.badge{display:inline-flex;align-items:center;gap:.25rem;padding:.2rem .6rem;border-radius:20px;font-size:.68rem;font-weight:600}
+.b-green{background:#d1fae5;color:#065f46}
+.b-red{background:#fee2e2;color:#991b1b}
+.b-amber{background:#fef3c7;color:#92400e}
+.b-blue{background:#dbeafe;color:#1e40af}
+.b-gray{background:#f1f5f9;color:#475569}
+.btn-sm{border:none;padding:.3rem .7rem;border-radius:6px;font-size:.72rem;font-weight:600;cursor:pointer;transition:.2s}
+.btn-ban-sm{background:#fee2e2;color:#991b1b}
+.btn-ban-sm:hover{background:#ef4444;color:white}
+.btn-unban-sm{background:#d1fae5;color:#065f46}
+.btn-unban-sm:hover{background:#10b981;color:white}
 
-    .stat-card-modern:hover::before {
-        opacity: 1;
-    }
+/* Trend */
+.trend-up{color:#10b981}.trend-down{color:#ef4444}.trend-stable{color:#f59e0b}
 
-    .stat-icon-modern {
-        font-size: 2.5rem;
-        margin-bottom: 1rem;
-        opacity: 0.9;
-    }
-
-    .stat-value-modern {
-        font-size: 2.5rem;
-        font-weight: 800;
-        line-height: 1;
-    }
-
-    .stat-label-modern {
-        font-size: 0.8rem;
-        opacity: 0.8;
-        margin-top: 0.5rem;
-    }
-
-    .stat-sub {
-        margin-top: 0.75rem;
-        font-size: 0.7rem;
-        opacity: 0.7;
-        display: flex;
-        gap: 0.75rem;
-        flex-wrap: wrap;
-    }
-
-    .dashboard-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1.5rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .dashboard-card {
-        background: white;
-        border-radius: 20px;
-        padding: 1.5rem;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        transition: all 0.3s;
-    }
-
-    .dashboard-card:hover {
-        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-        transform: translateY(-2px);
-    }
-
-    .card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1.25rem;
-        padding-bottom: 0.75rem;
-        border-bottom: 2px solid #f0f0f0;
-    }
-
-    .card-title {
-        font-size: 1rem;
-        font-weight: 700;
-        color: #1a3a2a;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .card-link {
-        color: #2d6a4f;
-        text-decoration: none;
-        font-size: 0.8rem;
-        font-weight: 600;
-    }
-
-    .empty-state {
-        text-align: center;
-        padding: 2rem;
-        color: #999;
-    }
-
-    .action-buttons {
-        display: flex;
-        gap: 1rem;
-        justify-content: center;
-        flex-wrap: wrap;
-    }
-
-    .btn-action {
-        padding: 0.75rem 1.5rem;
-        border-radius: 12px;
-        text-decoration: none;
-        font-weight: 600;
-        transition: all 0.3s;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .btn-action-primary {
-        background: linear-gradient(135deg, #2d6a4f, #1a3a2a);
-        color: white;
-    }
-
-    .btn-action-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(45,106,79,0.3);
-    }
-
-    .btn-action-secondary {
-        background: #f0f0f0;
-        color: #333;
-    }
-
-    .btn-action-secondary:hover {
-        background: #e0e0e0;
-    }
-
-    @media (max-width: 768px) {
-        .stats-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-        .dashboard-grid {
-            grid-template-columns: 1fr;
-        }
-    }
+@media(max-width:1024px){.kpi-grid{grid-template-columns:repeat(2,1fr)}.grid2,.grid3{grid-template-columns:1fr}}
 </style>
 
-<div class="stats-grid">
-    <div class="stat-card-modern">
-        <div class="stat-icon-modern">🚜</div>
-        <div class="stat-value-modern">{{ statsEquipements.total|default(0) }}</div>
-        <div class="stat-label-modern">Total équipements</div>
-        <div class="stat-sub">
-            <span>✓ {{ statsEquipements.fonctionnels|default(0) }} fonctionnels</span>
-            <span>🔧 {{ statsEquipements.enMaintenance|default(0) }} maintenance</span>
-            <span>⚠️ {{ statsEquipements.enPanne|default(0) }} panne</span>
+{# ── KPIs ── #}
+<div class="kpi-grid">
+    <div class="kpi-card">
+        <div class="kpi-icon">👥</div>
+        <div class="kpi-val">{{ statsUtilisateurs.total }}</div>
+        <div class="kpi-lbl">Utilisateurs total</div>
+        <div class="kpi-sub">
+            <span>✅ {{ statsUtilisateurs.actifs }} actifs</span>
+            <span>🚫 {{ statsUtilisateurs.bannis }} bannis</span>
         </div>
     </div>
-
-    <div class="stat-card-modern">
-        <div class="stat-icon-modern">🛠️</div>
-        <div class="stat-value-modern">{{ statsMaintenances.total|default(0) }}</div>
-        <div class="stat-label-modern">Total maintenances</div>
-        <div class="stat-sub">
-            <span>⏰ {{ statsMaintenances.planifiees|default(0) }} planifiées</span>
-            <span>✅ {{ statsMaintenances.realisees|default(0) }} réalisées</span>
+    <div class="kpi-card info">
+        <div class="kpi-icon">🔮</div>
+        <div class="kpi-val">{{ previsionProchainMois }}</div>
+        <div class="kpi-lbl">Prévision mois prochain</div>
+        <div class="kpi-sub">
+            <span class="
+                {% if tendance == 'hausse' %}trend-up{% elseif tendance == 'baisse' %}trend-down{% else %}trend-stable{% endif %}">
+                Tendance : {{ tendance }}
+                {% if tauxCroissance is not null %} ({{ tauxCroissance > 0 ? '+' : '' }}{{ tauxCroissance }}%){% endif %}
+            </span>
         </div>
     </div>
-
-    <div class="stat-card-modern">
-        <div class="stat-icon-modern">💰</div>
-        <div class="stat-value-modern">{{ statsMaintenances.coutTotal|default(0)|number_format(0) }} DT</div>
-        <div class="stat-label-modern">Coût total maintenances</div>
-        <div class="stat-sub">
-            {% set totalMaintenances = statsMaintenances.total|default(0) %}
-            {% set coutTotal = statsMaintenances.coutTotal|default(0) %}
-            {% set coutMoyen = (totalMaintenances > 0) ? (coutTotal / totalMaintenances)|round : 0 %}
-            <span>📊 Coût moyen: {{ coutMoyen|number_format(0) }} DT</span>
+    <div class="kpi-card warning">
+        <div class="kpi-icon">🚜</div>
+        <div class="kpi-val">{{ statsEquipements.total|default(0) }}</div>
+        <div class="kpi-lbl">Équipements</div>
+        <div class="kpi-sub">
+            <span>✓ {{ statsEquipements.fonctionnels|default(0) }}</span>
+            <span>⚠️ {{ statsEquipements.enPanne|default(0) }} pannes</span>
         </div>
     </div>
+    <div class="kpi-card danger">
+        <div class="kpi-icon">🚫</div>
+        <div class="kpi-val">{{ statsUtilisateurs.bannis }}</div>
+        <div class="kpi-lbl">Comptes bannis actifs</div>
+        <div class="kpi-sub"><span>Cliquez pour gérer ↓</span></div>
+    </div>
+</div>
 
-    <div class="stat-card-modern">
-        <div class="stat-icon-modern">👥</div>
-        <div class="stat-value-modern">{{ statsUtilisateurs.total|default(0) }}</div>
-        <div class="stat-label-modern">Utilisateurs</div>
-        <div class="stat-sub">
-            <span>👑 {{ statsUtilisateurs.admins|default(0) }} admins</span>
-            <span>📋 {{ statsUtilisateurs.responsables|default(0) }} responsables</span>
-            <span>🌾 {{ statsUtilisateurs.agriculteurs|default(0) }} agriculteurs</span>
+{# ── Graphiques IA inscriptions + Finance ── #}
+<div class="grid2">
+    <div class="card">
+        <div class="section-title">📈 Inscriptions réelles (12 mois)</div>
+        <div class="chart-wrap"><canvas id="chartInsc"></canvas></div>
+    </div>
+    <div class="card">
+        <div class="section-title">🔮 Prévisions IA (6 mois à venir)</div>
+        <div class="chart-wrap"><canvas id="chartPred"></canvas></div>
+    </div>
+</div>
+
+<div class="grid3">
+    <div class="card">
+        <div class="section-title">⚥ Genre</div>
+        <div class="chart-wrap"><canvas id="chartGenre"></canvas></div>
+    </div>
+    <div class="card">
+        <div class="section-title">🎂 Tranche d'âge</div>
+        <div class="chart-wrap"><canvas id="chartAge"></canvas></div>
+    </div>
+    <div class="card">
+        <div class="section-title">💰 Finances (6 mois)</div>
+        <div class="chart-wrap"><canvas id="chartFinance"></canvas></div>
+    </div>
+</div>
+
+{# ── Gestion Ban ── #}
+<div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+        <div class="section-title" style="margin:0">🚫 Gestion des bans</div>
+        <a href="{{ path('admin_user_index') }}" style="font-size:.8rem;color:#2d6a4f;text-decoration:none;font-weight:600">Voir tous les users →</a>
+    </div>
+
+    {# Formulaire de ban rapide par recherche de nom #}
+    <div style="background:#fff5f5;border:1px solid #fecaca;border-radius:12px;padding:1rem;margin-bottom:1rem">
+        <div style="font-size:.82rem;font-weight:600;color:#991b1b;margin-bottom:.75rem">⚡ Ban rapide — rechercher un utilisateur</div>
+        <div style="display:flex;gap:.75rem;align-items:flex-end;flex-wrap:wrap">
+            <div style="flex:1;min-width:220px;position:relative">
+                <label style="font-size:.72rem;color:#64748b;display:block;margin-bottom:.2rem">Nom / Prénom / Email</label>
+                <input type="text" id="quickBanSearch" placeholder="Tapez un nom..." autocomplete="off"
+                       style="padding:.4rem .6rem;border:1px solid #e2e8f0;border-radius:6px;width:100%;font-size:.82rem"
+                       oninput="searchUsers(this.value)">
+                <div id="searchDropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:white;border:1px solid #e2e8f0;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.1);z-index:100;max-height:200px;overflow-y:auto"></div>
+            </div>
+            <div>
+                <label style="font-size:.72rem;color:#64748b;display:block;margin-bottom:.2rem">Durée</label>
+                <select id="quickBanDuration" style="padding:.4rem .6rem;border:1px solid #e2e8f0;border-radius:6px;font-size:.82rem">
+                    <option value="1min">1 minute</option>
+                    <option value="1h">1 heure</option>
+                    <option value="24h" selected>24 heures</option>
+                    <option value="7d">7 jours</option>
+                    <option value="30d">30 jours</option>
+                    <option value="permanent">Permanent (à vie)</option>
+                </select>
+            </div>
+            <div style="flex:1;min-width:200px">
+                <label style="font-size:.72rem;color:#64748b;display:block;margin-bottom:.2rem">Raison *</label>
+                <input type="text" id="quickBanReason" placeholder="Raison du ban..." style="padding:.4rem .6rem;border:1px solid #e2e8f0;border-radius:6px;width:100%;font-size:.82rem">
+            </div>
+            <button onclick="submitQuickBan()" style="background:#ef4444;color:white;border:none;padding:.45rem 1rem;border-radius:8px;font-weight:600;cursor:pointer;font-size:.82rem">🚫 Bannir</button>
+        </div>
+        <div id="selectedUserInfo" style="display:none;margin-top:.6rem;padding:.4rem .75rem;background:#fef2f2;border-radius:6px;font-size:.8rem;color:#991b1b;font-weight:600"></div>
+        <input type="hidden" id="quickBanId">
+    </div>
+
+    {# Tableau des bannis actuels #}
+    {% if bannis|length > 0 %}
+    <table class="user-table">
+        <thead>
+            <tr>
+                <th>Utilisateur</th>
+                <th>Type ban</th>
+                <th>Raison</th>
+                <th>Expire le</th>
+                <th>Banni le</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for user in bannis %}
+        <tr>
+            <td>
+                <strong>{{ user.prenom }} {{ user.nom }}</strong>
+                <div style="font-size:.7rem;color:#94a3b8">{{ user.email }}</div>
+            </td>
+            <td>
+                {% if user.banStatus == 'permanent' %}
+                    <span class="badge b-red">🔴 Permanent</span>
+                {% else %}
+                    <span class="badge b-amber">⏱ Temporaire</span>
+                {% endif %}
+            </td>
+            <td style="max-width:180px;font-size:.78rem;color:#475569">{{ user.banReason|default('—') }}</td>
+            <td style="font-size:.78rem">
+                {% if user.banExpiresAt %}
+                    {{ user.banExpiresAt|date('d/m/Y H:i') }}
+                {% else %}
+                    <span style="color:#ef4444;font-weight:600">À vie</span>
+                {% endif %}
+            </td>
+            <td style="font-size:.78rem;color:#94a3b8">
+                {{ user.bannedAt ? user.bannedAt|date('d/m/Y H:i') : '—' }}
+            </td>
+            <td>
+                <form method="POST" action="{{ path('admin_dashboard_unban', {id: user.id}) }}" onsubmit="return confirm('Débannir {{ user.prenom }} {{ user.nom }} ?')">
+                    <input type="hidden" name="_token" value="{{ csrf_token('unban' ~ user.id) }}">
+                    <button type="submit" class="btn-sm btn-unban-sm">✅ Débannir</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div style="text-align:center;padding:1.5rem;color:#94a3b8;font-size:.875rem">
+        ✅ Aucun utilisateur banni en ce moment
+    </div>
+    {% endif %}
+</div>
+
+{# ── Derniers inscrits ── #}
+<div class="grid2">
+    <div class="card">
+        <div class="section-title">🆕 Derniers inscrits</div>
+        <table class="user-table">
+            <thead><tr><th>Utilisateur</th><th>Rôle</th><th>Date</th><th>Ban</th></tr></thead>
+            <tbody>
+            {% for user in derniersInscrits %}
+            <tr>
+                <td>
+                    <strong>{{ user.prenom }} {{ user.nom }}</strong>
+                    <div style="font-size:.7rem;color:#94a3b8">{{ user.email }}</div>
+                </td>
+                <td>
+                    {% if user.typeRole == 'ADMINISTRATEUR' %}
+                        <span class="badge b-red">👑 Admin</span>
+                    {% elseif user.typeRole == 'RESPONSABLE_EXPLOITATION' %}
+                        <span class="badge b-amber">📋 Resp.</span>
+                    {% else %}
+                        <span class="badge b-green">🌾 Agri.</span>
+                    {% endif %}
+                </td>
+                <td style="font-size:.75rem;color:#64748b">{{ user.dateCreation ? user.dateCreation|date('d/m/Y') : '—' }}</td>
+                <td>
+                    {% if user.isBanned() %}
+                        <span class="badge b-red">🚫 Banni</span>
+                    {% else %}
+                        <button class="btn-sm btn-ban-sm" onclick="openBanModal({{ user.id }}, '{{ user.prenom }} {{ user.nom }}')">
+                            🚫 Bannir
+                        </button>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <div class="section-title">📊 Résumé par rôle</div>
+        <div style="display:flex;flex-direction:column;gap:.75rem;margin-top:.5rem">
+            {% set roles = [
+                {label: '👑 Administrateurs', count: statsUtilisateurs.admins, class: 'b-red'},
+                {label: '📋 Responsables', count: statsUtilisateurs.responsables, class: 'b-amber'},
+                {label: '🌾 Agriculteurs', count: statsUtilisateurs.agriculteurs, class: 'b-green'},
+                {label: '✅ Comptes actifs', count: statsUtilisateurs.actifs, class: 'b-blue'},
+                {label: '🚫 Comptes bannis', count: statsUtilisateurs.bannis, class: 'b-red'},
+            ] %}
+            {% for r in roles %}
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem .75rem;background:#f8fafc;border-radius:8px">
+                <span style="font-size:.85rem">{{ r.label }}</span>
+                <span class="badge {{ r.class }}">{{ r.count }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #f1f5f9;display:flex;gap:.75rem;flex-wrap:wrap">
+            <a href="{{ path('admin_user_index') }}" style="flex:1;text-align:center;padding:.5rem;background:#1a3a2a;color:white;border-radius:8px;text-decoration:none;font-size:.8rem;font-weight:600">👥 Gérer les users</a>
+            <a href="{{ path('admin_user_ai_stats') }}" style="flex:1;text-align:center;padding:.5rem;background:#2d6a4f;color:white;border-radius:8px;text-decoration:none;font-size:.8rem;font-weight:600">🤖 Stats IA complètes</a>
         </div>
     </div>
 </div>
 
-<div class="dashboard-grid">
-    <!-- Maintenances à venir -->
-    <div class="dashboard-card">
-        <div class="card-header">
-            <div class="card-title">
-                <span>📅</span> Maintenances à venir
+{# ── Modal Ban ── #}
+<div class="modal-overlay" id="banModal">
+    <div class="modal-box">
+        <div class="modal-title">🚫 Bannir <span id="modalUserName"></span></div>
+        <form method="POST" id="banForm">
+            <input type="hidden" name="_token" id="banToken" value="">
+            <div class="form-group">
+                <label>Durée du ban</label>
+                <select name="ban_duration" id="modalDuration">
+                    <option value="1min">1 minute (test)</option>
+                    <option value="1h">1 heure</option>
+                    <option value="24h" selected>24 heures</option>
+                    <option value="7d">7 jours</option>
+                    <option value="30d">30 jours</option>
+                    <option value="permanent">🔴 Permanent (à vie)</option>
+                </select>
             </div>
-            <a href="{{ path('admin_maintenance_index') }}" class="card-link">Voir tout →</a>
-        </div>
-        {% if upcomingMaintenances|length > 0 %}
-            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                {% for maintenance in upcomingMaintenances %}
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: #f8f9fa; border-radius: 12px;">
-                        <div>
-                            <strong style="color: #1a3a2a;">{{ maintenance.equipement.nom }}</strong>
-                            <p style="font-size: 0.75rem; color: #666; margin-top: 0.25rem;">{{ maintenance.typeMaintenance }}</p>
-                        </div>
-                        <div style="text-align: right;">
-                            <div style="font-size: 0.8rem; font-weight: 600; color: #2d6a4f;">{{ maintenance.dateMaintenance|date('d/m/Y') }}</div>
-                            {% if maintenance.joursRestants <= 3 %}
-                                <span style="background: #fee2e2; color: #991b1b; padding: 0.2rem 0.5rem; border-radius: 10px; font-size: 0.7rem;">⚠️ Urgent</span>
-                            {% else %}
-                                <span style="font-size: 0.7rem; color: #666;">Dans {{ maintenance.joursRestants }} jours</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                {% endfor %}
+            <div class="form-group">
+                <label>Raison du ban *</label>
+                <textarea name="ban_reason" placeholder="Ex: Comportement inapproprié, Spam, Violation des conditions..." required></textarea>
             </div>
-        {% else %}
-            <div class="empty-state">
-                <div style="font-size: 3rem; opacity: 0.5;">✅</div>
-                <p>Aucune maintenance planifiée</p>
+            <div class="btn-row">
+                <button type="button" class="btn-cancel" onclick="closeBanModal()">Annuler</button>
+                <button type="submit" class="btn-ban">🚫 Bannir l'utilisateur</button>
             </div>
-        {% endif %}
-    </div>
-
-    <!-- Derniers équipements -->
-    <div class="dashboard-card">
-        <div class="card-header">
-            <div class="card-title">
-                <span>🆕</span> Derniers équipements ajoutés
-            </div>
-            <a href="{{ path('admin_equipement_index') }}" class="card-link">Voir tout →</a>
-        </div>
-        {% if derniersEquipements|length > 0 %}
-            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                {% for equipement in derniersEquipements %}
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #f0f0f0;">
-                        <div>
-                            <strong style="color: #1a3a2a;">{{ equipement.nom }}</strong>
-                            <p style="font-size: 0.7rem; color: #666;">{{ equipement.type }}</p>
-                        </div>
-                        <div>
-                            <span style="padding: 0.2rem 0.5rem; border-radius: 10px; font-size: 0.7rem; 
-                                {% if equipement.etat == 'Fonctionnel' %}background: #d1fae5; color: #065f46;
-                                {% elseif equipement.etat == 'En panne' %}background: #fee2e2; color: #991b1b;
-                                {% else %}background: #fed7aa; color: #92400e;{% endif %}">
-                                {{ equipement.etat }}
-                            </span>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="empty-state">
-                <div style="font-size: 3rem; opacity: 0.5;">🚜</div>
-                <p>Aucun équipement enregistré</p>
-            </div>
-        {% endif %}
+        </form>
     </div>
 </div>
 
-<!-- Actions rapides -->
-<div class="dashboard-card">
-    <div class="card-header">
-        <div class="card-title">
-            <span>⚡</span> Actions rapides
-        </div>
-    </div>
-    <div class="action-buttons">
-        <a href="{{ path('admin_equipement_new') }}" class="btn-action btn-action-primary">
-            🚜 + Ajouter un équipement
-        </a>
-        <a href="{{ path('admin_maintenance_new') }}" class="btn-action btn-action-primary">
-            🛠️ + Planifier maintenance
-        </a>
-        <a href="{{ path('admin_stock_new') }}" class="btn-action btn-action-primary">
-            📦 + Ajouter un produit
-        </a>
-        <a href="{{ path('admin_marketplace_new') }}" class="btn-action btn-action-secondary">
-            🛒 + Mettre en vente
-        </a>
-        <a href="{{ path('admin_user_new') }}" class="btn-action btn-action-secondary">
-            👥 + Ajouter un utilisateur
-        </a>
-    </div>
-</div>
+<script>
+var d = document.getElementById('dash-data');
+var inscLabels     = JSON.parse(d.dataset.inscLabels);
+var inscValues     = JSON.parse(d.dataset.inscValues);
+var predLabels     = JSON.parse(d.dataset.predLabels);
+var predValues     = JSON.parse(d.dataset.predValues);
+var genreData      = JSON.parse(d.dataset.genres);
+var ageLabels      = JSON.parse(d.dataset.ageLabels);
+var ageValues      = JSON.parse(d.dataset.ageValues);
+var finLabels      = JSON.parse(d.dataset.financeLabels);
+var finRevenus     = JSON.parse(d.dataset.financeRevenus);
+var finDepenses    = JSON.parse(d.dataset.financeDepenses);
+
+var noLegend = { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } } };
+var withLegend = { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:true, position:'bottom', labels:{ padding:12, usePointStyle:true, font:{ size:11 } } } } };
+
+new Chart(document.getElementById('chartInsc'), {
+    type:'bar',
+    data:{ labels:inscLabels, datasets:[{ label:'Inscriptions', data:inscValues, backgroundColor:'#2d6a4f', borderRadius:5 }] },
+    options: Object.assign({}, noLegend, { scales:{ y:{ beginAtZero:true, ticks:{ stepSize:1 } } } })
+});
+
+new Chart(document.getElementById('chartPred'), {
+    type:'line',
+    data:{ labels:predLabels, datasets:[{ label:'Prévisions', data:predValues, borderColor:'#10b981', backgroundColor:'rgba(16,185,129,.12)', fill:true, tension:.4, pointRadius:4, pointBackgroundColor:'#10b981' }] },
+    options: Object.assign({}, noLegend, { scales:{ y:{ beginAtZero:true, ticks:{ stepSize:1 } } } })
+});
+
+new Chart(document.getElementById('chartGenre'), {
+    type:'doughnut',
+    data:{ labels:['Masculin','Féminin','Autre','N/R'], datasets:[{ data:genreData, backgroundColor:['#3b82f6','#ec4899','#8b5cf6','#94a3b8'], borderWidth:0 }] },
+    options: Object.assign({}, withLegend, { cutout:'55%' })
+});
+
+new Chart(document.getElementById('chartAge'), {
+    type:'bar',
+    data:{ labels:ageLabels, datasets:[{ data:ageValues, backgroundColor:['#f59e0b','#10b981','#3b82f6','#8b5cf6','#ec4899','#ef4444','#94a3b8'], borderRadius:4 }] },
+    options: Object.assign({}, noLegend, { scales:{ y:{ beginAtZero:true, ticks:{ stepSize:1 } } } })
+});
+
+new Chart(document.getElementById('chartFinance'), {
+    type:'line',
+    data:{ labels:finLabels, datasets:[
+        { label:'Revenus', data:finRevenus, borderColor:'#10b981', backgroundColor:'rgba(16,185,129,.1)', fill:true, tension:.4 },
+        { label:'Dépenses', data:finDepenses, borderColor:'#ef4444', backgroundColor:'rgba(239,68,68,.1)', fill:true, tension:.4 }
+    ]},
+    options: Object.assign({}, withLegend, { scales:{ y:{ beginAtZero:true } } })
+});
+
+// ── Ban modal ──
+function openBanModal(userId, userName) {
+    document.getElementById('modalUserName').textContent = userName;
+    document.getElementById('banForm').action = '/admin/dashboard/ban/' + userId;
+    document.getElementById('banToken').value = ''; // token géré côté serveur
+    document.getElementById('banModal').classList.add('open');
+}
+function closeBanModal() {
+    document.getElementById('banModal').classList.remove('open');
+}
+document.getElementById('banModal').addEventListener('click', function(e) {
+    if (e.target === this) closeBanModal();
+});
+
+// ── Autocomplete recherche utilisateur ──
+var searchTimer;
+function searchUsers(q) {
+    clearTimeout(searchTimer);
+    var drop = document.getElementById('searchDropdown');
+    if (q.length < 2) { drop.style.display='none'; return; }
+    searchTimer = setTimeout(function() {
+        fetch('/admin/users/ajax/search?q=' + encodeURIComponent(q))
+            .then(function(r){ return r.json(); })
+            .then(function(users) {
+                drop.innerHTML = '';
+                if (!users.length) {
+                    drop.innerHTML = '<div style="padding:.5rem .75rem;color:#94a3b8;font-size:.8rem">Aucun résultat</div>';
+                    drop.style.display = 'block';
+                    return;
+                }
+                users.forEach(function(u) {
+                    var el = document.createElement('div');
+                    el.style.cssText = 'padding:.5rem .75rem;cursor:pointer;font-size:.82rem;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center';
+                    var status = u.banned ? '<span style="color:#ef4444;font-size:.7rem">🚫 déjà banni</span>' : '';
+                    var disabled = u.isMe ? '<span style="color:#94a3b8;font-size:.7rem">vous-même</span>' : '';
+                    el.innerHTML = '<span>' + u.label + '</span><span>' + status + disabled + '</span>';
+                    if (!u.isMe && !u.banned) {
+                        el.addEventListener('mouseenter', function(){ this.style.background='#fef2f2'; });
+                        el.addEventListener('mouseleave', function(){ this.style.background=''; });
+                        el.addEventListener('click', function() { selectUser(u); });
+                    } else {
+                        el.style.opacity = '.5';
+                        el.style.cursor = 'default';
+                    }
+                    drop.appendChild(el);
+                });
+                drop.style.display = 'block';
+            });
+    }, 300);
+}
+
+function selectUser(u) {
+    document.getElementById('quickBanId').value = u.id;
+    document.getElementById('quickBanSearch').value = u.label;
+    document.getElementById('searchDropdown').style.display = 'none';
+    var info = document.getElementById('selectedUserInfo');
+    info.textContent = '✔ Sélectionné : ' + u.label;
+    info.style.display = 'block';
+}
+
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('#searchDropdown') && e.target.id !== 'quickBanSearch') {
+        document.getElementById('searchDropdown').style.display = 'none';
+    }
+});
+
+// ── Ban rapide ──
+function submitQuickBan() {
+    var id       = document.getElementById('quickBanId').value;
+    var duration = document.getElementById('quickBanDuration').value;
+    var reason   = document.getElementById('quickBanReason').value.trim();
+    var label    = document.getElementById('quickBanSearch').value;
+    if (!id) { alert('Veuillez sélectionner un utilisateur dans la liste.'); return; }
+    if (!reason) { alert('La raison du ban est obligatoire.'); return; }
+    if (!confirm('Bannir ' + label + ' ?')) return;
+
+    var form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/admin/dashboard/ban/' + id;
+    [['ban_duration', duration], ['ban_reason', reason]].forEach(function(pair) {
+        var inp = document.createElement('input');
+        inp.type = 'hidden'; inp.name = pair[0]; inp.value = pair[1];
+        form.appendChild(inp);
+    });
+    document.body.appendChild(form);
+    form.submit();
+}
+</script>
 {% endblock %}

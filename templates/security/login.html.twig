@@ -1,12 +1,61 @@
 {% extends 'front/base.html.twig' %}
 
 {% block body %}
+<style>
+    .btn-google {
+        width: 100%;
+        padding: 0.75rem;
+        border-radius: 12px;
+        border: 1px solid #d0d5dd;
+        background: white;
+        color: #1f2937;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    .auth-divider {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: #98a2b3;
+        font-size: 0.8rem;
+        margin: 1rem 0;
+    }
+
+    .auth-divider::before,
+    .auth-divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: #eaecf0;
+    }
+
+    .auth-links {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 1rem 0;
+        font-size: 0.9rem;
+    }
+</style>
 <div class="container" style="min-height: 80vh; display: flex; align-items: center; justify-content: center; padding: 4rem 0;">
     <div class="card" style="max-width: 450px; width: 100%; margin: 0 auto;">
         <div style="text-align: center; margin-bottom: 2rem;">
             <div style="font-size: 3rem;">🔐</div>
             <h1 style="font-size: 1.8rem;">Connexion</h1>
         </div>
+
+        <a href="{{ path('connect_google_start') }}" class="btn-google">
+            <span style="font-size: 1.1rem;">G</span>
+            Continuer avec Google
+        </a>
+
+        <div class="auth-divider">ou avec votre email</div>
 
         <form method="post">
             {% if error %}
@@ -29,13 +78,14 @@
                 </label>
             </div>
 
+            <div class="auth-links">
+                <a href="{{ path('app_forgot_password') }}" style="color: var(--green-mid);">Mot de passe oublié ?</a>
+                <a href="{{ path('app_register') }}" style="color: var(--green-mid);">Créer un compte</a>
+            </div>
+
             <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
             <button type="submit" class="btn-primary" style="width: 100%; padding: 0.75rem;">Se connecter</button>
-
-            <div style="text-align: center; margin-top: 1rem;">
-                <a href="{{ path('app_register') }}" style="color: var(--green-mid);">Créer un compte</a>
-            </div>
         </form>
     </div>
 </div>
