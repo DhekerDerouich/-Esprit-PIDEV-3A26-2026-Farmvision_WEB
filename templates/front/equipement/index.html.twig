@@ -64,6 +64,24 @@
         </div>
     </div>
 
+    <!-- Empreinte Carbone Totale -->
+    {% if co2Data is defined and co2Data.total_co2 is defined %}
+    <div class="card" style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border: 2px solid #10b981; margin-bottom: 2rem; padding: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h3 style="font-size: 1.1rem; color: #065f46; margin-bottom: 0.5rem;">🌱 Empreinte Carbone du Parc</h3>
+                <div style="font-size: 2rem; font-weight: 700; color: #047857;">{{ co2Data.total_co2|number_format(2) }} kg CO₂</div>
+                <div style="font-size: 0.8rem; color: #065f46; margin-top: 0.5rem;">
+                    📊 Moyenne par équipement: {{ co2Data.moyenne_co2|number_format(2) }} kg CO₂
+                </div>
+            </div>
+            <a href="{{ path('front_carbone_index') }}" class="btn-primary btn" style="text-decoration: none;">
+                Voir détails →
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Résultats de recherche -->
     {% if search or selectedType != 'all' or selectedEtat != 'all' %}
         <div style="margin-bottom: 1rem; padding: 0.5rem 1rem; background: var(--green-glow); border-radius: 8px;">

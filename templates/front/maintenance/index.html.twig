@@ -61,6 +61,46 @@
         </div>
     </div>
 
+    <!-- Section Lever/Coucher du soleil -->
+    {% if soleil is defined %}
+    <div class="card" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b; margin-bottom: 2rem; padding: 1.5rem;">
+        <h3 style="font-size: 1.1rem; color: #92400e; margin-bottom: 1rem;">🌞 Heures d'ensoleillement pour planification</h3>
+        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; text-align: center;">
+            <div>
+                <div style="font-size: 1.5rem;">🌅</div>
+                <div style="font-size: 0.7rem; color: #78350f;">Lever</div>
+                <div style="font-size: 1.2rem; font-weight: 700; color: #92400e;">{{ soleil.sunrise ?? '--:--' }}</div>
+            </div>
+            <div>
+                <div style="font-size: 1.5rem;">☀️</div>
+                <div style="font-size: 0.7rem; color: #78350f;">Heures optimales</div>
+                <div style="font-size: 0.9rem; font-weight: 700; color: #92400e;">{{ soleil.sunrise ?? '--:--' }} - {{ soleil.sunset ?? '--:--' }}</div>
+            </div>
+            <div>
+                <div style="font-size: 1.5rem;">🌡️</div>
+                <div style="font-size: 0.7rem; color: #78350f;">Température</div>
+                <div style="font-size: 1.2rem; font-weight: 700; color: #92400e;">
+                    {% if meteo.current is defined and meteo.current.temperature_2m is defined %}
+                        {{ meteo.current.temperature_2m }}°C
+                    {% else %}
+                        --°C
+                    {% endif %}
+                </div>
+            </div>
+            <div>
+                <div style="font-size: 1.5rem;">🌇</div>
+                <div style="font-size: 0.7rem; color: #78350f;">Coucher</div>
+                <div style="font-size: 1.2rem; font-weight: 700; color: #92400e;">{{ soleil.sunset ?? '--:--' }}</div>
+            </div>
+            <div>
+                <div style="font-size: 1.5rem;">⏱️</div>
+                <div style="font-size: 0.7rem; color: #78350f;">Durée du jour</div>
+                <div style="font-size: 1.2rem; font-weight: 700; color: #92400e;">{{ soleil.day_length ?? '--:--' }}</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Résultats de recherche -->
     {% if search|default('') != '' or selectedType|default('all') != 'all' or selectedStatut|default('all') != 'all' %}
         <div style="margin-bottom: 1rem; padding: 0.5rem 1rem; background: var(--green-glow); border-radius: 8px;">
