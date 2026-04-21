@@ -184,7 +184,6 @@
     <table id="userTable">
         <thead>
             <tr>
-                <th data-sort="id">ID <i class="fas fa-sort"></i></th>
                 <th data-sort="nom">Nom <i class="fas fa-sort"></i></th>
                 <th data-sort="prenom">Prénom <i class="fas fa-sort"></i></th>
                 <th data-sort="email">Email <i class="fas fa-sort"></i></th>
@@ -196,13 +195,13 @@
             </tr>
         </thead>
         <tbody id="userTableBody">
-            <tr class="loading"><td colspan="9"><div class="spinner"></div> Chargement...<\/td><\/tr>
+            <tr class="loading"><td colspan="8"><div class="spinner"></div> Chargement...<\/td><\/tr>
         </tbody>
     </table>
 </div>
 
 <script>
-    let currentSort = 'id';
+    let currentSort = 'nom';
     let currentOrder = 'DESC';
     let isLoading = false;
     
@@ -215,7 +214,7 @@
         if (isLoading) return;
         isLoading = true;
         
-        tableBody.innerHTML = '<tr class="loading"><td colspan="9"><div class="spinner"></div> Chargement...<\/td><\/tr>';
+        tableBody.innerHTML = '<tr class="loading"><td colspan="8"><div class="spinner"></div> Chargement...<\/td><\/tr>';
         
         const params = new URLSearchParams({
             search: searchInput.value,
@@ -231,7 +230,7 @@
             renderTable(data.users);
         } catch (error) {
             console.error('Erreur:', error);
-            tableBody.innerHTML = '<tr class="empty-row"><td colspan="9">❌ Erreur lors du chargement<\/td><\/tr>';
+            tableBody.innerHTML = '<tr class="empty-row"><td colspan="8">❌ Erreur lors du chargement<\/td><\/tr>';
         }
         
         isLoading = false;
@@ -239,13 +238,12 @@
     
     function renderTable(users) {
         if (!users || users.length === 0) {
-            tableBody.innerHTML = '<tr class="empty-row"><td colspan="9">📭 Aucun utilisateur trouvé<\/td><\/tr>';
+            tableBody.innerHTML = '<tr class="empty-row"><td colspan="8">📭 Aucun utilisateur trouvé<\/td><\/tr>';
             return;
         }
         
         tableBody.innerHTML = users.map(user => `
             <tr>
-                <td>${user.id}<\/td>
                 <td><strong>${escapeHtml(user.nom)}<\/strong><\/td>
                 <td>${escapeHtml(user.prenom)}<\/td>
                 <td>${escapeHtml(user.email)}<\/td>
