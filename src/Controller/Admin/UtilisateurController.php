@@ -6,6 +6,7 @@ namespace App\Controller\Admin;
 use App\Entity\Utilisateur;
 use App\Repository\UtilisateurRepository;
 use App\Service\ProfileImageUploader;
+use App\Service\UserAnalyticsService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -23,21 +24,10 @@ class UtilisateurController extends AbstractController
     // =========================================================
 
     #[Route('/', name: 'admin_user_index')]
-    public function index(Request $request, UtilisateurRepository $repository): Response
+    public function index(UserAnalyticsService $analytics): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
-
-        $stats = [
-            'total'        => $repository->createQueryBuilder('u')->select('COUNT(u.id)')->getQuery()->getSingleScalarResult(),
-            'admins'       => $repository->createQueryBuilder('u')->select('COUNT(u.id)')->where('u.type_role = :r')->setParameter('r', 'ADMINISTRATEUR')->getQuery()->getSingleScalarResult(),
-            'responsables' => $repository->createQueryBuilder('u')->select('COUNT(u.id)')->where('u.type_role = :r')->setParameter('r', 'RESPONSABLE_EXPLOITATION')->getQuery()->getSingleScalarResult(),
-            'agriculteurs' => $repository->createQueryBuilder('u')->select('COUNT(u.id)')->where('u.type_role = :r')->setParameter('r', 'AGRICULTEUR')->getQuery()->getSingleScalarResult(),
-            'actifs'       => $repository->createQueryBuilder('u')->select('COUNT(u.id)')->where('u.activated = 1')->getQuery()->getSingleScalarResult(),
-            'inactifs'     => $repository->createQueryBuilder('u')->select('COUNT(u.id)')->where('u.activated = 0')->getQuery()->getSingleScalarResult(),
-            'bannis'       => $repository->createQueryBuilder('u')->select('COUNT(u.id)')->where('u.banStatus IS NOT NULL')->getQuery()->getSingleScalarResult(),
-        ];
-
-        return $this->render('admin/user/index.html.twig', ['stats' => $stats]);
+        return $this->render('admin/user/index.html.twig', ['stats' => $analytics->getStats()]);
     }
 
     // =========================================================
@@ -210,104 +200,30 @@ class UtilisateurController extends AbstractController
     // =========================================================
 
     #[Route('/ai-stats', name: 'admin_user_ai_stats')]
-    public function aiStats(UtilisateurRepository $repository): Response
+    public function aiStats(UserAnalyticsService $analytics): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-        $allUsers = $repository->findAll();
-        $now      = new \DateTime();
-
-        // --- Stats par mois (12 derniers mois) ---
-        $inscriptionsMois = [];
-        for ($i = 11; $i >= 0; $i--) {
-            $mois  = (new \DateTime())->modify("-{$i} months");
-            $label = $mois->format('M Y');
-            $inscriptionsMois[$label] = 0;
-        }
-        foreach ($allUsers as $u) {
-            if ($u->getDateCreation()) {
-                $key = $u->getDateCreation()->format('M Y');
-                if (isset($inscriptionsMois[$key])) {
-                    $inscriptionsMois[$key]++;
-                }
-            }
-        }
-
-        // --- Stats par genre ---
-        $genres = ['M' => 0, 'F' => 0, 'A' => 0, 'NC' => 0];
-        foreach ($allUsers as $u) {
-            $g = $u->getGenre();
-            if ($g === 'M') $genres['M']++;
-            elseif ($g === 'F') $genres['F']++;
-            elseif ($g === 'A') $genres['A']++;
-            else $genres['NC']++;
-        }
-
-        // --- Stats par tranche d'âge ---
-        $tranches = ['<18' => 0, '18-25' => 0, '26-35' => 0, '36-50' => 0, '51-65' => 0, '>65' => 0, 'NC' => 0];
-        foreach ($allUsers as $u) {
-            $age = $u->getAge();
-            if ($age === null) { $tranches['NC']++; continue; }
-            if ($age < 18)        $tranches['<18']++;
-            elseif ($age <= 25)   $tranches['18-25']++;
-            elseif ($age <= 35)   $tranches['26-35']++;
-            elseif ($age <= 50)   $tranches['36-50']++;
-            elseif ($age <= 65)   $tranches['51-65']++;
-            else                  $tranches['>65']++;
-        }
-
-        // --- Prédiction IA : régression linéaire sur 12 mois ---
-        $valeurs = array_values($inscriptionsMois);
-        $n       = count($valeurs);
-        $sumX    = 0; $sumY = 0; $sumXY = 0; $sumX2 = 0;
-        for ($i = 0; $i < $n; $i++) {
-            $sumX  += $i;
-            $sumY  += $valeurs[$i];
-            $sumXY += $i * $valeurs[$i];
-            $sumX2 += $i * $i;
-        }
-        $denom = ($n * $sumX2 - $sumX * $sumX);
-        if ($denom !== 0) {
-            $slope     = ($n * $sumXY - $sumX * $sumY) / $denom;
-            $intercept = ($sumY - $slope * $sumX) / $n;
-        } else {
-            $slope = 0; $intercept = $sumY / max(1, $n);
-        }
-
-        // Prédictions pour les 6 prochains mois
-        $predictions = [];
-        for ($i = 0; $i < 6; $i++) {
-            $mois  = (new \DateTime())->modify('+' . ($i + 1) . ' months');
-            $label = $mois->format('M Y');
-            $pred  = max(0, round($slope * ($n + $i) + $intercept));
-            $predictions[$label] = $pred;
-        }
-
-        // --- Taux de croissance mensuel ---
-        $tauxCroissance = null;
-        if ($n >= 2 && $valeurs[$n - 2] > 0) {
-            $tauxCroissance = round((($valeurs[$n - 1] - $valeurs[$n - 2]) / $valeurs[$n - 2]) * 100, 1);
-        }
-
-        $predictionsValues = array_values($predictions);
+        $stats = $analytics->getIAStats();
+        $predictions = $analytics->getPredictions($analytics->getIAStats()['inscriptionsMois'] ?? []);
 
         return $this->render('admin/user/ai_stats.html.twig', [
-            'inscriptionsMois'       => $inscriptionsMois,
-            'inscriptionsMoisLabels' => array_keys($inscriptionsMois),
-            'inscriptionsMoisValues' => array_values($inscriptionsMois),
+            'inscriptionsMois'       => $stats['inscriptionsMois'],
+            'inscriptionsMoisLabels' => array_keys($stats['inscriptionsMois']),
+            'inscriptionsMoisValues' => array_values($stats['inscriptionsMois']),
             'predictions'            => $predictions,
             'predictionsLabels'      => array_keys($predictions),
-            'predictionsValues'      => $predictionsValues,
-            'predictionsSum'         => array_sum($predictionsValues),
-            'genres'                 => $genres,
-            'genresValues'           => array_values($genres),
-            'tranches'               => $tranches,
-            'tranchesLabels'         => array_keys($tranches),
-            'tranchesValues'         => array_values($tranches),
-            'tauxCroissance'         => $tauxCroissance,
-            'totalUsers'             => count($allUsers),
-            'previsionProchainMois'  => $predictionsValues[0] ?? 0,
-            'tendance'               => $slope > 0 ? 'hausse' : ($slope < 0 ? 'baisse' : 'stable'),
+            'predictionsValues'      => array_values($predictions),
+            'predictionsSum'         => array_sum(array_values($predictions)),
+            'genres'                 => $stats['genres'],
+            'genresValues'           => array_values($stats['genres']),
+            'tranches'               => $stats['tranchesAge'],
+            'tranchesLabels'         => array_keys($stats['tranchesAge']),
+            'tranchesValues'         => array_values($stats['tranchesAge']),
+            'tauxCroissance'         => $stats['croissance'],
+            'totalUsers'             => $stats['totalUsers'],
+            'previsionProchainMois'  => array_values($predictions)[0] ?? 0,
+            'tendance'               => ($stats['croissance'] ?? 0) > 0 ? 'hausse' : (($stats['croissance'] ?? 0) < 0 ? 'baisse' : 'stable'),
         ]);
     }
 
