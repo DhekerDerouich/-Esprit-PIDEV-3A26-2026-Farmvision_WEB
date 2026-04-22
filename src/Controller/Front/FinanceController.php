@@ -10,7 +10,7 @@ use App\Service\AIRecommendationService;
 use App\Service\AIDataService;
 use App\Repository\DepenseRepository;
 use App\Repository\RevenuRepository;
-use App\Service\SmsService;
+use App\Service\SmsAservice;
 use App\Service\CurrencyService;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
@@ -249,7 +249,7 @@ public function newDepense(
     Request $request,
     EntityManagerInterface $em,
     AnomalyDetectionService $anomalyService,
-    SmsService $smsService,
+    SmsAservice $smsService,
     DepenseRepository $depenseRepository
 ): Response {
     $errors = [];
@@ -358,7 +358,7 @@ public function addFromScan(
     Request $request,
     EntityManagerInterface $em,
     AnomalyDetectionService $anomalyService,
-    SmsService $smsService,
+    SmsAservice $smsService,
     DepenseRepository $depenseRepository
 ): Response {
     // Vérifier l'authentification

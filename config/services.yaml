@@ -36,6 +36,12 @@ services:
             $fromNumber: '%env(TWILIO_FROM_NUMBER)%'
             $enabled: '%env(bool:TWILIO_ENABLED)%'
 
+    App\Service\SmsAservice:
+        arguments:
+            $accountSid: '%env(TWILIO_ACCOUNT_SID)%'
+            $authToken: '%env(TWILIO_AUTH_TOKEN)%'
+            $twilioPhoneNumber: '%env(TWILIO_PHONE_NUMBER)%'
+
     App\Service\OpenFoodFactsService:
         autowire: true
 
