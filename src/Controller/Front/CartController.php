@@ -79,10 +79,9 @@ class CartController extends AbstractController
             return $this->redirectToRoute('front_cart_index');
         }
 
-        // Guard: Stripe not configured
+        // If Stripe not configured, use simulated checkout
         if (!$stripeService->isConfigured()) {
-            $this->addFlash('error', '⚠️ Le paiement Stripe n\'est pas encore configuré. Ajoutez vos clés API dans le fichier .env');
-            return $this->redirectToRoute('front_cart_index');
+            return $this->redirectToRoute('front_cart_simulate');
         }
 
         $items = [];
@@ -105,6 +104,67 @@ class CartController extends AbstractController
             $this->addFlash('error', 'Erreur Stripe : ' . $e->getMessage());
             return $this->redirectToRoute('front_cart_index');
         }
+    }
+
+    #[Route('/simulate', name: 'front_cart_simulate')]
+    public function simulate(CartService $cartService): Response
+    {
+        $cart = $cartService->getCurrentCart();
+
+        if ($cart->getItems()->count() === 0) {
+            return $this->redirectToRoute('front_cart_index');
+        }
+
+        return $this->render('front/cart/simulate.html.twig', [
+            'cart'  => $cart,
+            'total' => $cart->getTotal(),
+        ]);
+    }
+
+    #[Route('/simulate/confirm', name: 'front_cart_simulate_confirm', methods: ['POST'])]
+    public function simulateConfirm(
+        Request $request,
+        CartService $cartService,
+        InvoiceService $invoiceService,
+        EntityManagerInterface $em
+    ): Response {
+        $cart = $cartService->getCurrentCart();
+
+        if ($cart->getItems()->count() === 0) {
+            return $this->redirectToRoute('front_cart_index');
+        }
+
+        $user          = $this->getUser();
+        /** @var \App\Entity\Utilisateur|null $user */
+        $customerEmail = $user ? $user->getEmail() : ($request->request->get('email', 'client@farmvision.com'));
+        $customerName  = $user ? ($user->getPrenom() . ' ' . $user->getNom()) : $request->request->get('name', 'Client');
+
+        // Create a fake Stripe-like session object
+        $fakeSession = new \stdClass();
+        $fakeSession->id             = 'sim_' . uniqid();
+        $fakeSession->payment_status = 'paid';
+
+        $invoice = $invoiceService->generateInvoiceSimulated($cart, $fakeSession->id, $customerEmail, $customerName);
+
+        // Update stock quantities
+        foreach ($cart->getItems() as $item) {
+            $marketplace = $item->getMarketplace();
+            $newQty      = $marketplace->getQuantiteEnVente() - $item->getQuantity();
+            $marketplace->setQuantiteEnVente(max(0, $newQty));
+            if ($newQty <= 0) $marketplace->setStatut('Vendu');
+
+            $stock = $marketplace->getStock();
+            $stock->setQuantite(max(0, $stock->getQuantite() - $item->getQuantity()));
+            if ($stock->getQuantite() <= 0) $stock->setStatut('Épuisé');
+            $stock->setUpdatedAt(new \DateTime());
+        }
+
+        $cartService->clearCart();
+        $em->flush();
+
+        return $this->render('front/cart/success.html.twig', [
+            'invoice' => $invoice,
+        ]);
     }
 
     #[Route('/success', name: 'front_cart_success')]
@@ -139,7 +199,7 @@ class CartController extends AbstractController
         // Generate invoice
         $invoice = $invoiceService->generateInvoice($cart, $session, $customerEmail, $customerName);
 
-        // Send email with invoice
+        // Send email with invoice (graceful fallback if mailer not configured)
         try {
             $emailMsg = (new Email())
                 ->from('no-reply@farmvision.com')

@@ -7,7 +7,6 @@ use App\Entity\Cart;
 use App\Entity\Invoice;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Snappy\Pdf;
-use Stripe\Checkout\Session;
 use Twig\Environment;
 
 class InvoiceService
@@ -25,7 +24,23 @@ class InvoiceService
         $this->invoiceDir = $invoiceDir;
     }
 
-    public function generateInvoice(Cart $cart, Session $stripeSession, string $customerEmail, ?string $customerName = null): Invoice
+    /**
+     * Generate invoice from a real Stripe session.
+     */
+    public function generateInvoice(Cart $cart, object $stripeSession, string $customerEmail, ?string $customerName = null): Invoice
+    {
+        return $this->buildInvoice($cart, $stripeSession->id, $customerEmail, $customerName);
+    }
+
+    /**
+     * Generate invoice without Stripe (simulation / demo mode).
+     */
+    public function generateInvoiceSimulated(Cart $cart, string $fakeSessionId, string $customerEmail, ?string $customerName = null): Invoice
+    {
+        return $this->buildInvoice($cart, $fakeSessionId, $customerEmail, $customerName);
+    }
+
+    private function buildInvoice(Cart $cart, string $sessionId, string $customerEmail, ?string $customerName): Invoice
     {
         if (!is_dir($this->invoiceDir)) {
             mkdir($this->invoiceDir, 0777, true);
@@ -39,7 +54,7 @@ class InvoiceService
         $invoice->setCurrency('EUR');
         $invoice->setCustomerEmail($customerEmail);
         $invoice->setCustomerName($customerName);
-        $invoice->setStripeSessionId($stripeSession->id);
+        $invoice->setStripeSessionId($sessionId);
         $invoice->setStatus('paid');
 
         $items = [];
@@ -56,20 +71,19 @@ class InvoiceService
         $this->em->persist($invoice);
         $this->em->flush();
 
-        // Generate PDF
+        // PDF generation — optional, skipped if wkhtmltopdf not installed
         try {
-            $html = $this->twig->render('front/pdf/invoice.html.twig', [
+            $html    = $this->twig->render('front/pdf/invoice.html.twig', [
                 'invoice' => $invoice,
                 'items'   => $items,
                 'date'    => new \DateTime(),
             ]);
-
             $pdfPath = $this->invoiceDir . '/' . $invoiceNumber . '.pdf';
             $this->pdf->generateFromHtml($html, $pdfPath);
             $invoice->setPdfPath($pdfPath);
             $this->em->flush();
         } catch (\Exception $e) {
-            // PDF generation failed (e.g. wkhtmltopdf not installed) — continue without PDF
+            // wkhtmltopdf not installed — continue without PDF
         }
 
         return $invoice;
