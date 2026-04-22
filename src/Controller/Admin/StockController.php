@@ -7,7 +7,6 @@ use App\Entity\Stock;
 use App\Repository\StockRepository;
 use App\Service\ImageUploadService;
 use App\Service\OpenFoodFactsService;
-use App\Service\SmsService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -97,7 +96,7 @@ class StockController extends AbstractController
     }
 
     #[Route('/api/send-sms', name: 'admin_stock_api_send_sms', methods: ['POST'])]
-    public function apiSendSms(Request $request, SmsService $smsService): JsonResponse
+    public function apiSendSms(Request $request): JsonResponse
     {
         $phone   = $request->request->get('phone');
         $message = $request->request->get('message');
@@ -105,18 +104,34 @@ class StockController extends AbstractController
         if (!$phone) {
             return $this->json(['success' => false, 'error' => 'Numéro de téléphone requis'], 400);
         }
-
         if (empty($message)) {
             return $this->json(['success' => false, 'error' => 'Message requis'], 400);
         }
 
-        $result = $smsService->sendCustom($phone, $message);
+        // Build WhatsApp click-to-chat URL (free, no API key needed)
+        $cleanPhone = preg_replace('/[\s\-\(\)\+]/', '', $phone);
+        $waUrl = 'https://wa.me/' . $cleanPhone . '?text=' . rawurlencode($message);
 
-        return $this->json(array_merge($result, [
+        // Log locally
+        $logDir = __DIR__ . '/../../../var/log';
+        if (!is_dir($logDir)) {
+            mkdir($logDir, 0777, true);
+        }
+        file_put_contents(
+            $logDir . '/sms.log',
+            sprintf("[%s] WhatsApp vers %s: %s\n", date('Y-m-d H:i:s'), $phone, $message),
+            FILE_APPEND
+        );
+
+        return $this->json([
+            'success'   => true,
+            'whatsapp'  => true,
+            'wa_url'    => $waUrl,
+            'message'   => 'Cliquez sur le lien pour envoyer via WhatsApp',
             'phone'     => $phone,
             'content'   => $message,
             'timestamp' => date('Y-m-d H:i:s'),
-        ]));
+        ]);
     }
 
     #[Route('/api/forecast', name: 'admin_stock_api_forecast', methods: ['POST'])]
