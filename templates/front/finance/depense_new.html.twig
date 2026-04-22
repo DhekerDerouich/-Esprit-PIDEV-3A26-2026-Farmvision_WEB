@@ -2,42 +2,52 @@
 
 {% block body %}
 <div class="container" style="padding: 3rem 0; max-width: 800px; margin: 0 auto; padding: 3rem 2rem;">
-    <div style="margin-bottom: 2rem;">
-        <a href="{{ path('front_finance_depenses') }}" class="btn-outline btn" style="text-decoration: none;">← Retour</a>
+    
+   
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <a href="{{ path('front_finance_depenses') }}" class="btn-outline btn" style="text-decoration: none;">← Retour aux dépenses</a>
+        <a href="{{ path('front_finance_scan_receipt') }}" class="btn-primary" style="padding: 0.5rem 1rem; text-decoration: none; border-radius: 8px;">📸 Scanner un reçu</a>
     </div>
 
-    <div class="card">
+    <div class="card" style="background: white; border-radius: 12px; padding: 1.5rem;">
         <h1 style="font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 1.5rem;">➕ Ajouter une dépense</h1>
+        
+        {% if prefill.type is defined and prefill.type %}
+            <div class="info-scan" style="margin-bottom: 1rem; padding: 0.5rem; background: var(--green-mist); border-radius: 8px;">
+                📸 Données importées du scan
+            </div>
+        {% endif %}
         
         <form method="post">
             <div class="form-group" style="margin-bottom: 1.5rem;">
                 <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Type de dépense *</label>
                 <select name="type_depense" class="form-control" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px;" required>
                     <option value="">-- Choisir un type --</option>
-                    <option value="Carburant">⛽ Carburant</option>
-                    <option value="Réparation">🔧 Réparation</option>
-                    <option value="Semences">🌱 Semences</option>
-                    <option value="Engrais">🌾 Engrais</option>
-                    <option value="Main d'œuvre">👨‍🌾 Main d'œuvre</option>
-                    <option value="Équipement">🚜 Équipement</option>
-                    <option value="Vétérinaire">💊 Vétérinaire</option>
-                    <option value="Autre">📋 Autre</option>
+                    <option value="Carburant" {% if prefill.type is defined and prefill.type == 'Carburant' %}selected{% endif %}>⛽ Carburant</option>
+                    <option value="Réparation" {% if prefill.type is defined and prefill.type == 'Réparation' %}selected{% endif %}>🔧 Réparation</option>
+                    <option value="Semences" {% if prefill.type is defined and prefill.type == 'Semences' %}selected{% endif %}>🌱 Semences</option>
+                    <option value="Engrais" {% if prefill.type is defined and prefill.type == 'Engrais' %}selected{% endif %}>🌾 Engrais</option>
+                    <option value="Main d'œuvre" {% if prefill.type is defined and prefill.type == "Main d'œuvre" %}selected{% endif %}>👨‍🌾 Main d'œuvre</option>
+                    <option value="Équipement" {% if prefill.type is defined and prefill.type == 'Équipement' %}selected{% endif %}>🚜 Équipement</option>
+                    <option value="Vétérinaire" {% if prefill.type is defined and prefill.type == 'Vétérinaire' %}selected{% endif %}>💊 Vétérinaire</option>
+                    <option value="Autre" {% if prefill.type is defined and prefill.type == 'Autre' %}selected{% endif %}>📋 Autre</option>
                 </select>
             </div>
             
             <div class="form-group" style="margin-bottom: 1.5rem;">
                 <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Montant (DT) *</label>
-                <input type="number" name="montant" class="form-control" step="0.01" min="0.01" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px;" required>
+                <input type="number" name="montant" class="form-control" step="0.01" min="0.01" value="{{ prefill.montant ?? '' }}" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px;" required>
             </div>
             
             <div class="form-group" style="margin-bottom: 1.5rem;">
                 <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Date de dépense *</label>
-                <input type="date" name="date_depense" class="form-control" value="{{ 'now'|date('Y-m-d') }}" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px;" required>
+                <input type="date" name="date_depense" class="form-control" value="{{ prefill.date ?? 'now'|date('Y-m-d') }}" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px;" required>
             </div>
             
             <div class="form-group" style="margin-bottom: 1.5rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Description</label>
-                <textarea name="description" class="form-control" rows="3" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px;"></textarea>
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Description *</label>
+                <textarea name="description" class="form-control" rows="3" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px;" required>{{ prefill.description ?? '' }}</textarea>
             </div>
             
             <button type="submit" class="btn-primary" style="padding: 0.75rem 2rem; border: none; border-radius: 8px; cursor: pointer;">💾 Enregistrer</button>

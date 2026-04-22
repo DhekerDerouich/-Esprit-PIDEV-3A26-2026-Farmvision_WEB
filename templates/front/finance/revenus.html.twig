@@ -5,13 +5,43 @@
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
         <div>
             <h1 style="font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 0.5rem;">💰 Mes Revenus</h1>
-            <p style="color: var(--text-muted);">Total: <strong style="color: var(--green-mid);">{{ total|number_format(2) }} DT</strong></p>
+            <p style="color: var(--text-muted);">
+                Total: <strong style="color: var(--green-mid);">{{ totalTND|number_format(2) }} DT</strong>
+                (≈ {{ totalEUR|number_format(2) }} € | ≈ {{ totalUSD|number_format(2) }} $)
+            </p>
+            <p style="color: var(--text-muted); font-size: 0.8rem;">{{ revenus.getTotalItemCount }} revenu(s) au total</p>
         </div>
-        <a href="{{ path('front_finance_revenu_new') }}" class="btn-primary" style="padding: 0.75rem 1.5rem; text-decoration: none; background: var(--green-mid);">+ Nouveau revenu</a>
+        <a href="{{ path('front_finance_revenu_new') }}" class="btn-primary" style="padding: 0.75rem 1.5rem; text-decoration: none; background: var(--green-mid); border-radius: 8px;">+ Nouveau revenu</a>
     </div>
 
-    <!-- Search & Filter with Date Range -->
-    <div class="card" style="margin-bottom: 2rem;">
+    <!-- Taux de change en temps réel -->
+    <div class="card" style="background: linear-gradient(135deg, var(--green-deep), var(--green-mid)); color: white; margin-bottom: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; padding: 0.5rem;">
+            <div>
+                <h4 style="margin-bottom: 0.25rem;">💱 Taux de change en temps réel</h4>
+                <p style="opacity: 0.8; font-size: 0.75rem;">Dernière mise à jour: {{ 'now'|date('H:i:s') }}</p>
+            </div>
+            <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+                <div style="text-align: center;">
+                    <div style="font-size: 0.7rem; opacity: 0.8;">Euro (EUR)</div>
+                    <div style="font-size: 1.5rem; font-weight: 700;">{{ eurRate.rate }}</div>
+                    <div style="font-size: 0.7rem; {% if eurRate.is_up %}color: #90EE90;{% elseif eurRate.is_down %}color: #FFB6C1;{% endif %}">
+                        {% if eurRate.is_up %}📈 +{{ eurRate.change }}%{% elseif eurRate.is_down %}📉 {{ eurRate.change }}%{% else %}➡️ 0%{% endif %}
+                    </div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 0.7rem; opacity: 0.8;">Dollar US (USD)</div>
+                    <div style="font-size: 1.5rem; font-weight: 700;">{{ usdRate.rate }}</div>
+                    <div style="font-size: 0.7rem; {% if usdRate.is_up %}color: #90EE90;{% elseif usdRate.is_down %}color: #FFB6C1;{% endif %}">
+                        {% if usdRate.is_up %}📈 +{{ usdRate.change }}%{% elseif usdRate.is_down %}📉 {{ usdRate.change }}%{% else %}➡️ 0%{% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="card" style="background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
         <form method="get">
             <div style="display: grid; grid-template-columns: 1fr auto auto auto auto; gap: 1rem; align-items: end;">
                 <div>
@@ -36,33 +66,25 @@
                     <input type="date" name="end_date" value="{{ endDate }}" style="padding: 0.6rem; border-radius: 8px; border: 1px solid var(--border);">
                 </div>
                 <div>
-                    <button type="submit" class="btn-primary" style="padding: 0.6rem 1.5rem;">Filtrer</button>
-                    <a href="{{ path('front_finance_revenus') }}" style="margin-left: 0.5rem; padding: 0.6rem 1rem; border: 1px solid var(--border); border-radius: 8px; text-decoration: none; color: var(--text-muted);">Réinitialiser</a>
+                    <button type="submit" class="btn-primary" style="padding: 0.6rem 1.5rem; border: none; border-radius: 8px; cursor: pointer;">Filtrer</button>
+                    <a href="{{ path('front_finance_revenus') }}" style="margin-left: 0.5rem; padding: 0.6rem 1rem; border: 1px solid var(--border); border-radius: 8px; text-decoration: none;">Réinitialiser</a>
                 </div>
             </div>
         </form>
     </div>
 
-    <!-- Display date range info -->
-    {% if startDate or endDate %}
-    <div style="margin-bottom: 1rem; padding: 0.5rem 1rem; background: var(--green-mist); border-radius: 8px;">
-        📅 Période: 
-        {% if startDate %}du {{ startDate|date('d/m/Y') }}{% endif %}
-        {% if endDate %}au {{ endDate|date('d/m/Y') }}{% endif %}
-        ({{ revenus|length }} résultat(s))
-    </div>
-    {% endif %}
-
-    <!-- Revenus List -->
+    <!-- Liste des revenus -->
     {% if revenus|length > 0 %}
-    <div class="card">
+    <div class="card" style="background: white; border-radius: 12px; padding: 1.5rem;">
         <table style="width: 100%; border-collapse: collapse;">
             <thead>
                 <tr>
                     <th style="text-align: left; padding: 0.75rem; background: var(--green-mist);">Date</th>
                     <th style="text-align: left; padding: 0.75rem; background: var(--green-mist);">Source</th>
                     <th style="text-align: left; padding: 0.75rem; background: var(--green-mist);">Description</th>
-                    <th style="text-align: right; padding: 0.75rem; background: var(--green-mist);">Montant</th>
+                    <th style="text-align: right; padding: 0.75rem; background: var(--green-mist);">Montant (TND)</th>
+                    <th style="text-align: right; padding: 0.75rem; background: var(--green-mist);">≈ EUR</th>
+                    <th style="text-align: right; padding: 0.75rem; background: var(--green-mist);">≈ USD</th>
                     <th style="text-align: center; padding: 0.75rem; background: var(--green-mist);">Actions</th>
                 </tr>
             </thead>
@@ -77,8 +99,14 @@
                     <td style="padding: 0.75rem; border-bottom: 1px solid var(--border); text-align: right; font-weight: 600; color: var(--green-mid);">
                         {{ revenu.montant|number_format(2) }} DT
                     </td>
+                    <td style="padding: 0.75rem; border-bottom: 1px solid var(--border); text-align: right; color: var(--gray);">
+                        {{ (revenu.montant * eurRate.rate)|number_format(2) }} €
+                    </td>
+                    <td style="padding: 0.75rem; border-bottom: 1px solid var(--border); text-align: right; color: var(--gray);">
+                        {{ (revenu.montant * usdRate.rate)|number_format(2) }} $
+                    </td>
                     <td style="padding: 0.75rem; border-bottom: 1px solid var(--border); text-align: center;">
-                        <a href="{{ path('front_finance_revenu_edit', {'id': revenu.idRevenu}) }}" style="margin-right: 0.5rem; text-decoration: none; color: var(--green-mid);">✏️</a>
+                        <a href="{{ path('front_finance_revenu_edit', {'id': revenu.idRevenu}) }}" style="margin-right: 0.5rem; text-decoration: none;">✏️</a>
                         <form method="post" action="{{ path('front_finance_revenu_delete', {'id': revenu.idRevenu}) }}" style="display: inline;" onsubmit="return confirm('Supprimer ce revenu ?')">
                             <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ revenu.idRevenu) }}">
                             <button type="submit" style="background: none; border: none; color: var(--red); cursor: pointer;">🗑️</button>
@@ -88,11 +116,20 @@
                 {% endfor %}
             </tbody>
         </table>
+        
+        <!-- PAGINATION -->
+        <div style="margin-top: 2rem; text-align: center;">
+            {{ knp_pagination_render(revenus) }}
+        </div>
+        
+        <div style="margin-top: 1rem; text-align: center; color: var(--text-muted); font-size: 0.8rem;">
+            Page {{ revenus.getCurrentPageNumber }} sur {{ revenus.getPageCount }}
+        </div>
     </div>
     {% else %}
-    <div class="card" style="text-align: center; padding: 3rem;">
-        <p>Aucun revenu trouvé pour cette période.</p>
-        <a href="{{ path('front_finance_revenu_new') }}" class="btn-primary" style="margin-top: 1rem; display: inline-block; text-decoration: none; background: var(--green-mid);">Ajouter un revenu</a>
+    <div class="card" style="background: white; border-radius: 12px; padding: 3rem; text-align: center;">
+        <p>Aucun revenu trouvé.</p>
+        <a href="{{ path('front_finance_revenu_new') }}" class="btn-primary" style="margin-top: 1rem; display: inline-block; text-decoration: none; background: var(--green-mid); border-radius: 8px;">Ajouter un revenu</a>
     </div>
     {% endif %}
 </div>

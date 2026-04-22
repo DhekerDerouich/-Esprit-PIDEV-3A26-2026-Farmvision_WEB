@@ -13,15 +13,54 @@ class DepenseRepository extends ServiceEntityRepository
         parent::__construct($registry, Depense::class);
     }
 
-    public function getStatistics(): array
+    /**
+     * Récupère les dépenses d'un utilisateur spécifique
+     */
+    public function findByUser(int $userId): array
+    {
+        return $this->createQueryBuilder('d')
+            ->where('d.userId = :userId')
+            ->setParameter('userId', $userId)
+            ->orderBy('d.dateDepense', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Récupère la moyenne des 3 derniers mois pour un type et un utilisateur
+     */
+    public function getAverageForTypeLast3Months(string $type, int $userId): float
+{
+    $result = $this->createQueryBuilder('d')
+        ->select('AVG(d.montant)')
+        ->where('d.typeDepense = :type')
+        ->setParameter('type', $type)
+        ->andWhere('d.userId = :userId')
+        ->setParameter('userId', $userId)
+        ->andWhere('d.dateDepense >= :date')
+        ->setParameter('date', new \DateTime('-3 months'))
+        ->getQuery()
+        ->getSingleScalarResult();
+    
+    return $result ? (float) $result : 0;
+}
+
+    /**
+     * Récupère les statistiques pour un utilisateur
+     */
+    public function getStatisticsForUser(int $userId): array
     {
         $total = $this->createQueryBuilder('d')
             ->select('SUM(d.montant)')
+            ->where('d.userId = :userId')
+            ->setParameter('userId', $userId)
             ->getQuery()
             ->getSingleScalarResult();
 
         $parType = $this->createQueryBuilder('d')
             ->select('d.typeDepense as type, SUM(d.montant) as total')
+            ->where('d.userId = :userId')
+            ->setParameter('userId', $userId)
             ->groupBy('d.typeDepense')
             ->orderBy('total', 'DESC')
             ->getQuery()
@@ -32,7 +71,9 @@ class DepenseRepository extends ServiceEntityRepository
         
         $ceMois = $this->createQueryBuilder('d')
             ->select('SUM(d.montant)')
-            ->where('d.dateDepense >= :start')
+            ->where('d.userId = :userId')
+            ->setParameter('userId', $userId)
+            ->andWhere('d.dateDepense >= :start')
             ->setParameter('start', $firstDayOfMonth)
             ->getQuery()
             ->getSingleScalarResult();
@@ -44,10 +85,14 @@ class DepenseRepository extends ServiceEntityRepository
         ];
     }
 
-    //  Search with date range
-    public function search(?string $keyword = null, ?string $type = null, ?string $startDate = null, ?string $endDate = null): array
+    /**
+     * Recherche avec filtres pour un utilisateur
+     */
+    public function searchForUser(int $userId, ?string $keyword = null, ?string $type = null, ?string $startDate = null, ?string $endDate = null): array
     {
-        $qb = $this->createQueryBuilder('d');
+        $qb = $this->createQueryBuilder('d')
+            ->where('d.userId = :userId')
+            ->setParameter('userId', $userId);
         
         if (!empty($keyword)) {
             $qb->andWhere('d.typeDepense LIKE :keyword OR d.description LIKE :keyword')
@@ -59,7 +104,6 @@ class DepenseRepository extends ServiceEntityRepository
                ->setParameter('type', $type);
         }
         
-        // DATE RANGE FILTER
         if (!empty($startDate)) {
             $qb->andWhere('d.dateDepense >= :startDate')
                ->setParameter('startDate', new \DateTime($startDate));
@@ -75,14 +119,84 @@ class DepenseRepository extends ServiceEntityRepository
                   ->getResult();
     }
 
-    public function getUniqueTypes(): array
-    {
-        $result = $this->createQueryBuilder('d')
-            ->select('DISTINCT d.typeDepense as type')
-            ->orderBy('type', 'ASC')
-            ->getQuery()
-            ->getResult();
-        
-        return array_column($result, 'type');
+ public function getUniqueTypesForUser(int $userId): array
+{
+    $depenses = $this->findBy(['userId' => $userId]);
+    
+    $types = [];
+    foreach ($depenses as $depense) {
+        if (!in_array($depense->getTypeDepense(), $types)) {
+            $types[] = $depense->getTypeDepense();
+        }
     }
+    
+    sort($types);
+    return $types;
+}
+public function getTotalByMonth(int $year, int $month, int $userId): float
+{
+    $start = new \DateTime("{$year}-{$month}-01");
+    $end = new \DateTime("{$year}-{$month}-" . cal_days_in_month(CAL_GREGORIAN, $month, $year));
+    $end->setTime(23, 59, 59);
+    
+    $result = $this->createQueryBuilder('d')
+        ->select('SUM(d.montant)')
+        ->where('d.userId = :userId')
+        ->setParameter('userId', $userId)
+        ->andWhere('d.dateDepense BETWEEN :start AND :end')
+        ->setParameter('start', $start)
+        ->setParameter('end', $end)
+        ->getQuery()
+        ->getSingleScalarResult();
+    
+    return $result ? (float)$result : 0;
+}
+public function findByMonth(int $userId, int $year, int $month): array
+{
+    $start = new \DateTime("{$year}-{$month}-01");
+    $end = new \DateTime("{$year}-{$month}-" . cal_days_in_month(CAL_GREGORIAN, $month, $year));
+    $end->setTime(23, 59, 59);
+    
+    return $this->createQueryBuilder('d')
+        ->where('d.userId = :userId')
+        ->setParameter('userId', $userId)
+        ->andWhere('d.dateDepense BETWEEN :start AND :end')
+        ->setParameter('start', $start)
+        ->setParameter('end', $end)
+        ->orderBy('d.dateDepense', 'DESC')
+        ->getQuery()
+        ->getResult();
+}
+public function findByUserAndMonth(int $userId, int $year, int $month): array
+{
+    $start = new \DateTime("{$year}-{$month}-01");
+    $end = new \DateTime("{$year}-{$month}-" . cal_days_in_month(CAL_GREGORIAN, $month, $year));
+    $end->setTime(23, 59, 59);
+    
+    return $this->createQueryBuilder('d')
+        ->where('d.userId = :userId')
+        ->setParameter('userId', $userId)
+        ->andWhere('d.dateDepense BETWEEN :start AND :end')
+        ->setParameter('start', $start)
+        ->setParameter('end', $end)
+        ->orderBy('d.dateDepense', 'DESC')
+        ->getQuery()
+        ->getResult();
+}
+
+public function findByUserAndYear(int $userId, int $year): array
+{
+    $start = new \DateTime("{$year}-01-01");
+    $end = new \DateTime("{$year}-12-31 23:59:59");
+    
+    return $this->createQueryBuilder('d')
+        ->where('d.userId = :userId')
+        ->setParameter('userId', $userId)
+        ->andWhere('d.dateDepense BETWEEN :start AND :end')
+        ->setParameter('start', $start)
+        ->setParameter('end', $end)
+        ->orderBy('d.dateDepense', 'DESC')
+        ->getQuery()
+        ->getResult();
+}
 }
