@@ -1,0 +1,30 @@
+{% extends 'messages/base.html.twig' %}
+
+{% block body %}
+<div class="msg-container">
+    <div class="msg-header">
+        <h1>📢 Envoyer à tous</h1>
+    </div>
+
+    {% for error in errors %}
+        <div class="alert-error">{{ error }}</div>
+    {% endfor %}
+
+    <form method="post" class="msg-form">
+        <label class="msg-label">Envoyer à</label>
+        <select name="target_role" class="msg-select">
+            <option value="ALL">Tous les utilisateurs</option>
+            <option value="AGRICULTEUR">Agriteurs seulement</option>
+            <option value="RESPONSABLE_EXPLOITATION">Responsables exploitation</option>
+        </select>
+
+        <label class="msg-label">Message</label>
+        <textarea name="content" class="msg-textarea" required></textarea>
+
+        <div class="msg-actions">
+            <button type="submit" class="msg-btn" style="background: var(--gold); color: white;">📢 Envoyer le broadcast</button>
+            <a href="{{ path('messages_index') }}" class="msg-btn" style="background: #f1f1f1; color: var(--text);">Annuler</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

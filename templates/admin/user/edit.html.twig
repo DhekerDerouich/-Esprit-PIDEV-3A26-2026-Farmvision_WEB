@@ -24,6 +24,9 @@
     .required:after { content: " *"; color: #dc3545; }
     .info-text { color: #6c757d; font-size: 0.75rem; margin-top: 0.25rem; }
     .error-text { color: #dc3545; font-size: 0.75rem; margin-top: 0.25rem; }
+    .photo-block { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; padding: 1rem; border-radius: 12px; background: #f8f9fa; }
+    .photo-preview { width: 72px; height: 72px; border-radius: 50%; overflow: hidden; background: linear-gradient(135deg, #4CAF50, #2e7d32); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: 700; flex-shrink: 0; }
+    .photo-input { flex: 1; }
 </style>
 
 <div class="page-header">
@@ -41,7 +44,26 @@
 {% endfor %}
 
 <div class="card">
-    <form method="post">
+    <form method="post" enctype="multipart/form-data">
+        <div class="photo-block">
+            {{ include('profile/_avatar.html.twig', {
+                user: user,
+                wrapperClass: 'photo-preview',
+                fallbackText: user.prenom|first ~ user.nom|first,
+                alt: 'Photo de profil de ' ~ user.prenom ~ ' ' ~ user.nom
+            }) }}
+
+<div class="photo-input">
+                <label>Photo de profil</label>
+                <input type="file" name="photo_profil" accept="image/png,image/jpeg,image/webp,image/gif" class="form-control {% if errors.photo_profil is defined %}form-control-error{% endif %}">
+                {% if errors.photo_profil is defined %}
+                    <div class="error-text">{{ errors.photo_profil }}</div>
+                {% else %}
+                    <div class="info-text">Laissez vide pour avatar auto • JPG, PNG, WEBP ou GIF, 2 Mo max</div>
+                {% endif %}
+            </div>
+        </div>
+
         <div class="form-grid">
             <div class="form-group">
                 <label class="required">Nom</label>
@@ -109,6 +131,16 @@
             <label>
                 <input type="checkbox" name="activated" value="1" {% if formData.activated|default(user.activated) == 1 %}checked{% endif %}> Compte actif
             </label>
+        </div>
+
+        <div class="form-group">
+            <label>Nouveau mot de passe</label>
+            <input type="password" name="new_password" value="" class="form-control" placeholder="Laisser vide pour conserver">
+            {% if errors.new_password is defined %}
+                <div class="error-text">{{ errors.new_password }}</div>
+            {% else %}
+                <div class="info-text">Minimum 6 caractères, 1 majuscule, 1 minuscule, 1 chiffre</div>
+            {% endif %}
         </div>
         
         <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">

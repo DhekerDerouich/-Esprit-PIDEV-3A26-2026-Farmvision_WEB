@@ -7,6 +7,7 @@ use App\Repository\MarketplaceRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/marketplace')]
@@ -30,8 +31,12 @@ class MarketplaceController extends AbstractController
     }
     
     #[Route('/{id}', name: 'front_marketplace_show', methods: ['GET'])]
-    public function show(int $id, MarketplaceRepository $repository): Response
+    public function show(MarketplaceRepository $repository, SessionInterface $session, int $id = null): Response
     {
+        if ($id === null) {
+            return $this->redirectToRoute('front_marketplace_index');
+        }
+        
         $marketplace = $repository->find($id);
         
         if (!$marketplace) {

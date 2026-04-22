@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Culture {{ culture.nomCulture }} - FarmVision</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'DejaVu Sans', Arial, sans-serif;
+            font-size: 12pt;
+            color: #333;
+            line-height: 1.8;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #4CAF50;
+        }
+        
+        .header h1 {
+            color: #2d6a4f;
+            font-size: 28pt;
+            margin-bottom: 10px;
+        }
+        
+        .header .subtitle {
+            color: #666;
+            font-size: 14pt;
+        }
+        
+        .culture-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 30px;
+            border-radius: 10px;
+            border-left: 5px solid #4CAF50;
+            margin-bottom: 30px;
+        }
+        
+        .culture-title {
+            font-size: 22pt;
+            color: #2d6a4f;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        
+        .detail-row {
+            display: table;
+            width: 100%;
+            margin-bottom: 15px;
+            padding: 12px;
+            background: white;
+            border-radius: 5px;
+        }
+        
+        .detail-label {
+            display: table-cell;
+            width: 40%;
+            font-weight: 600;
+            color: #2d6a4f;
+            padding-right: 20px;
+        }
+        
+        .detail-value {
+            display: table-cell;
+            color: #333;
+        }
+        
+        .section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+        
+        .section-title {
+            font-size: 16pt;
+            color: #2d6a4f;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #4CAF50;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 5px;
+            font-size: 11pt;
+            font-weight: 600;
+        }
+        
+        .badge-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .badge-warning {
+            background: #fed7aa;
+            color: #92400e;
+        }
+        
+        .badge-info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .timeline {
+            margin-top: 20px;
+        }
+        
+        .timeline-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            background: white;
+            border-left: 3px solid #4CAF50;
+            border-radius: 5px;
+        }
+        
+        .timeline-date {
+            font-weight: 600;
+            color: #2d6a4f;
+            margin-bottom: 5px;
+        }
+        
+        .timeline-label {
+            color: #666;
+            font-size: 10pt;
+        }
+        
+        .footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 2px solid #e0e0e0;
+            text-align: center;
+            font-size: 10pt;
+            color: #999;
+        }
+        
+        .info-box {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        
+        .info-box p {
+            margin: 5px 0;
+            font-size: 10pt;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🌾 FarmVision</h1>
+        <div class="subtitle">Fiche Culture</div>
+    </div>
+
+    <div class="culture-card">
+        <div class="culture-title">{{ culture.nomCulture }}</div>
+        
+        <div class="detail-row">
+            <div class="detail-label">Type de culture</div>
+            <div class="detail-value">{{ culture.typeCulture }}</div>
+        </div>
+        
+        <div class="detail-row">
+            <div class="detail-label">Date de semis</div>
+            <div class="detail-value">{{ culture.dateSemis|date('d/m/Y') }}</div>
+        </div>
+        
+        <div class="detail-row">
+            <div class="detail-label">Date de récolte prévue</div>
+            <div class="detail-value">{{ culture.dateRecolte|date('d/m/Y') }}</div>
+        </div>
+        
+        <div class="detail-row">
+            <div class="detail-label">Durée du cycle</div>
+            <div class="detail-value">
+                {% set diff = culture.dateSemis.diff(culture.dateRecolte) %}
+                {{ diff.days }} jours
+            </div>
+        </div>
+        
+        <div class="detail-row">
+            <div class="detail-label">Statut actuel</div>
+            <div class="detail-value">
+                {% set now = date() %}
+                {% set dateRecolte = culture.dateRecolte %}
+                {% if dateRecolte < now %}
+                    <span class="badge badge-success">✓ Récolté</span>
+                {% elseif dateRecolte|date_modify('+7 days') > now %}
+                    <span class="badge badge-warning">⚠ Récolte imminente</span>
+                {% else %}
+                    <span class="badge badge-info">🌱 En cours de croissance</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Chronologie</div>
+        <div class="timeline">
+            <div class="timeline-item">
+                <div class="timeline-date">{{ culture.dateSemis|date('d/m/Y') }}</div>
+                <div class="timeline-label">🌱 Date de semis</div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-date">{{ culture.dateRecolte|date('d/m/Y') }}</div>
+                <div class="timeline-label">🌾 Date de récolte prévue</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-box">
+        <p><strong>Document généré le :</strong> {{ date|date('d/m/Y à H:i') }}</p>
+        <p><strong>Utilisateur :</strong> {{ user.prenom }} {{ user.nom }}</p>
+    </div>
+
+    <div class="footer">
+        <p>© {{ 'now'|date('Y') }} FarmVision - Agriculture Intelligente</p>
+        <p>Document généré automatiquement</p>
+    </div>
+</body>
+</html>

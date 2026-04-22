@@ -3,16 +3,20 @@
 
 {% block body %}
 <div style="margin-bottom: 2rem;">
-    <a href="{{ path('admin_maintenance_index') }}" class="btn" style="background: var(--bg-panel);">← Retour</a>
+    <a href="{{ path('admin_maintenance_index') }}" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: var(--gray-lighter); color: var(--dark); text-decoration: none; border-radius: var(--radius); font-weight: 500; transition: all 0.2s;">
+        <i class="fas fa-arrow-left"></i> Retour
+    </a>
 </div>
 
 <div class="card" style="max-width: 600px; margin: 0 auto;">
-    <h1 style="font-size: 1.5rem; margin-bottom: 1.5rem;">Modifier la maintenance</h1>
+    <div class="card-header">
+        <h3 style="margin: 0;">✏️ Modifier la maintenance</h3>
+    </div>
     
     <form method="post">
-        <div class="form-group" style="margin-bottom: 1rem;">
-            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Équipement</label>
-            <select name="equipement_id" class="form-control" required style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);">
+        <div style="margin-bottom: 1.5rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--dark);">🔧 Équipement <span style="color: var(--danger);">*</span></label>
+            <select name="equipement_id" class="form-control" style="width: 100%;">
                 {% for equipement in equipements %}
                     <option value="{{ equipement.id }}" {% if maintenance.equipement and maintenance.equipement.id == equipement.id %}selected{% endif %}>
                         {{ equipement.nom }} ({{ equipement.type }})
@@ -21,41 +25,135 @@
             </select>
         </div>
         
-        <div class="form-group" style="margin-bottom: 1rem;">
-            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Type de maintenance</label>
-            <select name="type_maintenance" class="form-control" required style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);">
-                <option value="Préventive" {% if maintenance.typeMaintenance == 'Préventive' %}selected{% endif %}>Préventive</option>
-                <option value="Corrective" {% if maintenance.typeMaintenance == 'Corrective' %}selected{% endif %}>Corrective</option>
+        <div style="margin-bottom: 1.5rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--dark);">🛠️ Type de maintenance <span style="color: var(--danger);">*</span></label>
+            <select name="type_maintenance" class="form-control" style="width: 100%;">
+                <option value="Préventive" {% if maintenance.typeMaintenance == 'Préventive' %}selected{% endif %}>🛡️ Préventive</option>
+                <option value="Corrective" {% if maintenance.typeMaintenance == 'Corrective' %}selected{% endif %}>🔧 Corrective</option>
             </select>
         </div>
         
-        <div class="form-group" style="margin-bottom: 1rem;">
-            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Description</label>
-            <textarea name="description" class="form-control" rows="4" style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);">{{ maintenance.description }}</textarea>
+        <div style="margin-bottom: 1.5rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--dark);">📝 Description</label>
+            <textarea name="description" class="form-control" rows="4" style="width: 100%;" placeholder="Décrivez les travaux effectués...">{{ maintenance.description }}</textarea>
+            <div style="color: var(--gray); font-size: 0.8rem; margin-top: 0.25rem;">Maximum 1000 caractères</div>
         </div>
         
-        <div class="form-group" style="margin-bottom: 1rem;">
-            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Date de maintenance</label>
-            <input type="date" name="date_maintenance" value="{{ maintenance.dateMaintenance ? maintenance.dateMaintenance|date('Y-m-d') : '' }}" class="form-control" required style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);">
+        <div style="margin-bottom: 1.5rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--dark);">📅 Date de maintenance <span style="color: var(--danger);">*</span></label>
+            <input type="text" name="date_maintenance" value="{{ maintenance.dateMaintenance ? maintenance.dateMaintenance|date('Y-m-d') : '' }}" class="form-control" style="width: 100%;" placeholder="AAAA-MM-JJ (ex: 2024-12-25)">
+            <div style="color: var(--gray); font-size: 0.8rem; margin-top: 0.25rem;">Format: AAAA-MM-JJ</div>
         </div>
         
-        <div class="form-group" style="margin-bottom: 1rem;">
-            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Coût (DT)</label>
-            <input type="number" step="0.01" name="cout" value="{{ maintenance.cout }}" class="form-control" style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);">
+        <div style="margin-bottom: 1.5rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--dark);">💰 Coût (DT)</label>
+            <input type="text" name="cout" value="{{ maintenance.cout }}" class="form-control" style="width: 100%;" placeholder="0.00">
+            <div style="color: var(--gray); font-size: 0.8rem; margin-top: 0.25rem;">Maximum 100 000 DT</div>
         </div>
         
-        <div class="form-group" style="margin-bottom: 1rem;">
-            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Statut</label>
-            <select name="statut" class="form-control" required style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);">
-                <option value="Planifiée" {% if maintenance.statut == 'Planifiée' %}selected{% endif %}>Planifiée</option>
-                <option value="Réalisée" {% if maintenance.statut == 'Réalisée' %}selected{% endif %}>Réalisée</option>
+        <div style="margin-bottom: 2rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--dark);">📌 Statut <span style="color: var(--danger);">*</span></label>
+            <select name="statut" class="form-control" style="width: 100%;">
+                <option value="Planifiée" {% if maintenance.statut == 'Planifiée' %}selected{% endif %}>⏰ Planifiée</option>
+                <option value="Réalisée" {% if maintenance.statut == 'Réalisée' %}selected{% endif %}>✅ Réalisée</option>
             </select>
         </div>
         
-        <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-            <button type="submit" class="btn btn-primary">💾 Enregistrer</button>
-            <a href="{{ path('admin_maintenance_index') }}" class="btn" style="background: var(--bg-panel);">Annuler</a>
+        <div style="display: flex; gap: 1rem; justify-content: flex-end; flex-wrap: wrap;">
+            <a href="{{ path('admin_maintenance_index') }}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Annuler
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Enregistrer
+            </button>
         </div>
     </form>
 </div>
+
+<style>
+    .form-control {
+        padding: 0.875rem 1rem;
+        border: 2px solid var(--gray-lighter);
+        border-radius: var(--radius);
+        background: var(--white);
+        color: var(--dark);
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+        width: 100%;
+    }
+    
+    .form-control:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        outline: none;
+    }
+    
+    .form-control.is-invalid {
+        border-color: var(--danger);
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    }
+    
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius);
+        font-weight: 600;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: white !important;
+        box-shadow: var(--shadow);
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+    
+    .btn-secondary {
+        background: var(--gray-lighter);
+        color: var(--dark) !important;
+        border: 1px solid var(--gray-lighter);
+    }
+    
+    .btn-secondary:hover {
+        background: var(--gray);
+        color: var(--white) !important;
+        border-color: var(--gray);
+    }
+    
+    /* Dark theme */
+    body.dark-theme .form-control {
+        background: var(--darker);
+        border-color: var(--gray);
+        color: var(--light);
+    }
+    
+    body.dark-theme .form-control:focus {
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+    }
+    
+    body.dark-theme label {
+        color: var(--light);
+    }
+    
+    body.dark-theme .btn-secondary {
+        background: var(--gray);
+        color: var(--light) !important;
+        border-color: var(--gray);
+    }
+    
+    body.dark-theme .btn-secondary:hover {
+        background: var(--gray-light);
+        color: var(--dark) !important;
+    }
+</style>
 {% endblock %}

@@ -1,0 +1,172 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block page_title %}Empreinte Carbone{% endblock %}
+
+{% block body %}
+<div style="margin-bottom: 2rem;">
+    <h1 style="font-size: 1.5rem;">🌱 Tableau de bord - Empreinte Carbone</h1>
+    <p style="color: var(--text-muted); margin-top: 0.5rem;">Suivez et analysez l'impact environnemental de vos équipements</p>
+</div>
+
+<!-- Statistiques globales -->
+<div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
+    <div class="card" style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border: 2px solid #10b981;">
+        <div style="font-size: 0.7rem; color: #065f46;">CO₂ Total</div>
+        <div style="font-size: 2rem; font-weight: 700; color: #047857;">{{ totalCO2|number_format(0) }} kg</div>
+        <div style="font-size: 0.65rem; color: #065f46; margin-top: 0.25rem;">Tous équipements</div>
+    </div>
+    
+    <div class="card" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b;">
+        <div style="font-size: 0.7rem; color: #92400e;">CO₂ Mensuel</div>
+        <div style="font-size: 2rem; font-weight: 700; color: #92400e;">{{ monthlyCO2|number_format(0) }} kg</div>
+        <div style="font-size: 0.65rem; color: #92400e; margin-top: 0.25rem;">Ce mois</div>
+    </div>
+    
+    <div class="card" style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); border: 2px solid #3b82f6;">
+        <div style="font-size: 0.7rem; color: #1e40af;">Arbres nécessaires</div>
+        <div style="font-size: 2rem; font-weight: 700; color: #1e40af;">{{ (totalCO2 / 21.77)|round(0) }} 🌳</div>
+        <div style="font-size: 0.65rem; color: #1e40af; margin-top: 0.25rem;">Pour compensation</div>
+    </div>
+    
+    <div class="card" style="background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); border: 2px solid #6366f1;">
+        <div style="font-size: 0.7rem; color: #4338ca;">Équipements suivis</div>
+        <div style="font-size: 2rem; font-weight: 700; color: #4338ca;">{{ equipementCount }}</div>
+        <div style="font-size: 0.65rem; color: #4338ca; margin-top: 0.25rem;">Total</div>
+    </div>
+</div>
+
+<!-- Graphique et conseils -->
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+    <div class="card">
+        <h3 style="margin-bottom: 1rem;">📊 Répartition par équipement</h3>
+        <canvas id="co2Chart" style="max-height: 300px;"></canvas>
+    </div>
+    
+    <div class="card" style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);">
+        <h3 style="margin-bottom: 1rem; color: #065f46;">💡 Conseils écologiques</h3>
+        <ul style="list-style: none; padding: 0; font-size: 0.85rem; color: #065f46;">
+            <li style="padding: 0.5rem 0; border-bottom: 1px solid rgba(5, 95, 70, 0.1);">
+                ✓ Maintenez régulièrement vos équipements pour optimiser leur efficacité énergétique
+            </li>
+            <li style="padding: 0.5rem 0; border-bottom: 1px solid rgba(5, 95, 70, 0.1);">
+                ✓ Privilégiez les équipements électriques ou hybrides
+            </li>
+            <li style="padding: 0.5rem 0; border-bottom: 1px solid rgba(5, 95, 70, 0.1);">
+                ✓ Planifiez vos opérations pour réduire les déplacements inutiles
+            </li>
+            <li style="padding: 0.5rem 0;">
+                ✓ Considérez la plantation d'arbres pour compenser votre empreinte carbone
+            </li>
+        </ul>
+    </div>
+</div>
+
+<!-- Liste des équipements -->
+<div class="card">
+    <h3 style="margin-bottom: 1rem;">🚜 Empreinte carbone par équipement</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Équipement</th>
+                <th>Type</th>
+                <th>CO₂ Total</th>
+                <th>CO₂ Mensuel</th>
+                <th>Niveau d'impact</th>
+                <th>Arbres nécessaires</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in equipements %}
+            <tr>
+                <td><strong>{{ item.equipement.nom }}</strong></td>
+                <td>{{ item.equipement.type }}</td>
+                <td>{{ item.co2Data.total|number_format(2) }} kg</td>
+                <td>{{ item.co2Data.monthly|number_format(2) }} kg</td>
+                <td>
+                    {% if item.co2Data.level == 'low' %}
+                        <span class="badge badge-success">🟢 Faible</span>
+                    {% elseif item.co2Data.level == 'medium' %}
+                        <span class="badge badge-warning">🟡 Moyen</span>
+                    {% else %}
+                        <span class="badge badge-danger">🔴 Élevé</span>
+                    {% endif %}
+                </td>
+                <td>{{ (item.co2Data.total / 21.77)|round(1) }} 🌳</td>
+                <td>
+                    <a href="{{ path('admin_equipement_show', {'id': item.equipement.id}) }}" class="btn btn-sm" style="background: var(--green-dim); color: var(--green);">
+                        Voir détails
+                    </a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                    Aucun équipement trouvé
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Information pédagogique -->
+<div class="card" style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); margin-top: 2rem;">
+    <h3 style="margin-bottom: 1rem; color: #1e40af;">📚 Comprendre l'empreinte carbone</h3>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; font-size: 0.85rem; color: #1e40af;">
+        <div>
+            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🌳</div>
+            <strong>Absorption par arbre</strong>
+            <p style="margin-top: 0.5rem; color: #3b82f6;">Un arbre mature absorbe environ 21.77 kg de CO₂ par an</p>
+        </div>
+        <div>
+            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🚜</div>
+            <strong>Impact des équipements</strong>
+            <p style="margin-top: 0.5rem; color: #3b82f6;">Les équipements agricoles contribuent significativement aux émissions de CO₂</p>
+        </div>
+        <div>
+            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">♻️</div>
+            <strong>Actions possibles</strong>
+            <p style="margin-top: 0.5rem; color: #3b82f6;">Maintenance régulière, conduite éco-responsable, équipements modernes</p>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Graphique CO2 par équipement
+const ctx = document.getElementById('co2Chart').getContext('2d');
+new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: [{% for item in equipements %}'{{ item.equipement.nom }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+        datasets: [{
+            label: 'CO₂ Total (kg)',
+            data: [{% for item in equipements %}{{ item.co2Data.total }}{% if not loop.last %}, {% endif %}{% endfor %}],
+            backgroundColor: 'rgba(16, 185, 129, 0.5)',
+            borderColor: 'rgba(16, 185, 129, 1)',
+            borderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return value + ' kg';
+                    }
+                }
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

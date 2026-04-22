@@ -1,0 +1,56 @@
+{% extends 'messages/base.html.twig' %}
+
+{% block body %}
+<div class="msg-container">
+    <div class="msg-header">
+        <h1>💬 Messages</h1>
+        <div style="display: flex; gap: 0.5rem;">
+            <a href="{{ path('messages_new') }}" class="msg-btn msg-btn-primary">➕ Nouveau</a>
+            {% if app.user.typeRole() == 'ADMIN' %}
+            <a href="{{ path('messages_broadcast') }}" class="msg-btn msg-btn-secondary">📢 Broadcast</a>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if conversations is empty %}
+        <div class="msg-list">
+            <div class="msg-empty">
+                <p>Aucune conversation</p>
+                <a href="{{ path('messages_new') }}" class="msg-btn msg-btn-primary" style="display: inline-block; margin-top: 1rem;">Commencer une conversation</a>
+            </div>
+        </div>
+    {% else %}
+        <div class="msg-list">
+            {% for conv in conversations %}
+                {% set other = conv.otherParticipant(app.user) %}
+                <a href="{{ path('messages_show', {id: conv.id}) }}" class="msg-item">
+                    <div class="msg-avatar">
+                        {% if other %}
+                            {% include 'profile/_avatar.html.twig' with {user: other, wrapperClass: '', alt: other.prenom} %}
+                        {% else %}
+                            📢
+                        {% endif %}
+                    </div>
+                    <div class="msg-info">
+                        <div class="msg-name">
+                            {% if conv.type == 'broadcast' %}
+                                📢 Broadcast
+                            {% elseif other %}
+                                {{ other.prenom }} {{ other.nom }}
+                            {% else %}
+                                Conversation
+                            {% endif %}
+                        </div>
+                        <div class="msg-preview">
+                            {% if conv.title %}{{ conv.title }}{% endif %}
+                        </div>
+                    </div>
+                    <div class="msg-time">
+                        {% if conv.lastMessageAt %}{{ conv.lastMessageAt|date('d/m H:i') }}{% endif %}
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

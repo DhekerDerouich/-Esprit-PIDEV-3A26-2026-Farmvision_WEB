@@ -187,11 +187,19 @@
             height: 40px;
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             border-radius: 50%;
+            overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--white);
             font-weight: 600;
+        }
+
+        .avatar-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
         }
 
         .user-name {
@@ -619,12 +627,20 @@
             </div>
         </div>
         <ul class="sidebar-menu">
-            <!-- DASHBOARD -->
-            <li class="{{ app.request.get('_route') == 'admin_dashboard' ? 'active' : '' }}">
-                <a href="{{ path('admin_dashboard') }}"><i class="fas fa-chart-line"></i> Dashboard</a>
-            </li>
-            
-            <!-- SECTION ÉQUIPEMENTS & MAINTENANCES -->
+<!-- DASHBOARD -->
+        <li class="{{ app.request.get('_route') == 'admin_dashboard' ? 'active' : '' }}">
+            <a href="{{ path('admin_dashboard') }}"><i class="fas fa-chart-line"></i> Dashboard</a>
+        </li>
+
+        <!-- SECTION IA PRÉDICTIVE -->
+        <li style="margin-top: 1rem; margin-bottom: 0.5rem;">
+            <span style="padding: 0.5rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--gray); display: block;">🤖 Intelligence Artificielle</span>
+        </li>
+        <li class="{{ app.request.get('_route') starts with 'admin_predictive' ? 'active' : '' }}">
+            <a href="{{ path('admin_predictive_index') }}"><i class="fas fa-brain"></i> IA Prédictive</a>
+        </li>
+
+        <!-- SECTION ÉQUIPEMENTS & MAINTENANCES -->
             <li style="margin-top: 1rem; margin-bottom: 0.5rem;">
                 <span style="padding: 0.5rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--gray); display: block;">🚜 Parc matériel</span>
             </li>
@@ -633,6 +649,15 @@
             </li>
             <li class="{{ app.request.get('_route') starts with 'admin_maintenance' ? 'active' : '' }}">
                 <a href="{{ path('admin_maintenance_index') }}"><i class="fas fa-wrench"></i> Maintenances</a>
+            </li>
+            <li style="margin-top: 1rem; margin-bottom: 0.5rem;">
+                <span style="padding: 0.5rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--gray); display: block;">🤖 Outils IA</span>
+            </li>
+            <li class="{{ app.request.get('_route') starts with 'admin_voice_chat' ? 'active' : '' }}">
+                <a href="{{ path('admin_voice_chat') }}"><i class="fas fa-microphone"></i> Assistant Vocal</a>
+            </li>
+            <li class="{{ app.request.get('_route') starts with 'admin_carbone' ? 'active' : '' }}">
+                <a href="{{ path('admin_carbone_index') }}"><i class="fas fa-leaf"></i> Empreinte Carbone</a>
             </li>
             
             <!-- SECTION CULTURES & PARCELLES -->
@@ -668,13 +693,21 @@
                 <a href="{{ path('admin_marketplace_index') }}"><i class="fas fa-store"></i> Marketplace</a>
             </li>
             
-            <!-- SECTION UTILISATEURS -->
-            <li style="margin-top: 1rem; margin-bottom: 0.5rem;">
-                <span style="padding: 0.5rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--gray); display: block;">👥 Administration</span>
-            </li>
-            <li class="{{ app.request.get('_route') starts with 'admin_user' ? 'active' : '' }}">
-                <a href="{{ path('admin_user_index') }}"><i class="fas fa-users"></i> Utilisateurs</a>
-            </li>
+<!-- SECTION RAPPORTS -->
+        <li style="margin-top: 1rem; margin-bottom: 0.5rem;">
+            <span style="padding: 0.5rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--gray); display: block;">📊 Rapports</span>
+        </li>
+        <li class="{{ app.request.get('_route') starts with 'admin_rapport' ? 'active' : '' }}">
+            <a href="{{ path('admin_rapport_index') }}"><i class="fas fa-file-alt"></i> Rapports personnalisés</a>
+        </li>
+
+        <!-- SECTION UTILISATEURS -->
+        <li style="margin-top: 1rem; margin-bottom: 0.5rem;">
+            <span style="padding: 0.5rem 1rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--gray); display: block;">👥 Administration</span>
+        </li>
+        <li class="{{ app.request.get('_route') starts with 'admin_user' ? 'active' : '' }}">
+            <a href="{{ path('admin_user_index') }}"><i class="fas fa-users"></i> Utilisateurs</a>
+        </li>
         </ul>
     </div>
 
@@ -686,7 +719,12 @@
             <div class="user-menu" id="userMenu">
                 <div class="user-info">
                     <span class="user-name">{{ app.user.prenom }} {{ app.user.nom }}</span>
-                    <div class="user-avatar">{{ app.user.prenom|first }}{{ app.user.nom|first }}</div>
+                    {{ include('profile/_avatar.html.twig', {
+                        user: app.user,
+                        wrapperClass: 'user-avatar',
+                        fallbackText: app.user.prenom|first ~ app.user.nom|first,
+                        alt: 'Photo de profil de ' ~ app.user.prenom ~ ' ' ~ app.user.nom
+                    }) }}
                     <span class="dropdown-arrow">▼</span>
                 </div>
                 
