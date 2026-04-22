@@ -1,136 +1,126 @@
 <?php
-// src/Service/QRCodeService.php
 
 namespace App\Service;
 
 use App\Entity\Equipement;
 use App\Entity\Utilisateur;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Endroid\QrCode\ErrorCorrectionLevel;
+use Endroid\QrCode\QrCode;
+use Endroid\QrCode\Writer\PngWriter;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 class QRCodeService
 {
-    private $httpClient;
+    private RequestStack $requestStack;
+    private string $baseUrl;
 
-    public function __construct(HttpClientInterface $httpClient)
+    public function __construct(RequestStack $requestStack, string $appBaseUrl = 'http://localhost:8000')
     {
-        $this->httpClient = $httpClient;
+        $this->requestStack = $requestStack;
+        $this->baseUrl = $appBaseUrl;
     }
 
-    /**
-     * Génère un QR Code en base64 pour un équipement
-     */
+    private function getBaseUrl(): string
+    {
+        $request = $this->requestStack->getCurrentRequest();
+        if ($request) {
+            return $request->getSchemeAndHttpHost();
+        }
+        return $this->baseUrl;
+    }
+
     public function generateBase64QR(Equipement $equipement): string
     {
-        return $this->generateQRCode($equipement);
+        $contenu = $this->construireContenuEquipement($equipement);
+        return $this->generateQrCodeDataUri($contenu, 300);
     }
 
-    /**
-     * Génère un QR Code via API externe
-     */
-    public function generateQRCode(Equipement $equipement): string
+    public function generateUserQrCodeBase64(Utilisateur $user): string
     {
-        $contenu = sprintf(
-            "FARMVISION - Equipement\nID: %d\nNom: %s\nType: %s\nEtat: %s\nURL: /equipement/%d",
+        $profileUrl = sprintf(
+            '%s/profile/public/%d',
+            $this->getBaseUrl(),
+            $user->getId()
+        );
+        return $this->generateQrCodeDataUri($profileUrl, 300);
+    }
+
+    public function generateVCardBase64(Utilisateur $user): string
+    {
+        $vcard = $this->generateVCardContent($user);
+        return $this->generateQrCodeDataUri($vcard, 400);
+    }
+
+    private function generateQrCodeDataUri(string $data, int $size = 300): string
+    {
+        $qrCode = new QrCode(
+            data: $data,
+            errorCorrectionLevel: ErrorCorrectionLevel::High,
+            size: $size,
+            margin: 10
+        );
+
+        $writer = new PngWriter();
+        $result = $writer->write($qrCode);
+
+        return $result->getDataUri();
+    }
+
+    private function generateVCardContent(Utilisateur $user): string
+    {
+        $vcard = "BEGIN:VCARD\n";
+        $vcard .= "VERSION:3.0\n";
+        $vcard .= "N:" . $user->getNom() . ";" . $user->getPrenom() . ";;;\n";
+        $vcard .= "FN:" . $user->getPrenom() . " " . $user->getNom() . "\n";
+
+        if ($user->getEmail()) {
+            $vcard .= "EMAIL:" . $user->getEmail() . "\n";
+        }
+
+        if ($user->getTelephone()) {
+            $vcard .= "TEL:" . $user->getTelephone() . "\n";
+        }
+
+        if ($user->getAdresse()) {
+            $vcard .= "ADR:;;" . $user->getAdresse() . ";;;\n";
+        }
+
+        $roleLabel = match($user->getTypeRole()) {
+            'ADMINISTRATEUR' => 'Administrateur FarmVision',
+            'RESPONSABLE_EXPLOITATION' => 'Responsable exploitation',
+            'AGRICULTEUR' => 'Agriculteur',
+            default => 'Utilisateur'
+        };
+        $vcard .= "ORG:FarmVision\n";
+        $vcard .= "TITLE:" . $roleLabel . "\n";
+        $vcard .= "END:VCARD";
+
+        return $vcard;
+    }
+
+    private function construireContenuEquipement(Equipement $equipement): string
+    {
+        $finGarantie = $equipement->getFinGarantie();
+        return sprintf(
+            "FARMVISION-EQUIPEMENT\n" .
+            "ID: %d\n" .
+            "Nom: %s\n" .
+            "Type: %s\n" .
+            "État: %s\n" .
+            "Date achat: %s\n" .
+            "Durée vie: %d ans\n" .
+            "Fin garantie: %s\n" .
+            "Âge: %d ans\n" .
+            "URL: farmvision://equipement/%d",
             $equipement->getId(),
             $equipement->getNom(),
             $equipement->getType(),
             $equipement->getEtat(),
+            $equipement->getDateAchat()?->format('d/m/Y') ?? 'N/A',
+            $equipement->getDureeVieEstimee() ?? 0,
+            $finGarantie?->format('d/m/Y') ?? 'N/A',
+            $equipement->getAge(),
             $equipement->getId()
         );
-        
-        // Utiliser l'API gratuite QR Server
-        $url = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' . urlencode($contenu);
-        
-        try {
-            $response = $this->httpClient->request('GET', $url, [
-                'timeout' => 5
-            ]);
-            $imageData = $response->getContent();
-            return 'data:image/png;base64,' . base64_encode($imageData);
-        } catch (\Exception $e) {
-            // Fallback : retourner une image SVG par défaut
-            return $this->generateFallbackSVG($equipement);
-        }
-    }
-    
-    /**
-     * Génère un SVG de secours si l'API est indisponible
-     */
-    private function generateFallbackSVG(Equipement $equipement): string
-    {
-        $nom = htmlspecialchars($equipement->getNom(), ENT_QUOTES, 'UTF-8');
-        $id = $equipement->getId();
-        
-        $svg = <<<SVG
-<svg width="300" height="300" xmlns="http://www.w3.org/2000/svg">
-    <rect width="300" height="300" fill="#f3f4f6"/>
-    <rect x="50" y="50" width="200" height="200" fill="white" stroke="#d1d5db" stroke-width="2"/>
-    <text x="150" y="120" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="#374151">QR Code</text>
-    <text x="150" y="145" text-anchor="middle" font-family="Arial" font-size="12" fill="#6b7280">{$nom}</text>
-    <text x="150" y="165" text-anchor="middle" font-family="Arial" font-size="10" fill="#9ca3af">ID: {$id}</text>
-    <text x="150" y="190" text-anchor="middle" font-family="Arial" font-size="10" fill="#ef4444">Service temporairement</text>
-    <text x="150" y="205" text-anchor="middle" font-family="Arial" font-size="10" fill="#ef4444">indisponible</text>
-</svg>
-SVG;
-        
-        return 'data:image/svg+xml;base64,' . base64_encode($svg);
-    }
-    
-    /**
-     * Génère un QR Code avec logo (alias)
-     */
-    public function generateQRWithLogo(Equipement $equipement): string
-    {
-        return $this->generateQRCode($equipement);
-    }
-
-    /**
-     * Génère un QR Code en base64 pour un utilisateur
-     */
-    public function generateUserQrCodeBase64(Utilisateur $user): string
-    {
-        $contenu = sprintf(
-            "FARMVISION - Utilisateur\nID: %d\nNom: %s %s\nRole: %s\nEmail: %s",
-            $user->getId(),
-            $user->getPrenom(),
-            $user->getNom(),
-            $user->getTypeRole(),
-            $user->getEmail()
-        );
-
-        $url = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' . urlencode($contenu);
-
-        try {
-            $response = $this->httpClient->request('GET', $url, [
-                'timeout' => 5
-            ]);
-            $imageData = $response->getContent();
-            return 'data:image/png;base64,' . base64_encode($imageData);
-        } catch (\Exception $e) {
-            return $this->generateUserFallbackSVG($user);
-        }
-    }
-
-    /**
-     * Génère un SVG de secours pour un utilisateur
-     */
-    private function generateUserFallbackSVG(Utilisateur $user): string
-    {
-        $nom = htmlspecialchars($user->getPrenom() . ' ' . $user->getNom(), ENT_QUOTES, 'UTF-8');
-        $id = $user->getId();
-
-        $svg = <<<SVG
-<svg width="300" height="300" xmlns="http://www.w3.org/2000/svg">
-    <rect width="300" height="300" fill="#f3f4f6"/>
-    <rect x="50" y="50" width="200" height="200" fill="white" stroke="#d1d5db" stroke-width="2"/>
-    <text x="150" y="120" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="#374151">QR Code</text>
-    <text x="150" y="145" text-anchor="middle" font-family="Arial" font-size="12" fill="#6b7280">{$nom}</text>
-    <text x="150" y="165" text-anchor="middle" font-family="Arial" font-size="10" fill="#9ca3af">ID: {$id}</text>
-    <text x="150" y="190" text-anchor="middle" font-family="Arial" font-size="10" fill="#ef4444">Service temporairement</text>
-    <text x="150" y="205" text-anchor="middle" font-family="Arial" font-size="10" fill="#ef4444">indisponible</text>
-</svg>
-SVG;
-
-        return 'data:image/svg+xml;base64,' . base64_encode($svg);
     }
 }

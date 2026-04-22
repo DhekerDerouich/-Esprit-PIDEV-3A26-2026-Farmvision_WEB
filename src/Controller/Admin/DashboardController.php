@@ -8,6 +8,7 @@ use App\Repository\MaintenanceRepository;
 use App\Repository\UtilisateurRepository;
 use App\Repository\RevenuRepository;
 use App\Repository\DepenseRepository;
+use App\Service\AlertesService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,7 +24,8 @@ class DashboardController extends AbstractController
         MaintenanceRepository   $maintenanceRepo,
         UtilisateurRepository   $utilisateurRepo,
         RevenuRepository        $revenuRepo,
-        DepenseRepository       $depenseRepo
+        DepenseRepository       $depenseRepo,
+        AlertesService          $alertesService
     ): Response {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
@@ -127,6 +129,11 @@ class DashboardController extends AbstractController
         // ── Chart data finances ──
         $chartDataFinance = $this->getMonthlyFinanceData($revenuRepo, $depenseRepo);
 
+        // ── Alertes ──
+        $alertes = $alertesService->getToutesLesAlertes();
+        $statsAlertes = $alertesService->getStatistiquesAlertes();
+        $alertesUrgentes = $alertesService->getAlertesUrgentes();
+
         // Prépare labels/valeurs séparés — évite |values (filtre inexistant en Twig natif)
         $inscriptionsMoisLabels = array_keys($inscriptionsMois);
         $inscriptionsMoisValues = array_values($inscriptionsMois);
@@ -143,6 +150,10 @@ class DashboardController extends AbstractController
             'statsUtilisateurs'   => $statsUtilisateurs,
             'statsRevenus'        => $statsRevenus,
             'statsDepenses'       => $statsDepenses,
+            // alertes
+            'alertes'             => $alertes,
+            'statsAlertes'        => $statsAlertes,
+            'alertesUrgentes'     => $alertesUrgentes,
             // users IA
             'inscriptionsMois'       => $inscriptionsMois,
             'inscriptionsMoisLabels' => $inscriptionsMoisLabels,
