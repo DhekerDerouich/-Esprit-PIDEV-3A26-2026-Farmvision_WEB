@@ -1,11 +1,14 @@
 <?php
-// src/Controller/ProfileController.php
 
 namespace App\Controller;
 
 use App\Entity\Utilisateur;
+use App\Repository\UtilisateurRepository;
+use App\Service\ProfileImageUploader;
+use App\Service\QRCodeService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -17,19 +20,85 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class ProfileController extends AbstractController
 {
     #[Route('/', name: 'profile_show')]
-    public function show(): Response
+    public function show(QRCodeService $qrCodeService): Response
     {
         $user = $this->getUser();
-        
+
+        if (!$user instanceof Utilisateur) {
+            throw $this->createAccessDeniedException();
+        }
+
+        try {
+            $profileQrCode = $qrCodeService->generateUserQrCodeBase64($user);
+            $vcardQrCode = $qrCodeService->generateVCardBase64($user);
+        } catch (\Exception $e) {
+            $profileQrCode = '';
+            $vcardQrCode = '';
+            $this->addFlash('warning', 'Impossible de générer les QR Codes: ' . $e->getMessage());
+        }
+
         return $this->render('profile/show.html.twig', [
+            'user' => $user,
+            'profileQrCode' => $profileQrCode,
+            'vcardQrCode' => $vcardQrCode,
+        ]);
+    }
+
+    #[Route('/public/{id}', name: 'profile_public')]
+    public function publicProfile(int $id, UtilisateurRepository $userRepository): Response
+    {
+        $user = $userRepository->find($id);
+
+        if (!$user) {
+            throw $this->createNotFoundException('Utilisateur non trouvé');
+        }
+
+        return $this->render('profile/public.html.twig', [
             'user' => $user,
         ]);
     }
 
-    #[Route('/edit', name: 'profile_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $passwordHasher): Response
+    #[Route('/qrcode/download', name: 'profile_qrcode_download')]
+    public function downloadQrCode(QRCodeService $qrCodeService): Response
     {
         $user = $this->getUser();
+
+        if (!$user instanceof Utilisateur) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $vcardBase64 = $qrCodeService->generateVCardBase64($user);
+        
+        $qrCodeDir = $this->getParameter('kernel.project_dir') . '/public/uploads/qrcodes';
+        
+        if (!is_dir($qrCodeDir)) {
+            mkdir($qrCodeDir, 0755, true);
+        }
+
+        $filename = 'vcard_' . $user->getId() . '.png';
+        $fullPath = $qrCodeDir . '/' . $filename;
+
+        $imageData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $vcardBase64));
+        file_put_contents($fullPath, $imageData);
+
+        return $this->file($fullPath, 'qrcode_' . $user->getNom() . '_' . $user->getPrenom() . '.png');
+    }
+
+    #[Route('/edit', name: 'profile_edit', methods: ['GET', 'POST'])]
+    public function edit(
+        Request $request,
+        EntityManagerInterface $em,
+        UserPasswordHasherInterface $passwordHasher,
+        UtilisateurRepository $userRepository,
+        ProfileImageUploader $profileImageUploader,
+    ): Response
+    {
+        $user = $this->getUser();
+
+        if (!$user instanceof Utilisateur) {
+            throw $this->createAccessDeniedException();
+        }
+
         $errors = [];
         
         if ($request->isMethod('POST')) {
@@ -38,6 +107,7 @@ class ProfileController extends AbstractController
             $email = trim($request->request->get('email', ''));
             $telephone = trim($request->request->get('telephone', ''));
             $adresse = trim($request->request->get('adresse', ''));
+            $photoProfil = $request->files->get('photo_profil');
             $currentPassword = $request->request->get('current_password', '');
             $newPassword = $request->request->get('new_password', '');
             $confirmPassword = $request->request->get('confirm_password', '');
@@ -71,6 +141,11 @@ class ProfileController extends AbstractController
                 $errors['email'] = '❌ L\'email est obligatoire.';
             } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 $errors['email'] = '❌ Format d\'email invalide. Exemple: nom@domaine.com';
+            } else {
+                $existingUser = $userRepository->findOneBy(['email' => $email]);
+                if ($existingUser instanceof Utilisateur && $existingUser->getId() !== $user->getId()) {
+                    $errors['email'] = '❌ Cet email est déjà utilisé par un autre compte.';
+                }
             }
             
             // Validation du TÉLÉPHONE (optionnel)
@@ -84,15 +159,26 @@ class ProfileController extends AbstractController
             if (!empty($adresse) && strlen($adresse) > 255) {
                 $errors['adresse'] = '❌ L\'adresse ne peut pas dépasser 255 caractères.';
             }
+
+            if ($photoProfil instanceof UploadedFile) {
+                $photoError = $profileImageUploader->validate($photoProfil);
+                if ($photoError !== null) {
+                    $errors['photo_profil'] = $photoError;
+                }
+            }
             
             // Changement de mot de passe
             $passwordChanged = false;
-            if (!empty($newPassword) || !empty($confirmPassword)) {
-                if (empty($currentPassword)) {
+            if (!empty($newPassword) || !empty($confirmPassword) || !empty($currentPassword)) {
+                $hasLocalPassword = !empty($user->getPassword());
+
+                if ($hasLocalPassword && empty($currentPassword)) {
                     $errors['current_password'] = '❌ Veuillez entrer votre mot de passe actuel.';
-                } elseif (!$passwordHasher->isPasswordValid($user, $currentPassword)) {
+                } elseif ($hasLocalPassword && !$passwordHasher->isPasswordValid($user, $currentPassword)) {
                     $errors['current_password'] = '❌ Mot de passe actuel incorrect.';
-                } elseif (empty($newPassword)) {
+                }
+
+                if (empty($newPassword)) {
                     $errors['new_password'] = '❌ Le nouveau mot de passe est obligatoire.';
                 } elseif (strlen($newPassword) < 6) {
                     $errors['new_password'] = '❌ Le nouveau mot de passe doit contenir au moins 6 caractères.';
@@ -114,6 +200,10 @@ class ProfileController extends AbstractController
                 $user->setEmail($email);
                 $user->setTelephone($telephone ?: null);
                 $user->setAdresse($adresse ?: null);
+
+                if ($photoProfil instanceof UploadedFile) {
+                    $user->setPhotoProfil($profileImageUploader->upload($photoProfil, $user->getPhotoProfil()));
+                }
                 
                 if ($passwordChanged) {
                     $user->setPassword($passwordHasher->hashPassword($user, $newPassword));
@@ -134,6 +224,7 @@ class ProfileController extends AbstractController
         return $this->render('profile/edit.html.twig', [
             'user' => $user,
             'errors' => $errors,
+            'hasLocalPassword' => !empty($user->getPassword()),
         ]);
     }
 }

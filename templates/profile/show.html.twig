@@ -2,130 +2,190 @@
 
 {% block body %}
 <style>
-    .profile-header {
-        background: linear-gradient(135deg, var(--green-deep) 0%, var(--green-mid) 100%);
-        padding: 3rem 0;
-        color: white;
-        margin-bottom: 2rem;
-    }
-    
-    .profile-avatar {
-        width: 120px;
-        height: 120px;
-        background: linear-gradient(135deg, #fff, var(--green-mist));
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 3rem;
-        margin: 0 auto 1rem;
-        border: 4px solid white;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    }
-    
-    .profile-card {
-        background: white;
-        border-radius: 16px;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        border: 1px solid rgba(0,0,0,0.05);
-    }
-    
-    .info-row {
-        display: flex;
-        padding: 1rem 0;
-        border-bottom: 1px solid #f0f0f0;
-    }
-    
-    .info-label {
-        width: 140px;
-        font-weight: 600;
-        color: var(--green-deep);
-    }
-    
-    .info-value {
-        flex: 1;
-        color: #555;
-    }
-    
-    .badge-role {
-        display: inline-block;
-        padding: 0.25rem 1rem;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        font-weight: 600;
-    }
-    
-    .badge-admin { background: #fee2e2; color: #991b1b; }
-    .badge-responsable { background: #fed7aa; color: #92400e; }
-    .badge-agriculteur { background: #d1fae5; color: #065f46; }
-    .badge-active { background: #d1fae5; color: #065f46; }
-    .badge-inactive { background: #fee2e2; color: #991b1b; }
-    
-    .stat-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 1rem;
-        margin-top: 1rem;
-    }
-    
-    .stat-item {
-        text-align: center;
-        padding: 1rem;
-        background: #f8f9fa;
-        border-radius: 12px;
-    }
-    
-    .stat-number {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: var(--green-mid);
-    }
-    
-    .stat-label {
-        font-size: 0.75rem;
-        color: #666;
-        margin-top: 0.25rem;
-    }
-    
-    .action-buttons {
-        display: flex;
-        gap: 1rem;
-        justify-content: center;
-        margin-top: 2rem;
-    }
-    
-    .btn-edit {
-        background: var(--green-mid);
-        color: white;
-        padding: 0.75rem 2rem;
-        border-radius: 8px;
-        text-decoration: none;
-        font-weight: 600;
-        transition: all 0.3s;
-    }
-    
-    .btn-edit:hover {
-        background: var(--green-deep);
-        transform: translateY(-2px);
-    }
-    
-    .btn-back {
-        background: #e2e8f0;
-        color: #333;
-        padding: 0.75rem 2rem;
-        border-radius: 8px;
-        text-decoration: none;
-        font-weight: 600;
-    }
+.profile-header {
+    background: linear-gradient(135deg, var(--green-deep) 0%, var(--green-mid) 100%);
+    padding: 3rem 0;
+    color: white;
+    margin-bottom: 2rem;
+}
+
+.profile-avatar {
+    width: 120px;
+    height: 120px;
+    background: linear-gradient(135deg, #fff, var(--green-mist));
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    margin: 0 auto 1rem;
+    border: 4px solid white;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.profile-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.info-row {
+    display: flex;
+    padding: 1rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.info-label {
+    width: 140px;
+    font-weight: 600;
+    color: var(--green-deep);
+}
+
+.info-value {
+    flex: 1;
+    color: #555;
+}
+
+.badge-role {
+    display: inline-block;
+    padding: 0.25rem 1rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge-admin { background: #fee2e2; color: #991b1b; }
+.badge-responsable { background: #fed7aa; color: #92400e; }
+.badge-agriculteur { background: #d1fae5; color: #065f46; }
+.badge-active { background: #d1fae5; color: #065f46; }
+.badge-inactive { background: #fee2e2; color: #991b1b; }
+
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 12px;
+}
+
+.stat-number {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--green-mid);
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: #666;
+    margin-top: 0.25rem;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.btn-edit {
+    background: var(--green-mid);
+    color: white;
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.btn-edit:hover {
+    background: var(--green-deep);
+    transform: translateY(-2px);
+}
+
+.btn-back {
+    background: #e2e8f0;
+    color: #333;
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.qrcode-section {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.qrcode-card {
+    text-align: center;
+    padding: 1.5rem;
+    background: #f8f9fa;
+    border-radius: 12px;
+}
+
+.qrcode-image {
+    width: 200px;
+    height: 200px;
+    margin: 0 auto 1rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.qrcode-title {
+    font-weight: 600;
+    color: var(--green-deep);
+    margin-bottom: 0.5rem;
+}
+
+.qrcode-desc {
+    font-size: 0.8rem;
+    color: #666;
+    margin-bottom: 1rem;
+}
+
+.btn-download {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: var(--green-mid);
+    color: white;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.btn-download:hover {
+    background: var(--green-deep);
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .qrcode-section { grid-template-columns: 1fr; }
+    .stat-grid { grid-template-columns: 1fr; }
+}
 </style>
 
 <div class="profile-header">
     <div class="container" style="text-align: center;">
-        <div class="profile-avatar">
-            {{ user.prenom|first }}{{ user.nom|first }}
-        </div>
+        {{ include('profile/_avatar.html.twig', {
+            user: user,
+            wrapperClass: 'profile-avatar',
+            fallbackText: user.prenom|first ~ user.nom|first,
+            alt: 'Photo de profil de ' ~ user.prenom ~ ' ' ~ user.nom
+        }) }}
         <h1 style="font-size: 2rem; margin-bottom: 0.5rem;">{{ user.prenom }} {{ user.nom }}</h1>
         <p style="opacity: 0.9;">
             {% if user.typeRole == 'ADMINISTRATEUR' %}
@@ -208,6 +268,30 @@
         </div>
     </div>
     
+    <!-- QR Code Section -->
+    <div class="profile-card">
+        <h3 style="margin-bottom: 1.5rem; color: var(--green-deep); display: flex; align-items: center; gap: 0.5rem;">
+            <span>📱</span> Mon QR Code
+        </h3>
+
+        {% if vcardQrCode is defined and vcardQrCode %}
+        <div class="qrcode-section">
+            <div class="qrcode-card">
+                <img src="{{ vcardQrCode }}" alt="QR Code Contact" class="qrcode-image">
+                <div class="qrcode-title">📱 Mon QR Code</div>
+                <div class="qrcode-desc">Scannez pour sauvegarder mes coordonnées</div>
+                <a href="{{ path('profile_qrcode_download') }}" class="btn-download">
+                    ⬇️ Télécharger
+                </a>
+            </div>
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 2rem; color: #666;">
+            <p>Les QR Codes ne sont pas disponibles pour le moment.</p>
+        </div>
+        {% endif %}
+    </div>
+
     <!-- Actions -->
     <div class="action-buttons">
         <a href="{{ path('profile_edit') }}" class="btn-edit">✏️ Modifier mon profil</a>

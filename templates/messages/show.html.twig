@@ -1,0 +1,53 @@
+{% extends 'messages/base.html.twig' %}
+
+{% block body %}
+<div class="msg-container">
+    <div class="msg-header">
+        <h1>
+            {% if other %}
+                {{ other.prenom }} {{ other.nom }}
+            {% elseif conversation.type == 'broadcast' %}
+                📢 Broadcast
+            {% else %}
+                Conversation
+            {% endif %}
+        </h1>
+        <a href="{{ path('messages_index') }}" class="msg-btn msg-btn-secondary">← Retour</a>
+    </div>
+
+    <div class="msg-chat">
+        <div class="msg-chat-header">
+            <div class="msg-avatar">
+                {% if other %}
+                    {% include 'profile/_avatar.html.twig' with {user: other, wrapperClass: '', alt: other.prenom} %}
+                {% else %}
+                    📢
+                {% endif %}
+            </div>
+            <div>
+                <strong>
+                    {% if other %}{{ other.prenom }} {{ other.nom }}{% else %}Broadcast{% endif %}
+                </strong>
+                {% if other %}<br><small style="color: var(--text-muted);">{{ other.typeRole }}</small>{% endif %}
+            </div>
+        </div>
+        
+        <div class="msg-chat-messages">
+            {% for msg in messages %}
+                <div class="msg-bubble {% if msg.sender == app.user %}msg-bubble-sent{% else %}msg-bubble-received{% endif %}">
+                    <div class="msg-bubble-header">
+                        <strong>{{ msg.sender.prenom }} {{ msg.sender.nom }}</strong>
+                    </div>
+                    <div>{{ msg.content }}</div>
+                    <div class="msg-bubble-time">{{ msg.createdAt|date('H:i') }}</div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <form method="post" action="{{ path('messages_send', {id: conversation.id}) }}" class="msg-chat-form">
+            <input type="text" name="content" class="msg-input" placeholder="Écrire un message..." required autofocus>
+            <button type="submit" class="msg-btn msg-btn-primary">Envoyer</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

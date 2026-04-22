@@ -3,17 +3,21 @@
 
 {% block body %}
 <div style="margin-bottom: 2rem;">
-    <a href="{{ path('admin_maintenance_index') }}" class="btn" style="background: var(--bg-panel);">← Retour</a>
+    <a href="{{ path('admin_maintenance_index') }}" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: var(--gray-lighter); color: var(--dark); text-decoration: none; border-radius: var(--radius); font-weight: 500; transition: all 0.2s;">
+        <i class="fas fa-arrow-left"></i> Retour
+    </a>
 </div>
 
 <div class="card" style="max-width: 600px; margin: 0 auto;">
-    <h1 style="font-size: 1.5rem; margin-bottom: 1.5rem;">Planifier une maintenance</h1>
+    <div class="card-header">
+        <h3 style="margin: 0;">🛠️ Planifier une maintenance</h3>
+    </div>
     
-    {# Affichage des erreurs de validation PHP #}
+    {# Affichage des erreurs #}
     {% if errors is defined and errors|length > 0 %}
-        <div style="background: var(--red-dim); border: 1px solid var(--red); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
-            <strong style="color: var(--red);">❌ Veuillez corriger les erreurs suivantes :</strong>
-            <ul style="margin-top: 0.5rem; margin-left: 1.5rem; color: var(--red);">
+        <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); border-radius: var(--radius); padding: 1rem; margin-bottom: 1.5rem;">
+            <strong style="color: var(--danger);">❌ Erreurs de validation :</strong>
+            <ul style="margin-top: 0.5rem; margin-left: 1.5rem; color: var(--danger);">
                 {% for field, error in errors %}
                     <li>{{ error }}</li>
                 {% endfor %}
@@ -23,11 +27,11 @@
     
     <form method="post">
         <!-- Équipement -->
-        <div class="form-group" style="margin-bottom: 1rem;">
-            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
-                🔧 Équipement <span style="color: var(--red);">*</span>
+        <div style="margin-bottom: 1.5rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--dark);">
+                🔧 Équipement <span style="color: var(--danger);">*</span>
             </label>
-            <select name="equipement_id" class="form-control {% if errors.equipement_id is defined %}error{% endif %}" style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);">
+            <select name="equipement_id" class="form-control {% if errors.equipement is defined %}is-invalid{% endif %}" style="width: 100%;">
                 <option value="">-- Sélectionner un équipement --</option>
                 {% for equipement in equipements %}
                     <option value="{{ equipement.id }}" 
@@ -40,17 +44,17 @@
                     </option>
                 {% endfor %}
             </select>
-            {% if errors.equipement_id is defined %}
-                <small style="color: var(--red); display: block; margin-top: 0.25rem;">❌ {{ errors.equipement_id }}</small>
+            {% if errors.equipement is defined %}
+                <div style="color: var(--danger); font-size: 0.8rem; margin-top: 0.25rem;">❌ {{ errors.equipement }}</div>
             {% endif %}
         </div>
         
         <!-- Type de maintenance -->
-        <div class="form-group" style="margin-bottom: 1rem;">
-            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
-                🛠️ Type de maintenance <span style="color: var(--red);">*</span>
+        <div style="margin-bottom: 1.5rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--dark);">
+                🛠️ Type de maintenance <span style="color: var(--danger);">*</span>
             </label>
-            <select name="type_maintenance" class="form-control {% if errors.type_maintenance is defined %}error{% endif %}" style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);">
+            <select name="type_maintenance" class="form-control {% if errors.typeMaintenance is defined %}is-invalid{% endif %}" style="width: 100%;">
                 <option value="Préventive" 
                     {% if maintenance.typeMaintenance is defined and maintenance.typeMaintenance == 'Préventive' %}
                         selected
@@ -68,55 +72,55 @@
                     🔧 Corrective
                 </option>
             </select>
-            {% if errors.type_maintenance is defined %}
-                <small style="color: var(--red); display: block; margin-top: 0.25rem;">❌ {{ errors.type_maintenance }}</small>
+            {% if errors.typeMaintenance is defined %}
+                <div style="color: var(--danger); font-size: 0.8rem; margin-top: 0.25rem;">❌ {{ errors.typeMaintenance }}</div>
             {% endif %}
         </div>
         
         <!-- Description -->
-        <div class="form-group" style="margin-bottom: 1rem;">
-            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">📝 Description</label>
-            <textarea name="description" class="form-control {% if errors.description is defined %}error{% endif %}" rows="4" style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);">{% if maintenance.description is defined %}{{ maintenance.description }}{% elseif old.description is defined %}{{ old.description }}{% endif %}</textarea>
+        <div style="margin-bottom: 1.5rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--dark);">📝 Description</label>
+            <textarea name="description" class="form-control {% if errors.description is defined %}is-invalid{% endif %}" rows="4" style="width: 100%;" placeholder="Décrivez les travaux à effectuer...">{% if maintenance.description is defined %}{{ maintenance.description }}{% elseif old.description is defined %}{{ old.description }}{% endif %}</textarea>
             {% if errors.description is defined %}
-                <small style="color: var(--red); display: block; margin-top: 0.25rem;">❌ {{ errors.description }}</small>
+                <div style="color: var(--danger); font-size: 0.8rem; margin-top: 0.25rem;">❌ {{ errors.description }}</div>
             {% else %}
-                <small style="color: var(--text-muted); display: block; margin-top: 0.25rem;">Maximum 1000 caractères</small>
+                <div style="color: var(--gray); font-size: 0.8rem; margin-top: 0.25rem;">Maximum 1000 caractères</div>
             {% endif %}
         </div>
         
         <!-- Date de maintenance -->
-        <div class="form-group" style="margin-bottom: 1rem;">
-            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
-                📅 Date de maintenance <span style="color: var(--red);">*</span>
+        <div style="margin-bottom: 1.5rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--dark);">
+                📅 Date de maintenance <span style="color: var(--danger);">*</span>
             </label>
-            <input type="date" name="date_maintenance" class="form-control {% if errors.date_maintenance is defined %}error{% endif %}" style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);"
-                value="{% if maintenance.dateMaintenance is defined and maintenance.dateMaintenance %}{{ maintenance.dateMaintenance|date('Y-m-d') }}{% elseif old.date_maintenance is defined %}{{ old.date_maintenance }}{% endif %}">
-            {% if errors.date_maintenance is defined %}
-                <small style="color: var(--red); display: block; margin-top: 0.25rem;">❌ {{ errors.date_maintenance }}</small>
+            <input type="text" name="date_maintenance" class="form-control {% if errors.dateMaintenance is defined %}is-invalid{% endif %}" style="width: 100%;"
+                value="{% if maintenance.dateMaintenance is defined and maintenance.dateMaintenance %}{{ maintenance.dateMaintenance|date('Y-m-d') }}{% elseif old.date_maintenance is defined %}{{ old.date_maintenance }}{% endif %}" placeholder="AAAA-MM-JJ (ex: 2024-12-25)">
+            {% if errors.dateMaintenance is defined %}
+                <div style="color: var(--danger); font-size: 0.8rem; margin-top: 0.25rem;">❌ {{ errors.dateMaintenance }}</div>
             {% else %}
-                <small style="color: var(--text-muted); display: block; margin-top: 0.25rem;">Pour une maintenance planifiée, la date doit être aujourd'hui ou dans le futur</small>
+                <div style="color: var(--gray); font-size: 0.8rem; margin-top: 0.25rem;">Format: AAAA-MM-JJ. Pour une maintenance planifiée, la date doit être aujourd'hui ou dans le futur</div>
             {% endif %}
         </div>
         
         <!-- Coût -->
-        <div class="form-group" style="margin-bottom: 1rem;">
-            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">💰 Coût (DT)</label>
-            <input type="number" step="0.01" name="cout" class="form-control {% if errors.cout is defined %}error{% endif %}" style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);"
+        <div style="margin-bottom: 1.5rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--dark);">💰 Coût (DT)</label>
+            <input type="text" name="cout" class="form-control {% if errors.cout is defined %}is-invalid{% endif %}" style="width: 100%;"
                 value="{% if maintenance.cout is defined %}{{ maintenance.cout }}{% elseif old.cout is defined %}{{ old.cout }}{% endif %}" 
                 placeholder="0.00">
             {% if errors.cout is defined %}
-                <small style="color: var(--red); display: block; margin-top: 0.25rem;">❌ {{ errors.cout }}</small>
+                <div style="color: var(--danger); font-size: 0.8rem; margin-top: 0.25rem;">❌ {{ errors.cout }}</div>
             {% else %}
-                <small style="color: var(--text-muted); display: block; margin-top: 0.25rem;">Maximum 100 000 DT</small>
+                <div style="color: var(--gray); font-size: 0.8rem; margin-top: 0.25rem;">Maximum 100 000 DT</div>
             {% endif %}
         </div>
         
         <!-- Statut -->
-        <div class="form-group" style="margin-bottom: 1rem;">
-            <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">
-                📌 Statut <span style="color: var(--red);">*</span>
+        <div style="margin-bottom: 2rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--dark);">
+                📌 Statut <span style="color: var(--danger);">*</span>
             </label>
-            <select name="statut" class="form-control {% if errors.statut is defined %}error{% endif %}" style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg);">
+            <select name="statut" class="form-control {% if errors.statut is defined %}is-invalid{% endif %}" style="width: 100%;">
                 <option value="Planifiée" 
                     {% if maintenance.statut is defined and maintenance.statut == 'Planifiée' %}
                         selected
@@ -137,26 +141,105 @@
                 </option>
             </select>
             {% if errors.statut is defined %}
-                <small style="color: var(--red); display: block; margin-top: 0.25rem;">❌ {{ errors.statut }}</small>
+                <div style="color: var(--danger); font-size: 0.8rem; margin-top: 0.25rem;">❌ {{ errors.statut }}</div>
             {% endif %}
         </div>
         
-        <hr style="border-color: var(--border); margin: 1.5rem 0;">
-        
-        <div style="display: flex; gap: 1rem; margin-top: 1.5rem; justify-content: flex-end;">
-            <a href="{{ path('admin_maintenance_index') }}" class="btn" style="background: var(--bg-panel);">Annuler</a>
-            <button type="submit" class="btn btn-primary">💾 Planifier</button>
+        <div style="display: flex; gap: 1rem; justify-content: flex-end; flex-wrap: wrap;">
+            <a href="{{ path('admin_maintenance_index') }}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Annuler
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-calendar-plus"></i> Planifier
+            </button>
         </div>
     </form>
 </div>
 
 <style>
-    .error {
-        border-color: var(--red) !important;
+    .form-control {
+        padding: 0.875rem 1rem;
+        border: 2px solid var(--gray-lighter);
+        border-radius: var(--radius);
+        background: var(--white);
+        color: var(--dark);
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+        width: 100%;
     }
+    
     .form-control:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
         outline: none;
-        border-color: var(--green);
+    }
+    
+    .form-control.is-invalid {
+        border-color: var(--danger);
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    }
+    
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: var(--radius);
+        font-weight: 600;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: white !important;
+        box-shadow: var(--shadow);
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+    
+    .btn-secondary {
+        background: var(--gray-lighter);
+        color: var(--dark) !important;
+        border: 1px solid var(--gray-lighter);
+    }
+    
+    .btn-secondary:hover {
+        background: var(--gray);
+        color: var(--white) !important;
+        border-color: var(--gray);
+    }
+    
+    /* Dark theme */
+    body.dark-theme .form-control {
+        background: var(--darker);
+        border-color: var(--gray);
+        color: var(--light);
+    }
+    
+    body.dark-theme .form-control:focus {
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+    }
+    
+    body.dark-theme label {
+        color: var(--light);
+    }
+    
+    body.dark-theme .btn-secondary {
+        background: var(--gray);
+        color: var(--light) !important;
+        border-color: var(--gray);
+    }
+    
+    body.dark-theme .btn-secondary:hover {
+        background: var(--gray-light);
+        color: var(--dark) !important;
     }
 </style>
 {% endblock %}

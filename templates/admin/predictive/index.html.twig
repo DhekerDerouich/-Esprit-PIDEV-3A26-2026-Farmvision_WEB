@@ -1,0 +1,635 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block page_title %}IA Prédictive - Maintenance{% endblock %}
+
+{% block body %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+.ai-header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    border-radius: 24px;
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.ai-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.3) 0%, transparent 70%);
+    animation: pulse 3s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.5; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.1); }
+}
+
+.ai-title {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.ai-badge {
+    background: linear-gradient(135deg, #10b981, #059669);
+    padding: 0.35rem 1rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.ai-subtitle {
+    opacity: 0.8;
+    font-size: 1rem;
+}
+
+.stats-ai-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-ai-card {
+    background: white;
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-ai-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+}
+
+.stat-ai-card.danger::after { background: linear-gradient(to bottom, #ef4444, #f87171); }
+.stat-ai-card.warning::after { background: linear-gradient(to bottom, #f59e0b, #fbbf24); }
+.stat-ai-card.success::after { background: linear-gradient(to bottom, #10b981, #34d399); }
+.stat-ai-card.info::after { background: linear-gradient(to bottom, #3b82f6, #60a5fa); }
+
+.stat-ai-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+}
+
+.stat-ai-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.stat-ai-card.danger .stat-ai-icon { background: #fee2e2; }
+.stat-ai-card.warning .stat-ai-icon { background: #fef3c7; }
+.stat-ai-card.success .stat-ai-icon { background: #d1fae5; }
+.stat-ai-card.info .stat-ai-icon { background: #dbeafe; }
+
+.stat-ai-value {
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: #1a1a2e;
+}
+
+.stat-ai-label {
+    color: #64748b;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+}
+
+.charts-ai-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.chart-ai-card {
+    background: white;
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.chart-ai-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #f1f5f9;
+}
+
+.chart-ai-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.chart-ai-container {
+    height: 280px;
+    position: relative;
+}
+
+.equipment-list-section {
+    background: white;
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    margin-bottom: 2rem;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.risk-filter {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.filter-btn {
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    border: 2px solid #e2e8f0;
+    background: white;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filter-btn:hover { border-color: #10b981; }
+.filter-btn.active { background: #10b981; color: white; border-color: #10b981; }
+
+.equipment-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.equipment-table th {
+    text-align: left;
+    padding: 1rem;
+    background: #f8fafc;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.equipment-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.equipment-table tr:hover td { background: #fafafa; }
+
+.equipment-name {
+    font-weight: 600;
+    color: #1a1a2e;
+}
+
+.equipment-type {
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.risk-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.risk-badge.high { background: #fee2e2; color: #991b1b; }
+.risk-badge.medium { background: #fef3c7; color: #92400e; }
+.risk-badge.low { background: #d1fae5; color: #065f46; }
+
+.score-bar {
+    width: 100px;
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.score-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+.score-fill.high { background: linear-gradient(90deg, #ef4444, #f87171); }
+.score-fill.medium { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.score-fill.low { background: linear-gradient(90deg, #10b981, #34d399); }
+
+.action-btn {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    cursor: pointer;
+    border: none;
+}
+
+.action-btn-primary {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+}
+
+.action-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.action-btn-secondary {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.action-btn-secondary:hover { background: #e2e8f0; }
+
+.timeline-section {
+    background: white;
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.timeline-item {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.timeline-date {
+    min-width: 100px;
+    font-weight: 600;
+    color: #1a1a2e;
+}
+
+.timeline-content {
+    flex: 1;
+}
+
+.timeline-predictions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.prediction-tag {
+    background: #fee2e2;
+    color: #991b1b;
+    padding: 0.25rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.empty-timeline {
+    text-align: center;
+    padding: 2rem;
+    color: #64748b;
+}
+
+.empty-timeline i { font-size: 3rem; opacity: 0.3; margin-bottom: 1rem; }
+
+.ai-features {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.ai-feature {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: rgba(255,255,255,0.1);
+    border-radius: 12px;
+}
+
+.ai-feature i { font-size: 1.25rem; }
+.ai-feature span { font-size: 0.85rem; }
+
+@media (max-width: 1024px) {
+    .stats-ai-grid { grid-template-columns: repeat(2, 1fr); }
+    .charts-ai-grid { grid-template-columns: 1fr; }
+    .ai-features { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+    .stats-ai-grid { grid-template-columns: 1fr; }
+    .ai-title { font-size: 1.5rem; }
+}
+</style>
+
+<div class="ai-header">
+    <div class="ai-title">
+        <span>🤖</span>
+        <span>IA Prédictive - Maintenance</span>
+        <span class="ai-badge">Machine Learning</span>
+    </div>
+    <p class="ai-subtitle">Algorithmes prédictifs pour anticiper les pannes et optimiser les maintenances</p>
+    <div class="ai-features">
+        <div class="ai-feature">
+            <i>📊</i>
+            <span>Analyse historique</span>
+        </div>
+        <div class="ai-feature">
+            <i>🎯</i>
+            <span>Score de risque 0-100</span>
+        </div>
+        <div class="ai-feature">
+            <i>⚡</i>
+            <span>Recommandations IA</span>
+        </div>
+    </div>
+</div>
+
+<div class="stats-ai-grid">
+    <div class="stat-ai-card danger">
+        <div class="stat-ai-icon">⚠️</div>
+        <div class="stat-ai-value">{{ summary.high_risk_count }}</div>
+        <div class="stat-ai-label">Équipements à risque élevé</div>
+    </div>
+
+    <div class="stat-ai-card warning">
+        <div class="stat-ai-icon">🔶</div>
+        <div class="stat-ai-value">{{ summary.medium_risk_count }}</div>
+        <div class="stat-ai-label">Risque modéré</div>
+    </div>
+
+    <div class="stat-ai-card success">
+        <div class="stat-ai-icon">✅</div>
+        <div class="stat-ai-value">{{ summary.low_risk_count }}</div>
+        <div class="stat-ai-label">Risque faible</div>
+    </div>
+
+    <div class="stat-ai-card info">
+        <div class="stat-ai-icon">📈</div>
+        <div class="stat-ai-value">{{ summary.average_score }}</div>
+        <div class="stat-ai-label">Score moyen</div>
+    </div>
+</div>
+
+<div class="charts-ai-grid">
+    <div class="chart-ai-card">
+        <div class="chart-ai-header">
+            <div class="chart-ai-title">
+                <span>🎯</span> Distribution des risques
+            </div>
+        </div>
+        <div class="chart-ai-container">
+            <canvas id="riskDistributionChart"></canvas>
+        </div>
+    </div>
+
+    <div class="chart-ai-card">
+        <div class="chart-ai-header">
+            <div class="chart-ai-title">
+                <span>📊</span> Top 5 équipements à risque
+            </div>
+        </div>
+        <div class="chart-ai-container">
+            <canvas id="topRiskChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="equipment-list-section">
+    <div class="section-header">
+        <div class="section-title">
+            <span>🔧</span>
+            Liste des équipements - Analyse IA
+        </div>
+        <div class="risk-filter">
+            <button class="filter-btn active" onclick="filterRisk('all')">Tous</button>
+            <button class="filter-btn" onclick="filterRisk('high')" style="border-color: #ef4444;">Élevé</button>
+            <button class="filter-btn" onclick="filterRisk('medium')" style="border-color: #f59e0b;">Moyen</button>
+            <button class="filter-btn" onclick="filterRisk('low')" style="border-color: #10b981;">Faible</button>
+        </div>
+    </div>
+
+    <table class="equipment-table">
+        <thead>
+            <tr>
+                <th>Équipement</th>
+                <th>Score IA</th>
+                <th>Niveau</th>
+                <th>Prédiction</th>
+                <th>Coût estimé</th>
+                <th>Confiance</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="equipmentTableBody">
+            {% for score in allScores %}
+            <tr data-risk="{{ score.level }}">
+                <td>
+                    <div class="equipment-name">{{ score.equipment_name }}</div>
+                    <div class="equipment-type">{{ score.equipment_type }} - {{ score.equipment_state }}</div>
+                </td>
+                <td>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <div class="score-bar">
+                            <div class="score-fill {{ score.level }}" style="width: {{ score.score }}%;"></div>
+                        </div>
+                        <strong>{{ score.score }}</strong>
+                    </div>
+                </td>
+                <td>
+                    <span class="risk-badge {{ score.level }}">
+                        {% if score.level == 'high' %}🔴 Élevé
+                        {% elseif score.level == 'medium' %}🟠 Moyen
+                        {% else %}🟢 Faible{% endif %}
+                    </span>
+                </td>
+                <td>
+                    {% if score.predicted_days_to_failure > 0 %}
+                        <strong>{{ score.predicted_days_to_failure }} jours</strong>
+                        <div style="font-size: 0.75rem; color: #64748b;">{{ score.predicted_failure_date }}</div>
+                    {% else %}
+                        <span style="color: #64748b;">-</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <strong>{{ score.estimated_cost|number_format(0, ',', ' ') }} DT</strong>
+                </td>
+                <td>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div style="width: 60px; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden;">
+                            <div style="width: {{ score.confidence }}%; height: 100%; background: #3b82f6;"></div>
+                        </div>
+                        <span style="font-size: 0.8rem;">{{ score.confidence }}%</span>
+                    </div>
+                </td>
+                <td>
+                    <a href="{{ path('admin_predictive_equipment', {id: score.equipment_id}) }}" class="action-btn action-btn-secondary">
+                        <i class="fas fa-chart-line"></i> Détails
+                    </a>
+                    {% if score.level == 'high' %}
+                    <form method="POST" action="{{ path('admin_predictive_create_maintenance', {id: score.equipment_id}) }}" style="display: inline;">
+                        <button type="submit" class="action-btn action-btn-primary">
+                            <i class="fas fa-wrench"></i> Maintenance
+                        </button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7" style="text-align: center; padding: 2rem;">
+                    <div style="font-size: 3rem; opacity: 0.3;">🚜</div>
+                    <p style="color: #64748b;">Aucun équipement enregistré</p>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="timeline-section">
+    <div class="section-header">
+        <div class="section-title">
+            <span>📅</span>
+            Timeline prédictive (30 jours)
+        </div>
+    </div>
+
+    {% if timeline|length > 0 %}
+        {% for item in timeline %}
+        <div class="timeline-item">
+            <div class="timeline-date">J+{{ item.day }}</div>
+            <div class="timeline-content">
+                <div style="font-size: 0.85rem; color: #64748b; margin-bottom: 0.5rem;">{{ item.date }}</div>
+                <div class="timeline-predictions">
+                    {% for pred in item.predictions %}
+                    <span class="prediction-tag">{{ pred.name }} ({{ pred.type }})</span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-timeline">
+            <i class="fas fa-check-circle"></i>
+            <p>Aucune panne prédite dans les 30 prochains jours</p>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function filterRisk(level) {
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+
+    document.querySelectorAll('#equipmentTableBody tr').forEach(row => {
+        if (level === 'all' || row.dataset.risk === level) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const distributionData = {{ riskDistribution|json_encode|raw }};
+
+    new Chart(document.getElementById('riskDistributionChart'), {
+        type: 'doughnut',
+        data: {
+            labels: distributionData.labels,
+            datasets: [{
+                data: distributionData.data,
+                backgroundColor: distributionData.colors,
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { padding: 20, usePointStyle: true } }
+            },
+            cutout: '65%'
+        }
+    });
+
+    const topRiskData = {{ summary.top_risk_equipment|json_encode|raw }};
+
+    new Chart(document.getElementById('topRiskChart'), {
+        type: 'bar',
+        data: {
+            labels: topRiskData.map(e => e.equipment_name),
+            datasets: [{
+                label: 'Score de risque',
+                data: topRiskData.map(e => e.score),
+                backgroundColor: topRiskData.map(e => 
+                    e.level === 'high' ? '#ef4444' : (e.level === 'medium' ? '#f59e0b' : '#10b981')
+                ),
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, max: 100 },
+                x: { ticks: { maxRotation: 45 } }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

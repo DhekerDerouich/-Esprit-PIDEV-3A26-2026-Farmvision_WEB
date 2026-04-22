@@ -1,0 +1,262 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block page_title %}{{ rapport.titre }}{% endblock %}
+
+{% block body %}
+<style>
+.rapport-container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.rapport-header {
+    background: linear-gradient(135deg, #1a3a2a 0%, #2d6a4f 100%);
+    border-radius: 20px;
+    padding: 2rem;
+    color: white;
+    margin-bottom: 2rem;
+}
+
+.rapport-header h1 {
+    font-size: 1.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.rapport-header .meta {
+    display: flex;
+    gap: 1.5rem;
+    font-size: 0.9rem;
+    opacity: 0.9;
+    flex-wrap: wrap;
+}
+
+.rapport-type-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    background: rgba(255,255,255,0.2);
+}
+
+.rapport-content {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.section {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1a3a2a;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+}
+
+.stat-item {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 1rem;
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--primary);
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: #666;
+    margin-top: 0.25rem;
+}
+
+.balance-positive { color: #10b981; }
+.balance-negative { color: #ef4444; }
+
+.actions-bar {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary), #059669);
+    color: white;
+}
+
+.btn-secondary {
+    background: #f1f5f9;
+    color: #333;
+}
+
+.btn-danger {
+    background: #fee2e2;
+    color: #991b1b;
+}
+</style>
+
+<div class="rapport-container">
+    <div class="rapport-header">
+        <h1><i class="fas fa-file-alt"></i> {{ rapport.titre }}</h1>
+        <div class="meta">
+            <span class="rapport-type-badge">{{ rapport.type|capitalize }}</span>
+            <span><i class="fas fa-calendar"></i> Créé le {{ rapport.createdAt|date('d/m/Y à H:i') }}</span>
+            {% if rapport.createdBy %}
+            <span><i class="fas fa-user"></i> {{ rapport.createdBy.prenom }} {{ rapport.createdBy.nom }}</span>
+            {% endif %}
+        </div>
+        {% if rapport.description %}
+        <p style="margin-top: 1rem; opacity: 0.9;">{{ rapport.description }}</p>
+        {% endif %}
+    </div>
+
+    <div class="rapport-content">
+        {% set data = rapport.donnees %}
+
+        {% if data.type == 'finance' or data.type == 'global' %}
+        <div class="section">
+            <div class="section-title"><i class="fas fa-coins"></i> Données financières</div>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value">{{ (data.revenus.total ?? 0)|number_format(0, ',', ' ') }} DT</div>
+                    <div class="stat-label">Total Revenus</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ (data.depenses.total ?? 0)|number_format(0, ',', ' ') }} DT</div>
+                    <div class="stat-label">Total Dépenses</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value {{ (data.balance ?? 0) >= 0 ? 'balance-positive' : 'balance-negative' }}">
+                        {{ (data.balance ?? 0)|number_format(0, ',', ' ') }} DT
+                    </div>
+                    <div class="stat-label">Solde</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ (data.revenus.ceMois ?? 0)|number_format(0, ',', ' ') }} DT</div>
+                    <div class="stat-label">Revenus ce mois</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if data.type == 'equipement' or data.type == 'global' %}
+        <div class="section">
+            <div class="section-title"><i class="fas fa-tractor"></i> Équipements</div>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value">{{ data.equipements.total ?? 0 }}</div>
+                    <div class="stat-label">Total</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" style="color: #10b981;">{{ data.equipements.fonctionnels ?? 0 }}</div>
+                    <div class="stat-label">Fonctionnels</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" style="color: #f59e0b;">{{ data.equipements.enMaintenance ?? 0 }}</div>
+                    <div class="stat-label">En maintenance</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" style="color: #ef4444;">{{ data.equipements.enPanne ?? 0 }}</div>
+                    <div class="stat-label">En panne</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if data.type == 'maintenance' or data.type == 'global' %}
+        <div class="section">
+            <div class="section-title"><i class="fas fa-wrench"></i> Maintenances</div>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value">{{ data.maintenances.total ?? 0 }}</div>
+                    <div class="stat-label">Total</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" style="color: #f59e0b;">{{ data.maintenances.planifiees ?? 0 }}</div>
+                    <div class="stat-label">Planifiées</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" style="color: #10b981;">{{ data.maintenances.realisees ?? 0 }}</div>
+                    <div class="stat-label">Réalisées</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ (data.maintenances.coutTotal ?? 0)|number_format(0, ',', ' ') }} DT</div>
+                    <div class="stat-label">Coût total</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if data.type == 'utilisateur' %}
+        <div class="section">
+            <div class="section-title"><i class="fas fa-users"></i> Utilisateurs</div>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value">{{ data.total ?? 0 }}</div>
+                    <div class="stat-label">Total</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" style="color: #7c3aed;">{{ data.admins ?? 0 }}</div>
+                    <div class="stat-label">Administrateurs</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" style="color: #3b82f6;">{{ data.responsables ?? 0 }}</div>
+                    <div class="stat-label">Responsables</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" style="color: #10b981;">{{ data.agriculteurs ?? 0 }}</div>
+                    <div class="stat-label">Agriculteurs</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="actions-bar">
+            <a href="{{ path('admin_rapport_index') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Retour
+            </a>
+            <form method="POST" action="{{ path('admin_rapport_delete', {id: rapport.id}) }}" style="display:inline;" onsubmit="return confirm('Supprimer ce rapport?')">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ rapport.id) }}">
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> Supprimer
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

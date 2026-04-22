@@ -1,0 +1,45 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block page_title %}QR Code - {{ equipement.nom }}{% endblock %}
+
+{% block body %}
+<div style="margin-bottom: 2rem;">
+    <a href="{{ path('admin_equipement_show', {'id': equipement.id}) }}" class="btn" style="background: var(--bg-panel);">← Retour</a>
+</div>
+
+<div class="card" style="max-width: 600px; margin: 0 auto; text-align: center;">
+    <h1 style="font-size: 1.5rem; margin-bottom: 1rem;">QR Code - {{ equipement.nom }}</h1>
+    <p style="color: var(--text-muted); margin-bottom: 2rem;">Scannez ce code pour accéder rapidement aux informations de l'équipement</p>
+    
+    <div style="background: white; padding: 2rem; border-radius: 12px; display: inline-block; box-shadow: var(--shadow-lg);">
+        <img src="{{ qrCode }}" alt="QR Code {{ equipement.nom }}" style="max-width: 300px; width: 100%;">
+    </div>
+    
+    <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center;">
+        <a href="{{ path('admin_equipement_qr_download', {'id': equipement.id}) }}" class="btn btn-primary" download>
+            <i class="fas fa-download"></i> Télécharger
+        </a>
+        <button onclick="window.print()" class="btn" style="background: var(--bg-panel);">
+            <i class="fas fa-print"></i> Imprimer
+        </button>
+    </div>
+    
+    <div style="margin-top: 2rem; padding: 1rem; background: var(--light); border-radius: 8px; text-align: left;">
+        <h3 style="font-size: 0.9rem; margin-bottom: 0.5rem;">Informations de l'équipement</h3>
+        <div style="font-size: 0.85rem; color: var(--text-muted);">
+            <div><strong>Nom:</strong> {{ equipement.nom }}</div>
+            <div><strong>Type:</strong> {{ equipement.type }}</div>
+            <div><strong>État:</strong> {{ equipement.etat }}</div>
+            <div><strong>ID:</strong> #{{ equipement.id }}</div>
+        </div>
+    </div>
+</div>
+
+<style>
+@media print {
+    .sidebar, .top-bar, .btn, nav { display: none !important; }
+    .main-content { margin-left: 0 !important; }
+    .card { box-shadow: none !important; border: 1px solid #ddd; }
+}
+</style>
+{% endblock %}

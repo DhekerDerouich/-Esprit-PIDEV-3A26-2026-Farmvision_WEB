@@ -1,0 +1,68 @@
+{% extends 'front/base.html.twig' %}
+
+{% block body %}
+<div class="container" style="padding: 3rem 0;">
+    <div style="margin-bottom: 2rem;">
+        <a href="{{ path('front_equipement_show', {'id': equipement.id}) }}" class="btn-outline btn">← Retour</a>
+    </div>
+
+    <div class="card" style="max-width: 600px; margin: 0 auto; text-align: center;">
+        <h1 style="font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 0.5rem;">QR Code</h1>
+        <h2 style="font-size: 1.2rem; color: var(--text-muted); margin-bottom: 2rem;">{{ equipement.nom }}</h2>
+        
+        <div style="background: white; padding: 2rem; border-radius: 12px; display: inline-block; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+            <img src="{{ qrCode }}" alt="QR Code {{ equipement.nom }}" style="max-width: 300px; width: 100%;">
+        </div>
+        
+        <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <a href="{{ path('front_equipement_qr_download', {'id': equipement.id}) }}" class="btn btn-primary" download>
+                📥 Télécharger
+            </a>
+            <button onclick="window.print()" class="btn btn-outline">
+                🖨️ Imprimer
+            </button>
+        </div>
+        
+        <div style="margin-top: 2rem; padding: 1.5rem; background: var(--green-mist); border-radius: 12px; text-align: left;">
+            <h3 style="font-size: 1rem; margin-bottom: 1rem; color: var(--green-deep);">📋 Informations de l'équipement</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; font-size: 0.9rem;">
+                <div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted);">Nom</div>
+                    <div style="font-weight: 600;">{{ equipement.nom }}</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted);">Type</div>
+                    <div style="font-weight: 600;">{{ equipement.type }}</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted);">État</div>
+                    <div>
+                        <span class="badge 
+                            {% if equipement.etat == 'Fonctionnel' %}badge-success
+                            {% elseif equipement.etat == 'En panne' %}badge-danger
+                            {% else %}badge-warning{% endif %}">
+                            {{ equipement.etat }}
+                        </span>
+                    </div>
+                </div>
+                <div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted);">ID</div>
+                    <div style="font-weight: 600;">#{{ equipement.id }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(45, 106, 79, 0.05); border-radius: 8px; font-size: 0.85rem; color: var(--text-muted);">
+            💡 <strong>Astuce:</strong> Imprimez ce QR code et collez-le sur l'équipement pour un accès rapide aux informations et à l'historique de maintenance.
+        </div>
+    </div>
+</div>
+
+<style>
+@media print {
+    nav, footer, .btn { display: none !important; }
+    .card { box-shadow: none !important; border: 1px solid #ddd; }
+    body { background: white !important; }
+}
+</style>
+{% endblock %}

@@ -50,6 +50,8 @@ class SecurityController extends AbstractController
             $matricule = trim($request->request->get('matricule', ''));
             $password = $request->request->get('password', '');
             $passwordConfirm = $request->request->get('password_confirm', '');
+            $genre = $request->request->get('genre', '');
+            $dateNaissanceStr = trim($request->request->get('date_naissance', ''));
             
             // Sauvegarde des données pour réaffichage
             $oldData = [
@@ -60,6 +62,8 @@ class SecurityController extends AbstractController
                 'telephone' => $telephone,
                 'adresse' => $adresse,
                 'matricule' => $matricule,
+                'genre' => $genre,
+                'date_naissance' => $dateNaissanceStr,
             ];
             
             // ========== VALIDATION PHP PERSONNALISÉE ==========
@@ -169,11 +173,25 @@ class SecurityController extends AbstractController
                 $user->setActivated(0); // Désactivé par défaut
                 $user->setPassword($passwordHasher->hashPassword($user, $password));
                 
+                if (in_array($role, ['AGRICULTEUR', 'RESPONSABLE_EXPLOITATION'])) {
+                    $user->setTwoFactorEnabled(true);
+                }
+                
                 if ($role === 'AGRICULTEUR') {
                     $user->setTelephone($telephone);
                     $user->setAdresse($adresse);
                 } elseif ($role === 'RESPONSABLE_EXPLOITATION') {
                     $user->setMatricule($matricule);
+                }
+
+                // Genre et date de naissance (stats IA)
+                if (in_array($genre, ['M', 'F', 'A'])) {
+                    $user->setGenre($genre);
+                }
+                if (!empty($dateNaissanceStr)) {
+                    try {
+                        $user->setDateNaissance(new \DateTime($dateNaissanceStr));
+                    } catch (\Exception $e) { /* date invalide — on ignore */ }
                 }
                 
                 $em->persist($user);
