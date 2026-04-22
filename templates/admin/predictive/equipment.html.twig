@@ -1,0 +1,362 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block page_title %}Analyse IA - {{ equipment.nom }}{% endblock %}
+
+{% block body %}
+<style>
+.prediction-header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border-radius: 24px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    color: white;
+}
+
+.equipment-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+}
+
+.equipment-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+}
+
+.equipment-meta {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 0.5rem;
+    opacity: 0.8;
+    font-size: 0.9rem;
+}
+
+.state-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+.state-fonctionnel { background: #10b981; }
+.state-panne { background: #ef4444; }
+.state-maintenance { background: #f59e0b; }
+
+.score-display {
+    text-align: center;
+    padding: 2rem;
+    background: rgba(255,255,255,0.1);
+    border-radius: 20px;
+    min-width: 200px;
+}
+
+.score-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    margin: 0 auto 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.score-circle::before {
+    content: '';
+    position: absolute;
+    inset: 8px;
+    border-radius: 50%;
+    background: #1a1a2e;
+}
+
+.score-value {
+    position: relative;
+    z-index: 1;
+    font-size: 2.5rem;
+    font-weight: 800;
+}
+
+.score-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.prediction-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.prediction-card {
+    background: white;
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.card-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.factor-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.factor-item:last-child { border-bottom: none; }
+
+.factor-label { color: #64748b; }
+.factor-value { font-weight: 600; color: #1a1a2e; }
+
+.recommendation-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.recommendation-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: #f8fafc;
+    border-radius: 12px;
+}
+
+.recommendation-item i { color: #10b981; margin-top: 2px; }
+
+.timeline-card {
+    grid-column: span 2;
+}
+
+.timeline-bar {
+    height: 60px;
+    background: linear-gradient(90deg, #10b981 0%, #f59e0b 50%, #ef4444 100%);
+    border-radius: 12px;
+    position: relative;
+    margin-top: 1rem;
+}
+
+.timeline-marker {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 40px;
+    background: white;
+    border-radius: 2px;
+}
+
+.timeline-marker::after {
+    content: attr(data-days);
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1a2e;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.timeline-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+.actions-card {
+    background: white;
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.btn-action {
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    border: none;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+}
+
+.btn-secondary {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.btn-secondary:hover { background: #e2e8f0; }
+
+@media (max-width: 768px) {
+    .prediction-grid { grid-template-columns: 1fr; }
+    .timeline-card { grid-column: span 1; }
+    .equipment-info { flex-direction: column; gap: 1.5rem; }
+}
+</style>
+
+<div class="prediction-header">
+    <div class="equipment-info">
+        <div>
+            <div class="equipment-title">🚜 {{ equipment.nom }}</div>
+            <div class="equipment-meta">
+                <span><i class="fas fa-tag"></i> {{ equipment.type }}</span>
+                <span><i class="fas fa-calendar"></i> Ajouté le {{ equipment.createdAt|date('d/m/Y') }}</span>
+                {% if equipment.dateAchat %}
+                <span><i class="fas fa-clock"></i> Âge: {{ equipment.age }} ans</span>
+                {% endif %}
+            </div>
+        </div>
+        <div>
+            <span class="state-badge state-{{ equipment.etat == 'Fonctionnel' ? 'fonctionnel' : (equipment.etat == 'En panne' ? 'panne' : 'maintenance') }}">
+                {{ equipment.etat }}
+            </span>
+        </div>
+    </div>
+
+    <div class="score-display">
+        <div class="score-circle" style="background: {{ prediction.level == 'high' ? '#ef4444' : (prediction.level == 'medium' ? '#f59e0b' : '#10b981') }};">
+            <div class="score-value">{{ prediction.score }}</div>
+        </div>
+        <div class="score-label">Score de risque</div>
+    </div>
+</div>
+
+<div class="prediction-grid">
+    <div class="prediction-card">
+        <div class="card-title">📊 Facteurs de risque</div>
+        <div class="factor-item">
+            <span class="factor-label">Âge de l'équipement</span>
+            <span class="factor-value">{{ prediction.factors.age_months }} mois</span>
+        </div>
+        <div class="factor-item">
+            <span class="factor-label">Pannes historiques</span>
+            <span class="factor-value">{{ prediction.factors.pannes_count }}</span>
+        </div>
+        <div class="factor-item">
+            <span class="factor-label">Maintenances correctives</span>
+            <span class="factor-value">{{ prediction.factors.correctives_count }}</span>
+        </div>
+        <div class="factor-item">
+            <span class="factor-label">Jours depuis dernière maintenance</span>
+            <span class="factor-value">{{ prediction.factors.days_since_maintenance }}</span>
+        </div>
+        <div class="factor-item">
+            <span class="factor-label">Facteur de type</span>
+            <span class="factor-value">× {{ prediction.factors.type_factor }}</span>
+        </div>
+    </div>
+
+    <div class="prediction-card">
+        <div class="card-title">🎯 Prédictions</div>
+        <div class="factor-item">
+            <span class="factor-label">Niveau de risque</span>
+            <span class="factor-value" style="color: {{ prediction.level == 'high' ? '#ef4444' : (prediction.level == 'medium' ? '#f59e0b' : '#10b981') }};">
+                {{ prediction.level == 'high' ? 'ÉLEVÉ' : (prediction.level == 'medium' ? 'MOYEN' : 'FAIBLE') }}
+            </span>
+        </div>
+        <div class="factor-item">
+            <span class="factor-label">Jours avant défaillance estimée</span>
+            <span class="factor-value">{{ prediction.predicted_days_to_failure > 0 ? prediction.predicted_days_to_failure ~ ' jours' : 'N/A' }}</span>
+        </div>
+        <div class="factor-item">
+            <span class="factor-label">Date estimée</span>
+            <span class="factor-value">{{ prediction.predicted_failure_date ?? '-' }}</span>
+        </div>
+        <div class="factor-item">
+            <span class="factor-label">Coût estimé maintenance</span>
+            <span class="factor-value">{{ prediction.estimated_cost|number_format(0, ',', ' ') }} DT</span>
+        </div>
+        <div class="factor-item">
+            <span class="factor-label">Confiance du modèle</span>
+            <span class="factor-value">{{ prediction.confidence }}%</span>
+        </div>
+    </div>
+
+    <div class="prediction-card">
+        <div class="card-title">💡 Recommandations IA</div>
+        <div class="recommendation-list">
+            {% for rec in prediction.recommendations %}
+            <div class="recommendation-item">
+                <i class="fas fa-check-circle"></i>
+                <span>{{ rec }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="prediction-card">
+        <div class="card-title">⚡ Actions rapides</div>
+        <div class="action-buttons">
+            {% if prediction.level == 'high' %}
+            <form method="POST" action="{{ path('admin_predictive_create_maintenance', {id: equipment.id}) }}">
+                <button type="submit" class="btn-action btn-primary">
+                    <i class="fas fa-wrench"></i> Créer maintenance préventive
+                </button>
+            </form>
+            {% endif %}
+            <a href="{{ path('admin_maintenance_new') }}" class="btn-action btn-secondary">
+                <i class="fas fa-plus"></i> Nouvelle maintenance
+            </a>
+            <a href="{{ path('admin_equipement_edit', {id: equipment.id}) }}" class="btn-action btn-secondary">
+                <i class="fas fa-edit"></i> Modifier équipement
+            </a>
+        </div>
+    </div>
+
+    <div class="prediction-card timeline-card">
+        <div class="card-title">📅 Timeline prédictive</div>
+        <div class="timeline-bar">
+            {% if prediction.predicted_days_to_failure > 0 %}
+            <div class="timeline-marker" style="left: {{ min(100, (prediction.predicted_days_to_failure / 90) * 100) }}%;" data-days="J+{{ prediction.predicted_days_to_failure }}"></div>
+            {% endif %}
+        </div>
+        <div class="timeline-labels">
+            <span>Aujourd'hui</span>
+            <span>30 jours</span>
+            <span>60 jours</span>
+            <span>90 jours</span>
+        </div>
+    </div>
+</div>
+
+<div class="actions-card" style="margin-top: 1.5rem;">
+    <a href="{{ path('admin_predictive_index') }}" class="btn-action btn-secondary">
+        <i class="fas fa-arrow-left"></i> Retour au dashboard IA
+    </a>
+</div>
+{% endblock %}

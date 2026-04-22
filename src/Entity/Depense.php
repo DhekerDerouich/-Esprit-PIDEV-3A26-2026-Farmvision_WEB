@@ -42,9 +42,17 @@ class Depense
     #[ORM\Column(name: 'created_at', nullable: true)]
     private ?\DateTimeImmutable $createdAt = null;
 
+    // NOUVEAU : Colonne pour lier la dépense à un utilisateur (responsable)
+    #[ORM\Column(name: 'user_id', type: 'integer', nullable: true)]
+    private ?int $userId = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
+    }
+     public function getId(): ?int 
+    { 
+        return $this->idDepense; 
     }
 
     public function getIdDepense(): ?int 
@@ -104,6 +112,18 @@ class Depense
     public function setCreatedAt(?\DateTimeImmutable $createdAt): self 
     { 
         $this->createdAt = $createdAt; 
+        return $this; 
+    }
+
+    // NOUVEAUX GETTERS ET SETTERS POUR userId
+    public function getUserId(): ?int 
+    { 
+        return $this->userId; 
+    }
+    
+    public function setUserId(?int $userId): self 
+    { 
+        $this->userId = $userId; 
         return $this; 
     }
 }

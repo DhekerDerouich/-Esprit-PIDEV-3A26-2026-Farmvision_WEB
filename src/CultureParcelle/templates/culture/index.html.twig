@@ -36,11 +36,75 @@
     .cp-card-body { padding: 1rem 1.5rem; flex: 1; }
     .cp-card-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem; }
     .cp-card-row strong { color: var(--text); }
-    .cp-card-footer { padding: 1rem 1.5rem; border-top: 1px solid #f0f4f2; display: flex; gap: 0.6rem; }
-    .cp-btn-edit { flex: 1; text-align: center; padding: 0.55rem; border-radius: 8px; border: 1.5px solid var(--green-mid); color: var(--green-mid); text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: background 0.2s; }
-    .cp-btn-edit:hover { background: var(--green-mist); }
-    .cp-btn-del { padding: 0.55rem 0.9rem; border-radius: 8px; background: #fff0f0; border: 1.5px solid #fcc; color: #e74c3c; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: background 0.2s; }
-    .cp-btn-del:hover { background: #ffe0e0; }
+    .cp-card-footer { padding: 1rem 1.5rem; border-top: 1px solid #f0f4f2; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; }
+    
+    /* Enhanced button styles */
+    .cp-btn-ai { 
+        display: flex; 
+        flex-direction: column; 
+        align-items: center; 
+        gap: 0.4rem; 
+        padding: 0.75rem 0.5rem; 
+        border-radius: 12px; 
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+        color: white; 
+        text-decoration: none; 
+        font-size: 0.8rem; 
+        font-weight: 600; 
+        transition: all 0.2s; 
+        border: none;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    }
+    .cp-btn-ai:hover { 
+        transform: translateY(-2px); 
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    .cp-btn-ai .btn-icon { font-size: 1.5rem; }
+    
+    .cp-btn-edit { 
+        display: flex; 
+        flex-direction: column; 
+        align-items: center; 
+        gap: 0.4rem; 
+        padding: 0.75rem 0.5rem; 
+        border-radius: 12px; 
+        border: 2px solid var(--green-mid); 
+        background: white;
+        color: var(--green-mid); 
+        text-decoration: none; 
+        font-size: 0.8rem; 
+        font-weight: 600; 
+        transition: all 0.2s; 
+    }
+    .cp-btn-edit:hover { 
+        background: var(--green-mist); 
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(45, 106, 79, 0.2);
+    }
+    .cp-btn-edit .btn-icon { font-size: 1.5rem; }
+    
+    .cp-btn-del { 
+        display: flex; 
+        flex-direction: column; 
+        align-items: center; 
+        gap: 0.4rem; 
+        padding: 0.75rem 0.5rem; 
+        border-radius: 12px; 
+        background: #fff0f0; 
+        border: 2px solid #ffcccc; 
+        color: #e74c3c; 
+        cursor: pointer; 
+        font-size: 0.8rem; 
+        font-weight: 600; 
+        transition: all 0.2s; 
+    }
+    .cp-btn-del:hover { 
+        background: #ffe0e0; 
+        border-color: #ff9999;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(231, 76, 60, 0.2);
+    }
+    .cp-btn-del .btn-icon { font-size: 1.5rem; }
 
     .cp-empty { grid-column: 1/-1; text-align: center; padding: 4rem 2rem; color: var(--text-muted); }
     .cp-empty-icon { font-size: 3rem; margin-bottom: 1rem; }
@@ -73,6 +137,8 @@
             <p>Suivi de toutes vos cultures en cours et passées</p>
         </div>
         <div style="display: flex; gap: 0.75rem;">
+            <a href="{{ path('ai_advice_dashboard') }}" class="cp-btn-calendar" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">🤖 Assistant IA</a>
+            <a href="{{ path('front_culture_export_pdf', app.request.query.all) }}" class="cp-btn-calendar" title="Exporter en PDF">📄 Export PDF</a>
             <a href="{{ path('front_culture_calendar') }}" class="cp-btn-calendar">📅 Calendrier</a>
             <a href="{{ path('front_culture_new') }}" class="cp-btn-add">+ Ajouter une culture</a>
         </div>
@@ -123,8 +189,18 @@
                 <div class="cp-card-row">🌾 Récolte : <strong>{{ culture.dateRecolte ? culture.dateRecolte|date('d/m/Y') : 'Non définie' }}</strong></div>
             </div>
             <div class="cp-card-footer">
-                <a href="{{ path('front_culture_edit', {'idCulture': culture.idCulture}) }}" class="cp-btn-edit">✏️ Modifier</a>
-                <button class="cp-btn-del" onclick="openModal('{{ path('front_culture_delete', {'idCulture': culture.idCulture}) }}','{{ csrf_token('delete_culture_' ~ culture.idCulture) }}','{{ culture.nomCulture|e('js') }}')">🗑️ Supprimer</button>
+                <a href="{{ path('ai_advice_culture', {'idCulture': culture.idCulture}) }}" class="cp-btn-ai" onclick="return getAIAdvice(event, this.href, 'culture')">
+                    <span class="btn-icon">🤖</span>
+                    <span>Conseils IA</span>
+                </a>
+                <a href="{{ path('front_culture_edit', {'idCulture': culture.idCulture}) }}" class="cp-btn-edit">
+                    <span class="btn-icon">✏️</span>
+                    <span>Modifier</span>
+                </a>
+                <button class="cp-btn-del" onclick="openModal('{{ path('front_culture_delete', {'idCulture': culture.idCulture}) }}','{{ csrf_token('delete_culture_' ~ culture.idCulture) }}','{{ culture.nomCulture|e('js') }}')">
+                    <span class="btn-icon">🗑️</span>
+                    <span>Supprimer</span>
+                </button>
             </div>
         </div>
         {% else %}
@@ -170,5 +246,43 @@ function openModal(action, token, name) {
 }
 function closeModal() { document.getElementById('deleteModal').style.display = 'none'; }
 document.getElementById('deleteModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+
+// AI Advice Modal
+async function getAIAdvice(event, url, type) {
+    event.preventDefault();
+    
+    const modal = document.createElement('div');
+    modal.className = 'cp-modal-overlay';
+    modal.style.display = 'flex';
+    modal.innerHTML = `
+        <div class="cp-modal" style="max-width: 600px;">
+            <div class="cp-modal-icon">🤖</div>
+            <h3>Conseils IA</h3>
+            <div id="ai-content" style="text-align: left; max-height: 400px; overflow-y: auto;">
+                <p style="text-align: center; color: var(--green-mid);">⏳ Génération des conseils en cours...</p>
+            </div>
+            <div style="margin-top: 1.5rem;">
+                <button class="cp-modal-cancel" onclick="this.closest('.cp-modal-overlay').remove()" style="width: 100%;">Fermer</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        const content = document.getElementById('ai-content');
+        if (data.success) {
+            content.innerHTML = `<div style="line-height: 1.8; white-space: pre-wrap;">${data.advice}</div>`;
+        } else {
+            content.innerHTML = `<p style="color: #e74c3c;">❌ ${data.error}</p>`;
+        }
+    } catch (error) {
+        document.getElementById('ai-content').innerHTML = `<p style="color: #e74c3c;">❌ Erreur de connexion</p>`;
+    }
+    
+    return false;
+}
 </script>
 {% endblock %}

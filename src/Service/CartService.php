@@ -16,6 +16,8 @@ class CartService
     private CartRepository $cartRepository;
     private RequestStack $requestStack;
 
+    private const CART_SESSION_KEY = '_farmvision_cart_id';
+
     public function __construct(
         EntityManagerInterface $em,
         CartRepository $cartRepository,
@@ -29,21 +31,27 @@ class CartService
     public function getCurrentCart(): Cart
     {
         $session = $this->requestStack->getSession();
-        $sessionId = $session->getId();
 
-        if (!$sessionId) {
-            $session->start();
-            $sessionId = $session->getId();
+        // Use a dedicated cart ID stored in session — not the session ID itself
+        $cartId = $session->get(self::CART_SESSION_KEY);
+
+        if ($cartId) {
+            $cart = $this->cartRepository->find($cartId);
+            // If found and active, return it
+            if ($cart && $cart->getStatus() === 'active') {
+                return $cart;
+            }
+            // Cart was completed or deleted — clear the stored ID
+            $session->remove(self::CART_SESSION_KEY);
         }
 
-        $cart = $this->cartRepository->findActiveBySessionId($sessionId);
+        // Create a new cart with a unique token
+        $cart = new Cart();
+        $cart->setSessionId(bin2hex(random_bytes(16))); // always unique
+        $this->em->persist($cart);
+        $this->em->flush();
 
-        if (!$cart) {
-            $cart = new Cart();
-            $cart->setSessionId($sessionId);
-            $this->em->persist($cart);
-            $this->em->flush();
-        }
+        $session->set(self::CART_SESSION_KEY, $cart->getId());
 
         return $cart;
     }
@@ -130,6 +138,9 @@ class CartService
         $cart->setStatus('completed');
         $cart->setUpdatedAt(new \DateTime());
         $this->em->flush();
+
+        // Remove the cart ID from session so next visit gets a fresh cart
+        $this->requestStack->getSession()->remove(self::CART_SESSION_KEY);
     }
 
     public function getCartCount(): int

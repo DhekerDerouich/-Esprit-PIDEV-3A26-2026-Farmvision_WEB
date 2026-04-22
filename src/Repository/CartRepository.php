@@ -25,6 +25,17 @@ class CartRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
+    public function findBySessionId(string $sessionId): ?Cart
+    {
+        return $this->createQueryBuilder('c')
+            ->where('c.sessionId = :sessionId')
+            ->orderBy('c.createdAt', 'DESC')
+            ->setParameter('sessionId', $sessionId)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     public function cleanupOldCarts(int $days = 7): int
     {
         $date = new \DateTime('-' . $days . ' days');

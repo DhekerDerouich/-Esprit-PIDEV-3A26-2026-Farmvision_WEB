@@ -1,75 +1,295 @@
 {% extends 'front/base.html.twig' %}
 
 {% block body %}
-<div class="container" style="padding: 3rem 0; max-width: 1200px; margin: 0 auto; padding: 3rem 2rem;">
+<div class="container" style="padding: 3rem 0; max-width: 1400px; margin: 0 auto; padding: 3rem 2rem;">
     <h1 style="font-family: 'Playfair Display', serif; font-size: 2.5rem; margin-bottom: 0.5rem;">💰 Mon Dashboard Financier</h1>
     <p style="color: var(--text-muted); margin-bottom: 2rem;">Suivez vos revenus et dépenses en temps réel</p>
 
-    <!-- Stats Cards -->
-    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
-        <div class="card" style="text-align: center;">
-            <div style="font-size: 2rem;">💰</div>
-            <div style="font-size: 1.8rem; font-weight: 700; color: var(--green-mid);">{{ totalRevenus|number_format(2) }} DT</div>
-            <div style="font-size: 0.8rem; color: var(--text-muted);">Total Revenus</div>
-        </div>
-        <div class="card" style="text-align: center;">
-            <div style="font-size: 2rem;">💸</div>
-            <div style="font-size: 1.8rem; font-weight: 700; color: var(--red);">{{ totalDepenses|number_format(2) }} DT</div>
-            <div style="font-size: 0.8rem; color: var(--text-muted);">Total Dépenses</div>
-        </div>
-        <div class="card" style="text-align: center;">
-            <div style="font-size: 2rem;">⚖️</div>
-            <div style="font-size: 1.8rem; font-weight: 700; {% if balance < 0 %}color: var(--red);{% else %}color: var(--green-mid);{% endif %}">
-                {{ balance|number_format(2) }} DT
+    <!-- Taux de change en temps réel -->
+    <div class="card" style="background: linear-gradient(135deg, var(--green-deep), var(--green-mid)); color: white; margin-bottom: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h3 style="margin-bottom: 0.5rem;">💱 Taux de change en temps réel</h3>
+                <p style="opacity: 0.8; font-size: 0.85rem;">Dernière mise à jour: {{ 'now'|date('H:i:s') }}</p>
             </div>
-            <div style="font-size: 0.8rem; color: var(--text-muted);">Solde</div>
-        </div>
-        <div class="card" style="text-align: center;">
-            <div style="font-size: 2rem;">📅</div>
-            <div style="font-size: 1.8rem; font-weight: 700;">{{ 'now'|date('F Y') }}</div>
-            <div style="font-size: 0.8rem; color: var(--text-muted);">Période</div>
+            <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+                <div style="text-align: center;">
+                    <div style="font-size: 0.8rem; opacity: 0.8;">Euro (EUR)</div>
+                    <div style="font-size: 1.8rem; font-weight: 700;">{{ eurRate.rate }}</div>
+                    <div style="font-size: 0.8rem; {% if eurRate.is_up %}color: #90EE90;{% elseif eurRate.is_down %}color: #FFB6C1;{% endif %}">
+                        {% if eurRate.is_up %}📈 +{{ eurRate.change }}%{% elseif eurRate.is_down %}📉 {{ eurRate.change }}%{% else %}➡️ 0%{% endif %}
+                    </div>
+                    <div style="font-size: 0.7rem; opacity: 0.7;">1 TND = {{ eurRate.rate }} EUR</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 0.8rem; opacity: 0.8;">Dollar US (USD)</div>
+                    <div style="font-size: 1.8rem; font-weight: 700;">{{ usdRate.rate }}</div>
+                    <div style="font-size: 0.8rem; {% if usdRate.is_up %}color: #90EE90;{% elseif usdRate.is_down %}color: #FFB6C1;{% endif %}">
+                        {% if usdRate.is_up %}📈 +{{ usdRate.change }}%{% elseif usdRate.is_down %}📉 {{ usdRate.change }}%{% else %}➡️ 0%{% endif %}
+                    </div>
+                    <div style="font-size: 0.7rem; opacity: 0.7;">1 TND = {{ usdRate.rate }} USD</div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- This Month Stats -->
+    <!-- Stats Cards -->
+    <div class="stats-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
+        <div class="stat-card" style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+            <div style="font-size: 2rem;">💰</div>
+            <div style="font-size: 1rem; color: var(--text-muted); margin-bottom: 0.5rem;">Total Revenus</div>
+            <div style="font-size: 1.8rem; font-weight: 700; color: var(--green-mid);">{{ totalRevenusTND|number_format(2) }} DT</div>
+            <div style="font-size: 0.8rem; color: var(--gray); margin-top: 0.5rem;">
+                ≈ {{ totalRevenusEUR|number_format(2) }} € | ≈ {{ totalRevenusUSD|number_format(2) }} $
+            </div>
+        </div>
+        <div class="stat-card" style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+            <div style="font-size: 2rem;">💸</div>
+            <div style="font-size: 1rem; color: var(--text-muted); margin-bottom: 0.5rem;">Total Dépenses</div>
+            <div style="font-size: 1.8rem; font-weight: 700; color: var(--red);">{{ totalDepensesTND|number_format(2) }} DT</div>
+            <div style="font-size: 0.8rem; color: var(--gray); margin-top: 0.5rem;">
+                ≈ {{ totalDepensesEUR|number_format(2) }} € | ≈ {{ totalDepensesUSD|number_format(2) }} $
+            </div>
+        </div>
+        <div class="stat-card" style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+            <div style="font-size: 2rem;">⚖️</div>
+            <div style="font-size: 1rem; color: var(--text-muted); margin-bottom: 0.5rem;">Solde</div>
+            <div style="font-size: 1.8rem; font-weight: 700; {% if balanceTND < 0 %}color: var(--red);{% else %}color: var(--green-mid);{% endif %}">
+                {{ balanceTND|number_format(2) }} DT
+            </div>
+            <div style="font-size: 0.8rem; color: var(--gray); margin-top: 0.5rem;">
+                ≈ {{ balanceEUR|number_format(2) }} € | ≈ {{ balanceUSD|number_format(2) }} $
+            </div>
+        </div>
+    </div>
+
+    <!-- Export -->
+    <div class="card" style="background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
+        <h3 style="margin-bottom: 1rem;">📄 Exporter vos rapports</h3>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <a href="{{ path('front_export_monthly_pdf', {'year': 'now'|date('Y'), 'month': 'now'|date('m')}) }}"
+               style="padding: 0.75rem 1.5rem; text-decoration: none; border-radius: 8px; background: #3b82f6; color: white; display: inline-flex; align-items: center; gap: 0.5rem;">
+                📄 Rapport mensuel
+            </a>
+            <a href="{{ path('front_export_yearly_pdf', {'year': 'now'|date('Y')}) }}"
+               style="padding: 0.75rem 1.5rem; text-decoration: none; border-radius: 8px; background: #8b5cf6; color: white; display: inline-flex; align-items: center; gap: 0.5rem;">
+                📊 Rapport annuel
+            </a>
+        </div>
+    </div>
+
+    <!-- IA Analyse Prédictive -->
+    <div class="card" style="background: linear-gradient(135deg, #1e3a5f, #2d6a4f); color: white; margin-bottom: 2rem;">
+        <div style="padding: 1.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                <span style="font-size: 2rem;">🤖</span>
+                <h3 style="margin: 0;">IA FarmVision - Analyse Prédictive</h3>
+                <span style="font-size: 0.7rem; background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 20px;">OpenRouter AI</span>
+            </div>
+            {% if aiAnalysis.prediction is defined %}
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+                    <div style="text-align: center; background: rgba(255,255,255,0.1); border-radius: 12px; padding: 0.75rem;">
+                        <div style="font-size: 0.7rem; opacity: 0.8;">📈 Revenu prévu</div>
+                        <div style="font-size: 1.5rem; font-weight: 700;">{{ aiAnalysis.prediction.revenu_prochain_mois|number_format(2) }} DT</div>
+                        <div style="font-size: 0.7rem;">Tendance: <span style="color: {% if aiAnalysis.prediction.tendance == 'Hausse' %}#90EE90{% elseif aiAnalysis.prediction.tendance == 'Baisse' %}#FFB6C1{% else %}#FFD700{% endif %}">{{ aiAnalysis.prediction.tendance }}</span></div>
+                    </div>
+                    <div style="text-align: center; background: rgba(255,255,255,0.1); border-radius: 12px; padding: 0.75rem;">
+                        <div style="font-size: 0.7rem; opacity: 0.8;">💸 Dépense prévue</div>
+                        <div style="font-size: 1.5rem; font-weight: 700;">{{ aiAnalysis.prediction.depense_prochain_mois|number_format(2) }} DT</div>
+                        <div style="font-size: 0.7rem;">Confiance: {{ aiAnalysis.prediction.confiance }}</div>
+                    </div>
+                    <div style="text-align: center; background: rgba(255,255,255,0.1); border-radius: 12px; padding: 0.75rem;">
+                        <div style="font-size: 0.7rem; opacity: 0.8;">⚖️ Solde prévu</div>
+                        <div style="font-size: 1.5rem; font-weight: 700; {% if aiAnalysis.prediction.solde_prochain_mois >= 0 %}color: #90EE90{% else %}color: #FFB6C1{% endif %}">
+                            {{ aiAnalysis.prediction.solde_prochain_mois|number_format(2) }} DT
+                        </div>
+                    </div>
+                </div>
+                {% if aiAnalysis.analyse_globale %}
+                <div style="background: rgba(255,255,255,0.1); border-radius: 12px; padding: 0.75rem; margin-bottom: 1rem;">
+                    <p style="margin: 0; font-size: 0.9rem;">📊 {{ aiAnalysis.analyse_globale }}</p>
+                </div>
+                {% endif %}
+                {% if aiAnalysis.alerte %}
+                <div style="background: rgba(239, 68, 68, 0.3); border-radius: 12px; padding: 0.75rem; margin-bottom: 1rem; border-left: 4px solid #ef4444;">
+                    <p style="margin: 0; font-size: 0.85rem;">⚠️ {{ aiAnalysis.alerte }}</p>
+                </div>
+                {% endif %}
+                <div style="margin-top: 0.5rem;">
+                    <h4 style="margin-bottom: 0.75rem;">💡 Recommandations IA</h4>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        {% for rec in aiAnalysis.recommandations %}
+                        <div style="background: rgba(255,255,255,0.1); border-radius: 8px; padding: 0.75rem;">
+                            <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+                                <div>
+                                    <span style="font-weight: 700;">🏷️ {{ rec.categorie }}</span>
+                                    <span style="font-size: 0.8rem; margin-left: 0.5rem;">→ {{ rec.action }}</span>
+                                </div>
+                                <div>
+                                    {% if rec.economie_estimee > 0 %}
+                                    <span style="background: #10b981; padding: 2px 8px; border-radius: 20px; font-size: 0.7rem;">💰 Économie: ~{{ rec.economie_estimee|number_format(2) }} DT</span>
+                                    {% endif %}
+                                    <span style="background: {% if rec.priorite == 'Haute' %}#ef4444{% elseif rec.priorite == 'Moyenne' %}#f59e0b{% else %}#6b7280{% endif %}; padding: 2px 8px; border-radius: 20px; font-size: 0.7rem; margin-left: 0.5rem;">Priorité {{ rec.priorite }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% else %}
+                <div style="text-align: center; padding: 2rem;">
+                    <p>📊 Ajoutez plus de données (3 mois minimum) pour que l'IA puisse analyser votre situation.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-section">
+        <h2 style="margin-bottom: 1.5rem;">📊 Indicateurs de Performance (KPI)</h2>
+        <div class="kpi-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem;">
+            <div class="kpi-card" style="background: white; border-radius: 12px; padding: 1rem; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                <div style="font-size: 1.8rem;">💰</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">Marge brute</div>
+                <div style="font-size: 1.5rem; font-weight: 700; {% if kpis.marge_brute >= 0 %}color: var(--green-mid);{% else %}color: var(--red);{% endif %}">{{ kpis.marge_brute|number_format(2) }} DT</div>
+                <div style="font-size: 0.7rem;">({{ kpis.marge_brute_percentage }}% du CA)</div>
+            </div>
+            <div class="kpi-card" style="background: white; border-radius: 12px; padding: 1rem; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                <div style="font-size: 1.8rem;">📊</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">Ratio dépenses/revenus</div>
+                <div style="font-size: 1.5rem; font-weight: 700; {% if kpis.ratio_depenses_revenus <= 70 %}color: var(--green-mid);{% else %}color: var(--red);{% endif %}">{{ kpis.ratio_depenses_revenus }}%</div>
+                <div class="progress-bar" style="height: 6px; background: #e2e8f0; border-radius: 3px; margin-top: 0.5rem; overflow: hidden;">
+                    <div style="width: {{ kpis.ratio_depenses_revenus }}%; height: 100%; background: {% if kpis.ratio_depenses_revenus <= 70 %}#10b981{% else %}#ef4444{% endif %};"></div>
+                </div>
+            </div>
+            <div class="kpi-card" style="background: white; border-radius: 12px; padding: 1rem; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                <div style="font-size: 1.8rem;">📈</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">Évolution revenus</div>
+                <div style="font-size: 1.5rem; font-weight: 700; {% if kpis.evolution.revenus_positive %}color: var(--green-mid);{% else %}color: var(--red);{% endif %}">{{ kpis.evolution.revenus > 0 ? '+' : '' }}{{ kpis.evolution.revenus }}%</div>
+                <div style="font-size: 0.7rem;">vs mois dernier</div>
+            </div>
+            <div class="kpi-card" style="background: white; border-radius: 12px; padding: 1rem; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-left: 4px solid {{ kpis.sante_niveau.color }};">
+                <div style="font-size: 1.8rem;">{{ kpis.sante_niveau.icon }}</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">Santé financière</div>
+                <div style="font-size: 1.5rem; font-weight: 700; color: {{ kpis.sante_niveau.color }};">{{ kpis.sante_score }}/100</div>
+                <div style="font-size: 0.7rem;">{{ kpis.sante_niveau.text }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graphique Évolution -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <h3>📈 Évolution des revenus et dépenses (6 derniers mois)</h3>
+        <canvas id="evolutionChart" width="400" height="200"></canvas>
+    </div>
+
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
         <div class="card">
+            <h3>🥧 Répartition des dépenses par catégorie</h3>
+            <canvas id="categoryChart" width="300" height="300"></canvas>
+        </div>
+        <div class="card">
+            <h3>💰 Économies potentielles</h3>
+            {% if kpis.economies_potentielles is defined and kpis.economies_potentielles|length > 0 %}
+                {% for category, data in kpis.economies_potentielles %}
+                    <div style="margin-bottom: 1rem; padding: 0.75rem; background: var(--green-mist); border-radius: 8px;">
+                        <div style="display: flex; justify-content: space-between; font-weight: 700;">
+                            <span>🏷️ {{ category }}</span>
+                            <span>{{ data.montant|number_format(2) }} DT</span>
+                        </div>
+                        <div style="font-size: 0.8rem; color: var(--green-mid);">💡 Économie possible: ~{{ data.economie_possible|number_format(2) }} DT</div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.25rem;">{{ data.suggestion }}</div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p style="text-align: center; color: var(--text-muted);">Ajoutez des dépenses pour voir les suggestions d'économies</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Top catégories -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <h3>🏆 Top 3 des catégories de dépenses</h3>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            {% if kpis.top_categories is defined and kpis.top_categories|length > 0 %}
+                {% for category, amount in kpis.top_categories %}
+                    <div style="flex: 1; background: linear-gradient(135deg, var(--green-deep), var(--green-mid)); color: white; border-radius: 12px; padding: 1rem; text-align: center;">
+                        <div style="font-size: 1.5rem;">
+                            {% if category == 'Carburant' %}⛽
+                            {% elseif category == 'Réparation' %}🔧
+                            {% elseif category == 'Semences' %}🌱
+                            {% elseif category == 'Engrais' %}🌾
+                            {% elseif category == 'Équipement' %}🚜
+                            {% elseif category == 'Vétérinaire' %}💊
+                            {% elseif category == 'Main d\'œuvre' %}👨‍🌾
+                            {% else %}📋
+                            {% endif %}
+                        </div>
+                        <div style="font-weight: 700;">{{ category }}</div>
+                        <div style="font-size: 1.2rem;">{{ amount|number_format(2) }} DT</div>
+                        <div style="font-size: 0.7rem; opacity: 0.8;">{{ (amount / kpis.total_depenses * 100)|round(1) }}% des dépenses</div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p style="text-align: center; color: var(--text-muted); width: 100%;">Ajoutez des dépenses pour voir les statistiques</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Ce mois + Actions rapides -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+        <div class="card" style="background: white; border-radius: 12px; padding: 1.5rem;">
             <h3 style="margin-bottom: 1rem;">📈 Ce mois-ci</h3>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                <span>Revenus</span>
-                <span style="font-weight: 700; color: var(--green-mid);">{{ revenusCeMois|number_format(2) }} DT</span>
+            <div style="margin-bottom: 1rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span>Revenus</span>
+                    <div>
+                        <span style="font-weight: 700; color: var(--green-mid);">{{ revenusCeMoisTND|number_format(2) }} DT</span>
+                        <span style="font-size: 0.7rem; color: var(--gray);"> (≈ {{ revenusCeMoisEUR|number_format(2) }} €)</span>
+                    </div>
+                </div>
+                <div style="height: 8px; background: var(--green-mist); border-radius: 4px; overflow: hidden;">
+                    {% set totalMois = revenusCeMoisTND + depensesCeMoisTND %}
+                    <div style="width: {{ totalMois > 0 ? (revenusCeMoisTND / totalMois * 100) : 0 }}%; height: 100%; background: var(--green-mid);"></div>
+                </div>
             </div>
-            <div style="height: 8px; background: var(--green-mist); border-radius: 4px; overflow: hidden;">
-                <div style="width: {{ revenusCeMois > 0 ? (revenusCeMois / (revenusCeMois + depensesCeMois) * 100) : 0 }}%; height: 100%; background: var(--green-mid);"></div>
-            </div>
-            <div style="display: flex; justify-content: space-between; margin-top: 0.5rem;">
-                <span>Dépenses</span>
-                <span style="font-weight: 700; color: var(--red);">{{ depensesCeMois|number_format(2) }} DT</span>
-            </div>
-            <div style="height: 8px; background: var(--green-mist); border-radius: 4px; overflow: hidden;">
-                <div style="width: {{ depensesCeMois > 0 ? (depensesCeMois / (revenusCeMois + depensesCeMois) * 100) : 0 }}%; height: 100%; background: var(--red);"></div>
+            <div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span>Dépenses</span>
+                    <div>
+                        <span style="font-weight: 700; color: var(--red);">{{ depensesCeMoisTND|number_format(2) }} DT</span>
+                        <span style="font-size: 0.7rem; color: var(--gray);"> (≈ {{ depensesCeMoisEUR|number_format(2) }} €)</span>
+                    </div>
+                </div>
+                <div style="height: 8px; background: var(--green-mist); border-radius: 4px; overflow: hidden;">
+                    <div style="width: {{ totalMois > 0 ? (depensesCeMoisTND / totalMois * 100) : 0 }}%; height: 100%; background: var(--red);"></div>
+                </div>
             </div>
         </div>
-        
-        <div class="card">
+        <div class="card" style="background: white; border-radius: 12px; padding: 1.5rem;">
             <h3 style="margin-bottom: 1rem;">🎯 Actions rapides</h3>
             <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                <a href="{{ path('front_finance_depense_new') }}" class="btn-primary" style="padding: 0.75rem 1.5rem; text-decoration: none;">+ Ajouter une dépense</a>
-                <a href="{{ path('front_finance_revenu_new') }}" class="btn-primary" style="padding: 0.75rem 1.5rem; text-decoration: none; background: var(--green-mid);">+ Ajouter un revenu</a>
+                <a href="{{ path('front_finance_depense_new') }}" class="btn-primary" style="padding: 0.75rem 1.5rem; text-decoration: none; border-radius: 8px;">+ Ajouter une dépense</a>
+                <a href="{{ path('front_finance_revenu_new') }}" class="btn-primary" style="padding: 0.75rem 1.5rem; text-decoration: none; background: var(--green-mid); border-radius: 8px;">+ Ajouter un revenu</a>
+            </div>
+            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+                <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
+                    <span>🇪🇺 1 TND = {{ eurRate.rate }} EUR</span>
+                    <span>🇺🇸 1 TND = {{ usdRate.rate }} USD</span>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Recent Transactions -->
-    <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+    <!-- Dernières transactions -->
+    <div class="card" style="background: white; border-radius: 12px; padding: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
             <h3>📋 Dernières transactions</h3>
             <div style="display: flex; gap: 0.5rem;">
                 <a href="{{ path('front_finance_depenses') }}" class="btn-outline btn" style="text-decoration: none;">Voir toutes les dépenses →</a>
                 <a href="{{ path('front_finance_revenus') }}" class="btn-outline btn" style="text-decoration: none;">Voir tous les revenus →</a>
             </div>
         </div>
-        
         {% if recentTransactions|length > 0 %}
         <table style="width: 100%; border-collapse: collapse;">
             <thead>
@@ -77,7 +297,9 @@
                     <th style="text-align: left; padding: 0.75rem; background: var(--green-mist);">Date</th>
                     <th style="text-align: left; padding: 0.75rem; background: var(--green-mist);">Catégorie</th>
                     <th style="text-align: left; padding: 0.75rem; background: var(--green-mist);">Description</th>
-                    <th style="text-align: right; padding: 0.75rem; background: var(--green-mist);">Montant</th>
+                    <th style="text-align: right; padding: 0.75rem; background: var(--green-mist);">Montant (TND)</th>
+                    <th style="text-align: right; padding: 0.75rem; background: var(--green-mist);">≈ EUR</th>
+                    <th style="text-align: right; padding: 0.75rem; background: var(--green-mist);">≈ USD</th>
                 </tr>
             </thead>
             <tbody>
@@ -85,14 +307,14 @@
                 <tr>
                     <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">{{ transaction.date|date('d/m/Y') }}</td>
                     <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">
-                        <span class="badge {% if transaction.type == 'revenu' %}badge-success{% else %}badge-warning{% endif %}">
-                            {{ transaction.categorie }}
-                        </span>
+                        <span class="badge {% if transaction.type == 'revenu' %}badge-success{% else %}badge-warning{% endif %}">{{ transaction.categorie }}</span>
                     </td>
-                    <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">{{ transaction.description|slice(0, 50) }}{% if transaction.description|length > 50 %}...{% endif %}</td>
+                    <td style="padding: 0.75rem; border-bottom: 1px solid var(--border);">{{ transaction.description|slice(0, 50) }}</td>
                     <td style="padding: 0.75rem; border-bottom: 1px solid var(--border); text-align: right; font-weight: 600; {% if transaction.type == 'revenu' %}color: var(--green-mid);{% else %}color: var(--red);{% endif %}">
-                        {{ transaction.type == 'revenu' ? '+' : '-' }}{{ transaction.montant|number_format(2) }} DT
+                        {{ transaction.type == 'revenu' ? '+' : '-' }}{{ transaction.montant_tnd|number_format(2) }} DT
                     </td>
+                    <td style="padding: 0.75rem; border-bottom: 1px solid var(--border); text-align: right; color: var(--gray);">{{ transaction.montant_eur|number_format(2) }} €</td>
+                    <td style="padding: 0.75rem; border-bottom: 1px solid var(--border); text-align: right; color: var(--gray);">{{ (transaction.montant_tnd * usdRate.rate)|number_format(2) }} $</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -102,4 +324,404 @@
         {% endif %}
     </div>
 </div>
+
+{# ============================================ #}
+{# CHATBOT FLOTTANT - BOTTOM RIGHT             #}
+{# ============================================ #}
+
+<!-- Bouton flottant -->
+<button id="chatToggle" onclick="toggleChat()" title="Assistant Financier IA">
+    <span id="chatToggleIcon">🤖</span>
+    <span id="chatToggleBadge" class="chat-badge">IA</span>
+</button>
+
+<!-- Fenêtre du chatbot -->
+<div id="chatWindow" class="chat-window">
+    <!-- Header -->
+    <div class="chat-header">
+        <div style="display: flex; align-items: center; gap: 0.6rem;">
+            <div class="chat-avatar">🤖</div>
+            <div>
+                <div style="font-weight: 700; font-size: 0.95rem;">FarmVision IA</div>
+                <div style="font-size: 0.7rem; opacity: 0.85;">💬 Assistant Financier</div>
+            </div>
+        </div>
+        <button onclick="toggleChat()" class="chat-close-btn">✕</button>
+    </div>
+
+    <!-- Messages -->
+    <div id="chatMessages" class="chat-messages">
+        <div class="chat-bubble bot">
+            <p>Bonjour 👋 Je suis votre assistant financier. Posez-moi vos questions sur vos revenus, dépenses ou demandez des conseils d'économies !</p>
+        </div>
+        <div class="chat-suggestions">
+            <button class="suggestion-chip" onclick="askSuggestion('Quel est mon solde ?')">💰 Mon solde</button>
+            <button class="suggestion-chip" onclick="askSuggestion('Total de mes dépenses ?')">💸 Mes dépenses</button>
+            <button class="suggestion-chip" onclick="askSuggestion('Conseils pour économiser ?')">💡 Économies</button>
+        </div>
+    </div>
+
+    <!-- Input -->
+    <div class="chat-input-area">
+        <input type="text" id="chatInput" class="chat-input" placeholder="Posez votre question...">
+        <button onclick="sendMessage()" class="chat-send-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+        </button>
+    </div>
+</div>
+
+<style>
+/* ── Floating Button ── */
+#chatToggle {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2d6a4f, #1e3a5f);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 6px 24px rgba(45, 106, 79, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    z-index: 1000;
+    transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), box-shadow 0.25s;
+}
+#chatToggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 10px 32px rgba(45, 106, 79, 0.55);
+}
+#chatToggle.is-open {
+    background: linear-gradient(135deg, #ef4444, #b91c1c);
+}
+.chat-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: #f59e0b;
+    color: white;
+    font-size: 0.55rem;
+    font-weight: 800;
+    padding: 2px 5px;
+    border-radius: 20px;
+    letter-spacing: 0.05em;
+    border: 2px solid white;
+}
+
+/* ── Chat Window ── */
+.chat-window {
+    position: fixed;
+    bottom: 6rem;
+    right: 2rem;
+    width: 360px;
+    max-height: 520px;
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    z-index: 999;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+    pointer-events: none;
+    transition: opacity 0.3s cubic-bezier(.4,0,.2,1), transform 0.3s cubic-bezier(.34,1.56,.64,1);
+}
+.chat-window.is-open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: all;
+}
+
+/* ── Header ── */
+.chat-header {
+    background: linear-gradient(135deg, #2d6a4f, #1e3a5f);
+    color: white;
+    padding: 1rem 1.1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+.chat-avatar {
+    width: 36px;
+    height: 36px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+}
+.chat-close-btn {
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+.chat-close-btn:hover { background: rgba(255,255,255,0.3); }
+
+/* ── Messages ── */
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    background: #f8fafc;
+}
+.chat-messages::-webkit-scrollbar { width: 4px; }
+.chat-messages::-webkit-scrollbar-track { background: transparent; }
+.chat-messages::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+.chat-bubble {
+    max-width: 85%;
+    padding: 0.6rem 0.9rem;
+    border-radius: 16px;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    animation: bubbleIn 0.25s ease;
+}
+.chat-bubble p { margin: 0; }
+.chat-bubble.bot {
+    background: white;
+    color: #1e293b;
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    align-self: flex-start;
+}
+.chat-bubble.user {
+    background: linear-gradient(135deg, #2d6a4f, #1e3a5f);
+    color: white;
+    border-bottom-right-radius: 4px;
+    align-self: flex-end;
+}
+.chat-bubble.loading p {
+    color: #94a3b8;
+    font-style: italic;
+}
+
+/* Suggestions */
+.chat-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-self: flex-start;
+}
+.suggestion-chip {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    padding: 0.3rem 0.75rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+    color: #2d6a4f;
+    font-weight: 600;
+    transition: all 0.15s;
+}
+.suggestion-chip:hover {
+    background: #2d6a4f;
+    color: white;
+    border-color: #2d6a4f;
+}
+
+/* ── Input Area ── */
+.chat-input-area {
+    padding: 0.75rem 1rem;
+    background: white;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-shrink: 0;
+}
+.chat-input {
+    flex: 1;
+    border: 1px solid #e2e8f0;
+    border-radius: 24px;
+    padding: 0.55rem 1rem;
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color 0.2s;
+    background: #f8fafc;
+}
+.chat-input:focus {
+    border-color: #2d6a4f;
+    background: white;
+}
+.chat-send-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2d6a4f, #1e3a5f);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    flex-shrink: 0;
+    transition: transform 0.2s, opacity 0.2s;
+}
+.chat-send-btn:hover { transform: scale(1.08); opacity: 0.9; }
+
+@keyframes bubbleIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Stat cards hover ── */
+.stat-card { transition: transform 0.2s, box-shadow 0.2s; }
+.stat-card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,0.1); }
+.kpi-card { transition: transform 0.2s; }
+.kpi-card:hover { transform: translateY(-2px); }
+
+@media (max-width: 480px) {
+    .chat-window { width: calc(100vw - 2rem); right: 1rem; bottom: 5.5rem; }
+    #chatToggle  { right: 1rem; bottom: 1rem; }
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+/* ── Toggle chat ── */
+function toggleChat() {
+    const win    = document.getElementById('chatWindow');
+    const btn    = document.getElementById('chatToggle');
+    const icon   = document.getElementById('chatToggleIcon');
+    const isOpen = win.classList.toggle('is-open');
+    btn.classList.toggle('is-open', isOpen);
+    icon.textContent = isOpen ? '✕' : '🤖';
+    if (isOpen) {
+        setTimeout(() => document.getElementById('chatInput').focus(), 300);
+        scrollChatToBottom();
+    }
+}
+
+function scrollChatToBottom() {
+    const chatDiv = document.getElementById('chatMessages');
+    chatDiv.scrollTop = chatDiv.scrollHeight;
+}
+
+function askSuggestion(question) {
+    document.getElementById('chatInput').value = question;
+    sendMessage();
+}
+
+async function sendMessage() {
+    const input    = document.getElementById('chatInput');
+    const question = input.value.trim();
+    if (!question) return;
+
+    const chatDiv = document.getElementById('chatMessages');
+
+    // User bubble
+    chatDiv.innerHTML += `
+        <div class="chat-bubble user">
+            <p>${escapeHtml(question)}</p>
+        </div>`;
+    input.value = '';
+    scrollChatToBottom();
+
+    // Loading bubble
+    const loadingId = 'loading-' + Date.now();
+    chatDiv.innerHTML += `
+        <div class="chat-bubble bot loading" id="${loadingId}">
+            <p>⏳ Réflexion en cours...</p>
+        </div>`;
+    scrollChatToBottom();
+
+    try {
+        const response = await fetch('/finance/chatbot', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question })
+        });
+        const data = await response.json();
+        const el = document.getElementById(loadingId);
+        if (el) {
+            el.classList.remove('loading');
+            el.innerHTML = `<p>${escapeHtml(data.answer)}</p>`;
+        }
+    } catch (e) {
+        const el = document.getElementById(loadingId);
+        if (el) {
+            el.classList.remove('loading');
+            el.innerHTML = `<p style="color:#ef4444;">❌ Erreur. Veuillez réessayer.</p>`;
+        }
+    }
+    scrollChatToBottom();
+}
+
+function escapeHtml(text) {
+    const d = document.createElement('div');
+    d.textContent = text;
+    return d.innerHTML;
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('chatInput').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') sendMessage();
+    });
+
+    // ── Evolution Chart ──
+    const ctx1 = document.getElementById('evolutionChart');
+    if (ctx1) {
+        const chartData = {{ chartData|json_encode|raw }};
+        if (chartData && chartData.months && chartData.months.length > 0) {
+            new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: chartData.months,
+                    datasets: [
+                        { label: 'Dépenses', data: chartData.depenses, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', tension: 0.3, fill: true },
+                        { label: 'Revenus',  data: chartData.revenus,  borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', tension: 0.3, fill: true }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { legend: { position: 'top' } },
+                    scales: { y: { beginAtZero: true, title: { display: true, text: 'Montant (DT)' } } }
+                }
+            });
+        } else {
+            ctx1.parentElement.innerHTML = '<div style="text-align:center;padding:50px;color:var(--gray);">📊 Ajoutez des données pour voir le graphique</div>';
+        }
+    }
+
+    // ── Pie Chart ──
+    const ctx2 = document.getElementById('categoryChart');
+    if (ctx2) {
+        const categoryData = {{ categoryData|json_encode|raw }};
+        if (categoryData && Object.keys(categoryData).length > 0) {
+            new Chart(ctx2, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(categoryData),
+                    datasets: [{ data: Object.values(categoryData), backgroundColor: ['#10b981','#f59e0b','#ef4444','#3b82f6','#8b5cf6','#ec4899','#06b6d4'] }]
+                },
+                options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom' } } }
+            });
+        } else {
+            ctx2.parentElement.innerHTML = '<div style="text-align:center;padding:50px;color:var(--gray);">🥧 Ajoutez des dépenses pour voir la répartition</div>';
+        }
+    }
+});
+</script>
 {% endblock %}

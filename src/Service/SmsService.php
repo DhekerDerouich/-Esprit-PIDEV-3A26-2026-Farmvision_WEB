@@ -89,4 +89,23 @@ class SmsService
 
         return ['success' => true, 'message' => "SMS (simulation) envoyé à $toNumber"];
     }
+
+    public function sendAnomalyAlert(string $toNumber, array $anomaly): array
+    {
+        $type    = $anomaly['type']    ?? 'Dépense';
+        $montant = $anomaly['montant'] ?? 0;
+        $moyenne = $anomaly['moyenne'] ?? 0;
+        $pct     = $anomaly['pourcentage'] ?? 0;
+
+        $message = sprintf(
+            "⚠️ ANOMALIE DÉTECTÉE — FarmVision\n" .
+            "Type: %s\n" .
+            "Montant: %.2f DT (%.0f%% au-dessus de la moyenne)\n" .
+            "Moyenne habituelle: %.2f DT\n" .
+            "Vérifiez votre tableau de bord.",
+            $type, $montant, $pct, $moyenne
+        );
+
+        return $this->sendCustom($toNumber, $message);
+    }
 }

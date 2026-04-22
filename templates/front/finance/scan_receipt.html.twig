@@ -1,0 +1,291 @@
+{% extends 'front/base.html.twig' %}
+
+{% block body %}
+<div class="container" style="padding: 3rem 0; max-width: 800px; margin: 0 auto;">
+    
+    
+    
+    <div style="margin-bottom: 2rem;">
+        <a href="{{ path('front_finance_depenses') }}" class="btn-outline btn" style="text-decoration: none;">← Retour aux dépenses</a>
+    </div>
+
+    <div class="card" style="background: white; border-radius: 12px; padding: 2rem;">
+        <h1 style="font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 0.5rem;">📸 Scanner un reçu</h1>
+        <p style="color: var(--text-muted); margin-bottom: 2rem;">Prenez une photo de votre reçu, l'IA extraira et ajoutera la dépense automatiquement.</p>
+        
+        <!-- Zone d'upload -->
+        <div class="upload-area" onclick="document.getElementById('receiptImage').click()" style="
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 1rem;
+        ">
+            <div style="font-size: 3rem;">📄</div>
+            <p style="color: var(--text-muted);">Cliquez pour sélectionner une image</p>
+            <p style="font-size: 0.7rem; color: var(--gray);">Format: JPG, PNG (max 5MB)</p>
+        </div>
+        
+        <input type="file" id="receiptImage" accept="image/*" style="display: none;">
+        
+        <!-- Aperçu de l'image -->
+        <div id="preview" style="display: none; margin-top: 1rem;">
+            <img id="previewImage" style="max-width: 100%; border-radius: 8px;">
+            <div id="loading" style="display: none; text-align: center; padding: 1rem;">
+                <div style="display: inline-block; width: 40px; height: 40px; border: 4px solid var(--green-mist); border-top-color: var(--green-mid); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                <p>🔍 Analyse en cours...</p>
+            </div>
+        </div>
+        
+        <!-- Résultats et bouton ajout direct -->
+        <div id="result" style="display: none; margin-top: 1rem; padding: 1rem; background: var(--green-mist); border-radius: 12px;">
+            <h3>✅ Informations détectées :</h3>
+            <div id="resultContent"></div>
+            <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                <button onclick="addDirectly()" id="addBtn" class="btn-primary" style="padding: 0.75rem 1.5rem; border: none; border-radius: 8px; cursor: pointer;">➕ Ajouter cette dépense</button>
+                <button onclick="resetScan()" class="btn-outline" style="padding: 0.75rem 1.5rem; border: 1px solid var(--border); border-radius: 8px; cursor: pointer;">🔄 Nouveau scan</button>
+            </div>
+            <div id="addLoading" style="display: none; text-align: center; padding: 0.5rem; color: var(--green-mid);">
+                ⏳ Ajout en cours...
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+.upload-area:hover {
+    border-color: var(--green-mid);
+    background: var(--green-mist);
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script>
+let detectedData = {};
+
+document.getElementById('receiptImage').addEventListener('change', async function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    // Afficher l'aperçu
+    const preview = document.getElementById('preview');
+    const previewImage = document.getElementById('previewImage');
+    const loading = document.getElementById('loading');
+    const result = document.getElementById('result');
+    
+    previewImage.src = URL.createObjectURL(file);
+    preview.style.display = 'block';
+    loading.style.display = 'block';
+    result.style.display = 'none';
+    
+    try {
+        // OCR avec Tesseract.js
+        const worker = await Tesseract.createWorker('fra');
+        await worker.load();
+        
+        const { data: { text } } = await worker.recognize(previewImage);
+        await worker.terminate();
+        
+        console.log('Texte reconnu:', text);
+        
+        // Extraire les informations
+        detectedData = extractData(text);
+        
+        // Afficher les résultats
+        loading.style.display = 'none';
+        result.style.display = 'block';
+        
+        const resultContent = document.getElementById('resultContent');
+        resultContent.innerHTML = `
+            <div style="margin-bottom: 0.5rem;">📅 <strong>Date:</strong> ${detectedData.date_display || 'Non détectée'}</div>
+            <div style="margin-bottom: 0.5rem;">💰 <strong>Montant:</strong> ${detectedData.montant || 'Non détecté'} DT</div>
+            <div style="margin-bottom: 0.5rem;">🏷️ <strong>Type:</strong> ${detectedData.type}</div>
+            <div style="margin-bottom: 0.5rem;">📝 <strong>Description:</strong> ${detectedData.description || 'Reçu scanné'}</div>
+            <hr style="margin: 0.5rem 0;">
+            <div style="font-size: 0.7rem; color: var(--gray); max-height: 100px; overflow-y: auto;">
+                <strong>Texte reconnu:</strong><br>${text.substring(0, 300)}...
+            </div>
+        `;
+    } catch (error) {
+        console.error('Erreur OCR:', error);
+        loading.style.display = 'none';
+        alert('Erreur lors de l\'analyse. Veuillez réessayer avec une image plus claire.');
+    }
+});
+
+function extractData(text) {
+    const textLower = text.toLowerCase();
+    
+    // Extraire le montant (pattern: 123.45 ou 123,45)
+    let montant = null;
+    const montantMatch = text.match(/(\d+[.,]\d{2})/);
+    if (montantMatch) {
+        montant = montantMatch[1].replace(',', '.');
+    }
+    
+    // Extraire la date - Supporte plusieurs formats
+    let dateForInput = null;
+    let dateDisplay = null;
+    
+    // Format: 15/04/2024 ou 15-04-2024 ou 15.04.2024
+    let dateMatch = text.match(/(\d{2}[\/\-\.]\d{2}[\/\-\.]\d{4})/);
+    if (dateMatch) {
+        let dateStr = dateMatch[1];
+        console.log('Date trouvée brute:', dateStr);
+        
+        // Remplacer les séparateurs par /
+        dateStr = dateStr.replace(/[-\.]/g, '/');
+        dateDisplay = dateStr;
+        
+        // Convertir DD/MM/YYYY → YYYY-MM-DD pour l'input HTML
+        const parts = dateStr.split('/');
+        if (parts.length === 3) {
+            dateForInput = `${parts[2]}-${parts[1]}-${parts[0]}`;
+        }
+    }
+    
+    // Si pas de date trouvée, chercher un format différent
+    if (!dateForInput) {
+        // Format: 15 avril 2024
+        const months = {
+            'janvier': '01', 'fevrier': '02', 'février': '02', 'mars': '03', 'avril': '04',
+            'mai': '05', 'juin': '06', 'juillet': '07', 'aout': '08', 'août': '08',
+            'septembre': '09', 'octobre': '10', 'novembre': '11', 'decembre': '12', 'décembre': '12'
+        };
+        for (const [monthName, monthNum] of Object.entries(months)) {
+            const regex = new RegExp(`(\\d{1,2})\\s+${monthName}\\s+(\\d{4})`, 'i');
+            const match = text.match(regex);
+            if (match) {
+                const day = match[1].padStart(2, '0');
+                dateDisplay = `${day}/${monthNum}/${match[2]}`;
+                dateForInput = `${match[2]}-${monthNum}-${day}`;
+                break;
+            }
+        }
+    }
+    
+    // Si toujours pas de date, utiliser la date d'aujourd'hui
+    if (!dateForInput) {
+        const today = new Date();
+        dateForInput = today.toISOString().split('T')[0];
+        dateDisplay = new Date().toLocaleDateString('fr-FR');
+        console.log('Date par défaut utilisée:', dateDisplay);
+    }
+    
+    console.log('Date pour input:', dateForInput);
+    console.log('Date pour affichage:', dateDisplay);
+    
+    // Détection du type de dépense
+    let type = 'Autre';
+    const typeKeywords = {
+        'Carburant': ['essence', 'diesel', 'gazole', 'station', 'fuel', 'carburant', 'gasoil', 'total', 'shell', 'diesel'],
+        'Réparation': ['réparation', 'réparer', 'garage', 'pièce', 'mécano', 'entretien', 'maintenance', 'vidange'],
+        'Semences': ['semence', 'grain', 'maïs', 'blé', 'orge', 'graine', 'semer'],
+        'Engrais': ['engrais', 'fertilisant', 'npk', 'urea'],
+        'Équipement': ['tracteur', 'moissonneuse', 'pulvérisateur', 'charrue', 'machine'],
+        'Vétérinaire': ['vétérinaire', 'vaccin', 'médicament', 'traitement'],
+        'Main d\'œuvre': ['salaire', 'ouvrier', 'main d\'oeuvre', 'travail']
+    };
+    
+    for (const [cat, keywords] of Object.entries(typeKeywords)) {
+        for (const keyword of keywords) {
+            if (textLower.includes(keyword)) {
+                type = cat;
+                break;
+            }
+        }
+        if (type !== 'Autre') break;
+    }
+    
+    // Description
+    let description = text.split('\n').find(line => line.trim().length > 10) || 'Reçu scanné';
+    description = description.substring(0, 100);
+    
+    return {
+        montant: montant,
+        date_for_input: dateForInput,
+        date_display: dateDisplay,
+        type: type,
+        description: description
+    };
+}
+
+function addDirectly() {
+    if (!detectedData.montant) {
+        alert('❌ Aucun montant détecté. Veuillez réessayer avec une image plus claire.');
+        return;
+    }
+    
+    // Vérifier que la date est valide
+    if (!detectedData.date_for_input) {
+        const today = new Date();
+        detectedData.date_for_input = today.toISOString().split('T')[0];
+        detectedData.date_display = today.toLocaleDateString('fr-FR');
+    }
+    
+    // Désactiver le bouton
+    const addBtn = document.getElementById('addBtn');
+    const addLoading = document.getElementById('addLoading');
+    addBtn.disabled = true;
+    addLoading.style.display = 'block';
+    
+    // Préparer les données
+    const postData = {
+        type: detectedData.type,
+        montant: parseFloat(detectedData.montant),
+        date: detectedData.date_for_input,
+        description: detectedData.description.substring(0, 100)
+    };
+    
+    console.log('Envoi des données:', postData);
+    console.log('URL:', '{{ path('front_finance_depense_add_from_scan') }}');
+    
+    // Utiliser l'URL générée par Symfony
+    fetch('{{ path('front_finance_depense_add_from_scan') }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify(postData)
+    })
+    .then(response => {
+        console.log('Status:', response.status);
+        if (!response.ok) {
+            return response.text().then(text => {
+                throw new Error(`HTTP ${response.status}: ${text.substring(0, 200)}`);
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Réponse:', data);
+        if (data.success) {
+            window.location.href = '{{ path('front_finance_depenses') }}';
+        } else {
+            alert('❌ Erreur: ' + (data.error || 'Impossible d\'ajouter la dépense'));
+            addBtn.disabled = false;
+            addLoading.style.display = 'none';
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert('❌ Erreur: ' + error.message);
+        addBtn.disabled = false;
+        addLoading.style.display = 'none';
+    });
+}
+function resetScan() {
+    document.getElementById('receiptImage').value = '';
+    document.getElementById('preview').style.display = 'none';
+    document.getElementById('result').style.display = 'none';
+    detectedData = {};
+}
+</script>
+{% endblock %}

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vérification 2FA - FarmVision</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/farmvision.css') }}">
+    <style>
+        :root {
+            --green-deep: #1a3a2a;
+            --green-mid: #2d6a4f;
+            --green-light: #52b788;
+            --green-pale: #b7e4c7;
+            --green-mist: #d8f3dc;
+            --cream: #faf7f2;
+        }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: linear-gradient(135deg, var(--green-mist) 0%, var(--cream) 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 1rem;
+        }
+        .verify-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2.5rem;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 4px 24px rgba(45, 106, 79, 0.15);
+            text-align: center;
+        }
+        .verify-icon {
+            width: 64px;
+            height: 64px;
+            background: var(--green-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 1.5rem;
+        }
+        h1 {
+            font-family: 'Playfair Display', serif;
+            color: var(--green-deep);
+            margin: 0 0 0.5rem;
+        }
+        .email-display {
+            background: var(--green-mist);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            margin: 1rem 0 1.5rem;
+            font-weight: 500;
+            color: var(--green-deep);
+        }
+        .code-input {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.5rem;
+            text-align: center;
+            letter-spacing: 0.5rem;
+            border: 2px solid var(--green-pale);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            transition: border-color 0.2s;
+        }
+        .code-input:focus {
+            outline: none;
+            border-color: var(--green-light);
+        }
+        .btn-verify {
+            width: 100%;
+            padding: 1rem;
+            background: var(--green-light);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-verify:hover {
+            background: var(--green-mid);
+        }
+        .resend-link {
+            display: inline-block;
+            margin-top: 1rem;
+            color: var(--green-mid);
+            text-decoration: none;
+        }
+        .resend-link:hover {
+            text-decoration: underline;
+        }
+        .error-msg {
+            background: #fee;
+            color: #c00;
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="verify-card">
+        <div class="verify-icon">🔐</div>
+        <h1>Vérification 2FA</h1>
+        <p>Entrez le code envoyé à votre email</p>
+        
+        <div class="email-display">{{ email }}</div>
+        
+        {% if error %}
+            <div class="error-msg">{{ error }}</div>
+        {% endif %}
+        
+        <form method="post">
+            <input type="text" name="code" class="code-input" placeholder="000000" maxlength="6" required autocomplete="one-time-code">
+            <button type="submit" class="btn-verify">Vérifier</button>
+        </form>
+        
+        <a href="{{ path('2fa_resend') }}" class="resend-link">Renvoyer le code</a>
+    </div>
+</body>
+</html>

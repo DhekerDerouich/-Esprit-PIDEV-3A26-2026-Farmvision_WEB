@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Rapport financier - {{ month_name }} {{ year }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #2d6a4f;
+        }
+        .header h1 {
+            color: #2d6a4f;
+            margin: 0;
+        }
+        .summary {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        .summary-card {
+            flex: 1;
+            background: #f8fafc;
+            padding: 15px;
+            text-align: center;
+            border-radius: 8px;
+            margin: 0 5px;
+        }
+        .summary-card.revenus { border-left: 4px solid #10b981; }
+        .summary-card.depenses { border-left: 4px solid #ef4444; }
+        .summary-card.solde { border-left: 4px solid #3b82f6; }
+        .summary-card .value { font-size: 20px; font-weight: bold; }
+        .summary-card.revenus .value { color: #10b981; }
+        .summary-card.depenses .value { color: #ef4444; }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background: #2d6a4f;
+            color: white;
+        }
+        .footer {
+            text-align: center;
+            font-size: 10px;
+            color: #666;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+        .badge-revenu { background: #d1fae5; color: #065f46; padding: 2px 6px; border-radius: 4px; }
+        .badge-depense { background: #fee2e2; color: #991b1b; padding: 2px 6px; border-radius: 4px; }
+        .text-right { text-align: right; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🌾 FarmVision - Rapport Financier</h1>
+        <p>{{ month_name }} {{ year }}</p>
+        <p>Généré le {{ date_generation|date('d/m/Y H:i') }}</p>
+    </div>
+    
+    <div class="summary">
+        <div class="summary-card revenus">
+            <h3>💰 Revenus</h3>
+            <div class="value">{{ totalRevenus|number_format(2) }} DT</div>
+        </div>
+        <div class="summary-card depenses">
+            <h3>💸 Dépenses</h3>
+            <div class="value">{{ totalDepenses|number_format(2) }} DT</div>
+        </div>
+        <div class="summary-card solde">
+            <h3>⚖️ Solde</h3>
+            <div class="value" style="color: {{ balance >= 0 ? '#10b981' : '#ef4444' }}">
+                {{ balance|number_format(2) }} DT
+            </div>
+        </div>
+    </div>
+    
+    {% if categories|length > 0 %}
+    <h3>📊 Répartition par catégorie</h3>
+    <table>
+        <thead>
+            <tr><th>Catégorie</th><th class="text-right">Montant</th><th class="text-right">%</th></tr>
+        </thead>
+        <tbody>
+            {% for cat, amount in categories %}
+            <tr>
+                <td>{{ cat }}</td>
+                <td class="text-right">{{ amount|number_format(2) }} DT</td>
+                <td class="text-right">{{ totalDepenses > 0 ? ((amount / totalDepenses) * 100)|round(1) : 0 }}%</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+    
+    <h3>📋 Détail des transactions</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Catégorie</th>
+                <th>Description</th>
+                <th class="text-right">Montant</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in revenus %}
+            <tr>
+                <td>{{ r.dateRevenu|date('d/m/Y') }}</td>
+                <td><span class="badge-revenu">REVENU</span></td>
+                <td>{{ r.source }}</td>
+                <td>{{ r.description|slice(0, 50) }}</td>
+                <td class="text-right" style="color:#10b981">+ {{ r.montant|number_format(2) }} DT</td>
+            </tr>
+            {% endfor %}
+            {% for d in depenses %}
+            <tr>
+                <td>{{ d.dateDepense|date('d/m/Y') }}</td>
+                <td><span class="badge-depense">DÉPENSE</span></td>
+                <td>{{ d.typeDepense }}</td>
+                <td>{{ d.description|slice(0, 50) }}</td>
+                <td class="text-right" style="color:#ef4444">- {{ d.montant|number_format(2) }} DT</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr style="font-weight:bold; background:#f0fdf4">
+                <td colspan="4" class="text-right">Total</td>
+                <td class="text-right">{{ balance|number_format(2) }} DT</td>
+            </tr>
+        </tfoot>
+    </table>
+    
+    <div class="footer">
+        <p>FarmVision - Agriculture intelligente</p>
+    </div>
+</body>
+</html>

@@ -38,8 +38,8 @@ class StripeService
                 'price_data' => [
                     'currency' => 'eur',
                     'product_data' => [
-                        'name' => $item['name'],
-                        'description' => $item['description'] ?? '',
+                        'name'        => $item['name'],
+                        'description' => !empty($item['description']) ? $item['description'] : null,
                     ],
                     'unit_amount' => (int) round($item['price'] * 100),
                 ],

@@ -2,179 +2,138 @@
 
 namespace App\Controller\Admin;
 
-use App\Entity\Depense;
 use App\Repository\DepenseRepository;
+use App\Repository\UtilisateurRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/admin/depenses')]
+#[IsGranted('ROLE_ADMIN')]
 class DepenseController extends AbstractController
 {
-   #[Route('/', name: 'admin_depense_index')]
-public function index(Request $request, DepenseRepository $repository): Response
-{
-    $search = $request->query->get('search', '');
-    $type = $request->query->get('type', 'all');
-    $startDate = $request->query->get('start_date', '');
-    $endDate = $request->query->get('end_date', '');
-    
-    // Recherche avec filtres (including date range)
-    if (!empty($search) || ($type !== 'all') || !empty($startDate) || !empty($endDate)) {
-        $depenses = $repository->search($search, $type, $startDate, $endDate);
-    } else {
-        $depenses = $repository->findBy([], ['dateDepense' => 'DESC']);
-    }
-    
-    $stats = $repository->getStatistics();
-    $typeOptions = $repository->getUniqueTypes();
-    
-    return $this->render('admin/depense/index.html.twig', [
-        'depenses' => $depenses,
-        'stats' => $stats,
-        'typeOptions' => $typeOptions,
-        'search' => $search,
-        'selectedType' => $type,
-        'startDate' => $startDate,
-        'endDate' => $endDate,
-    ]);
-}
-    
-    #[Route('/new', name: 'admin_depense_new', methods: ['GET', 'POST'])]
-public function new(Request $request, EntityManagerInterface $em): Response
-{
-    $errors = [];
-    
-    if ($request->isMethod('POST')) {
-        $typeDepense = trim($request->request->get('type_depense'));
-        $montant = $request->request->get('montant');
-        $dateDepense = $request->request->get('date_depense');
-        $description = trim($request->request->get('description'));
-        
-        $typesValides = ['Carburant', 'Réparation', 'Semences', 'Engrais', 'Main d\'œuvre', 'Équipement', 'Vétérinaire', 'Autre'];
-        if (empty($typeDepense)) {
-            $errors['type_depense'] = 'Le type de dépense est obligatoire';
-        } elseif (!in_array($typeDepense, $typesValides)) {
-            $errors['type_depense'] = 'Type non valide';
+    #[Route('/', name: 'admin_depense_index')]
+    public function index(
+        Request $request,
+        DepenseRepository $depenseRepository,
+        UtilisateurRepository $utilisateurRepository,
+        PaginatorInterface $paginator
+    ): Response {
+        $search       = $request->query->get('search', '');
+        $responsableId = $request->query->get('responsable', 'all');
+        $type         = $request->query->get('type', 'all');
+        $startDate    = $request->query->get('start_date', '');
+        $endDate      = $request->query->get('end_date', '');
+
+        $queryBuilder = $depenseRepository->createQueryBuilder('d')
+            ->leftJoin('App\Entity\Utilisateur', 'u', 'WITH', 'd.userId = u.id');
+
+        if (!empty($search)) {
+            $queryBuilder->andWhere(
+                'u.nom LIKE :search OR u.prenom LIKE :search OR u.email LIKE :search
+                 OR d.typeDepense LIKE :search OR d.description LIKE :search'
+            )->setParameter('search', '%' . $search . '%');
         }
-        
-        if (empty($montant)) {
-            $errors['montant'] = 'Le montant est obligatoire';
-        } elseif (!is_numeric($montant) || $montant <= 0) {
-            $errors['montant'] = 'Le montant doit être un nombre positif';
+
+        if ($responsableId !== 'all') {
+            $queryBuilder->andWhere('d.userId = :responsableId')
+                ->setParameter('responsableId', $responsableId);
         }
-        
-        if (empty($dateDepense)) {
-            $errors['date_depense'] = 'La date est obligatoire';
-        } else {
-            $dateObj = \DateTime::createFromFormat('Y-m-d', $dateDepense);
-            if (!$dateObj || $dateObj->format('Y-m-d') !== $dateDepense) {
-                $errors['date_depense'] = 'Date invalide';
-            } elseif ($dateObj > new \DateTime()) {
-                $errors['date_depense'] = 'La date ne peut pas être dans le futur';
-            }
+
+        if ($type !== 'all') {
+            $queryBuilder->andWhere('d.typeDepense = :type')
+                ->setParameter('type', $type);
         }
-        
-        if (count($errors) === 0) {
-            $depense = new Depense();
-            $depense->setTypeDepense($typeDepense);
-            $depense->setMontant((float)$montant);
-            $depense->setDateDepense(new \DateTime($dateDepense));
-            $depense->setDescription($description);
-            
-            $em->persist($depense);
-            $em->flush();
-            
-            $this->addFlash('success', 'Dépense ajoutée avec succès !');
-            return $this->redirectToRoute('admin_depense_index');
+
+        if (!empty($startDate)) {
+            $queryBuilder->andWhere('d.dateDepense >= :startDate')
+                ->setParameter('startDate', new \DateTime($startDate));
         }
-        
-        foreach ($errors as $error) {
-            $this->addFlash('error', $error);
+
+        if (!empty($endDate)) {
+            $queryBuilder->andWhere('d.dateDepense <= :endDate')
+                ->setParameter('endDate', new \DateTime($endDate . ' 23:59:59'));
         }
-    }
-    
-    return $this->render('admin/depense/new.html.twig', [
-        'errors' => $errors ?? [],
-        'old' => $request->request->all(),
-    ]);
-}
-    
-    #[Route('/{idDepense}/edit', name: 'admin_depense_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Depense $depense, EntityManagerInterface $em): Response
-    {
-        $errors = [];
-        
-        if ($request->isMethod('POST')) {
-            $typeDepense = trim($request->request->get('type_depense'));
-            $montant = $request->request->get('montant');
-            $dateDepense = $request->request->get('date_depense');
-            $description = trim($request->request->get('description'));
-            
-            $typesValides = ['Carburant', 'Réparation', 'Semences', 'Engrais', 'Main d\'œuvre', 'Équipement', 'Vétérinaire', 'Autre'];
-            if (empty($typeDepense) || !in_array($typeDepense, $typesValides)) {
-                $errors['type_depense'] = 'Type non valide';
-            }
-            
-            if (empty($montant) || !is_numeric($montant) || $montant <= 0) {
-                $errors['montant'] = 'Montant invalide';
-            }
-            
-            if (empty($dateDepense)) {
-                $errors['date_depense'] = 'La date est obligatoire';
-            } else {
-                $dateObj = \DateTime::createFromFormat('Y-m-d', $dateDepense);
-                if (!$dateObj || $dateObj->format('Y-m-d') !== $dateDepense) {
-                    $errors['date_depense'] = 'Date invalide';
-                } elseif ($dateObj > new \DateTime()) {
-                    $errors['date_depense'] = 'La date ne peut pas être dans le futur';
-                }
-            }
-            
-            if (count($errors) === 0) {
-                $depense->setTypeDepense($typeDepense);
-                $depense->setMontant((float)$montant);
-                $depense->setDateDepense(new \DateTime($dateDepense));
-                $depense->setDescription($description);
-                
-                $em->flush();
-                
-                $this->addFlash('success', 'Dépense modifiée avec succès !');
-                return $this->redirectToRoute('admin_depense_index');
-            }
-            
-            foreach ($errors as $error) {
-                $this->addFlash('error', $error);
-            }
+
+        $queryBuilder->orderBy('d.dateDepense', 'DESC');
+
+        $depenses = $paginator->paginate(
+            $queryBuilder,
+            $request->query->getInt('page', 1),
+            20
+        );
+
+        // Fetch all users and build a map: id => user
+        $allUsers = $utilisateurRepository->findAll();
+        $responsablesMap = [];
+        foreach ($allUsers as $user) {
+            $responsablesMap[$user->getId()] = $user;
         }
-        
-        return $this->render('admin/depense/edit.html.twig', [
-            'depense' => $depense,
-            'errors' => $errors,
+
+        $typeOptions = $depenseRepository->createQueryBuilder('d')
+            ->select('DISTINCT d.typeDepense')
+            ->getQuery()
+            ->getResult();
+        $typeOptions = array_column($typeOptions, 'typeDepense');
+
+        $totalDepenses = $depenseRepository->createQueryBuilder('d')
+            ->select('SUM(d.montant)')
+            ->getQuery()
+            ->getSingleScalarResult() ?? 0;
+
+        return $this->render('admin/depense/index.html.twig', [
+            'depenses'            => $depenses,
+            'responsables'        => $allUsers,
+            'responsablesMap'     => $responsablesMap,
+            'typeOptions'         => $typeOptions,
+            'search'              => $search,
+            'selectedResponsable' => $responsableId,
+            'selectedType'        => $type,
+            'startDate'           => $startDate,
+            'endDate'             => $endDate,
+            'totalDepenses'       => $totalDepenses,
         ]);
     }
-    
-    #[Route('/{idDepense}/delete', name: 'admin_depense_delete', methods: ['POST'])]
-    public function delete(Request $request, Depense $depense, EntityManagerInterface $em): Response
+
+    #[Route('/{id}', name: 'admin_depense_show')]
+    public function show(int $id, DepenseRepository $depenseRepository, UtilisateurRepository $utilisateurRepository): Response
     {
-        if ($this->isCsrfTokenValid('delete' . $depense->getIdDepense(), $request->request->get('_token'))) {
+        $depense = $depenseRepository->find($id);
+
+        if (!$depense) {
+            throw $this->createNotFoundException('Dépense non trouvée');
+        }
+
+        $responsable = null;
+        if ($depense->getUserId()) {
+            $responsable = $utilisateurRepository->find($depense->getUserId());
+        }
+
+        return $this->render('admin/depense/show.html.twig', [
+            'depense'     => $depense,
+            'responsable' => $responsable,
+        ]);
+    }
+
+    #[Route('/{id}/delete', name: 'admin_depense_delete', methods: ['POST'])]
+    public function delete(Request $request, int $id, DepenseRepository $depenseRepository, EntityManagerInterface $em): Response
+    {
+        $depense = $depenseRepository->find($id);
+
+        if (!$depense) {
+            throw $this->createNotFoundException('Dépense non trouvée');
+        }
+
+        if ($this->isCsrfTokenValid('delete' . $depense->getId(), $request->request->get('_token'))) {
             $em->remove($depense);
             $em->flush();
             $this->addFlash('success', 'Dépense supprimée avec succès !');
-        } else {
-            $this->addFlash('error', 'Token CSRF invalide.');
         }
-        
+
         return $this->redirectToRoute('admin_depense_index');
-    }
-    
-    #[Route('/{idDepense}', name: 'admin_depense_show')]
-    public function show(Depense $depense): Response
-    {
-        return $this->render('admin/depense/show.html.twig', [
-            'depense' => $depense,
-        ]);
     }
 }

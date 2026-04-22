@@ -20,6 +20,7 @@
         width: 56px; height: 56px;
         background: rgba(255,255,255,0.2);
         border-radius: 50%;
+        overflow: hidden;
         display: flex; align-items: center; justify-content: center;
         font-size: 1.5rem; font-weight: 700;
         border: 2px solid rgba(255,255,255,0.4);
@@ -110,7 +111,12 @@
             <p>Bienvenue, gérez vos ressources agricoles depuis votre tableau de bord</p>
         </div>
         <div style="text-align:right;">
-            <div class="dash-hero-avatar">{{ app.user.prenom|first }}{{ app.user.nom|first }}</div>
+            {{ include('profile/_avatar.html.twig', {
+                user: app.user,
+                wrapperClass: 'dash-hero-avatar',
+                fallbackText: app.user.prenom|first ~ app.user.nom|first,
+                alt: 'Photo de profil de ' ~ app.user.prenom ~ ' ' ~ app.user.nom
+            }) }}
             <div style="font-size:0.8rem; margin-top: 0.5rem;">{{ app.user.prenom }} {{ app.user.nom }}</div>
         </div>
     </div>

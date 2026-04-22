@@ -1,0 +1,154 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block page_title %}Rapports personnalisés{% endblock %}
+
+{% block body %}
+<style>
+.rapports-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.rapport-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+}
+
+.rapport-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    transition: all 0.3s;
+    border-left: 4px solid var(--primary);
+}
+
+.rapport-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.rapport-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1a3a2a;
+    margin-bottom: 0.5rem;
+}
+
+.rapport-meta {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.8rem;
+    color: #666;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.rapport-type {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.type-finance { background: #d1fae5; color: #065f46; }
+.type-equipement { background: #dbeafe; color: #1e40af; }
+.type-maintenance { background: #fef3c7; color: #92400e; }
+.type-utilisateur { background: #e0e7ff; color: #3730a3; }
+.type-global { background: #f3e8ff; color: #7c3aed; }
+
+.rapport-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.rapport-actions a, .rapport-actions button {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    text-decoration: none;
+    transition: all 0.2s;
+    cursor: pointer;
+    border: none;
+}
+
+.btn-view {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-view:hover {
+    background: #059669;
+}
+
+.btn-delete {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.btn-delete:hover {
+    background: #fecaca;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #666;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    opacity: 0.3;
+    margin-bottom: 1rem;
+}
+</style>
+
+<div class="rapports-header">
+    <h2><i class="fas fa-file-alt"></i> Rapports personnalisés</h2>
+    <a href="{{ path('admin_rapport_new') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Nouveau rapport
+    </a>
+</div>
+
+{% if rapports|length > 0 %}
+<div class="rapport-grid">
+    {% for rapport in rapports %}
+    <div class="rapport-card">
+        <div class="rapport-title">{{ rapport.titre }}</div>
+        <div class="rapport-meta">
+            <span class="rapport-type type-{{ rapport.type }}">{{ rapport.type|capitalize }}</span>
+            <span><i class="fas fa-calendar"></i> {{ rapport.createdAt|date('d/m/Y H:i') }}</span>
+        </div>
+        {% if rapport.description %}
+        <p style="font-size: 0.85rem; color: #666; margin-bottom: 0.5rem;">{{ rapport.description|slice(0, 100) }}{% if rapport.description|length > 100 %}...{% endif %}</p>
+        {% endif %}
+        <div class="rapport-actions">
+            <a href="{{ path('admin_rapport_show', {id: rapport.id}) }}" class="btn-view">
+                <i class="fas fa-eye"></i> Voir
+            </a>
+            <form method="POST" action="{{ path('admin_rapport_delete', {id: rapport.id}) }}" style="display:inline;" onsubmit="return confirm('Supprimer ce rapport?')">
+                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ rapport.id) }}">
+                <button type="submit" class="btn-delete">
+                    <i class="fas fa-trash"></i> Supprimer
+                </button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <i class="fas fa-file-alt"></i>
+    <p>Aucun rapport créé</p>
+    <a href="{{ path('admin_rapport_new') }}" class="btn btn-primary" style="margin-top: 1rem;">
+        <i class="fas fa-plus"></i> Créer un rapport
+    </a>
+</div>
+{% endif %}
+{% endblock %}

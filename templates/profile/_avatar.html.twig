@@ -1,0 +1,15 @@
+<div class="{{ wrapperClass|default('profile-avatar') }}">
+    {% if user.photoProfil %}
+        <img
+            src="{{ asset('uploads/profiles/' ~ user.photoProfil) }}"
+            alt="{{ alt|default('Photo de profil') }}"
+            class="avatar-image{% if imageClass is defined and imageClass %} {{ imageClass }}{% endif %}"
+        >
+    {% else %}
+        <img
+            src="https://ui-avatars.com/api/?name={{ (user.prenom ~ ' ' ~ user.nom)|url_encode }}&background=22c55e&color=fff&size=128&bold=true"
+            alt="{{ alt|default('Avatar') }}"
+            class="avatar-image{% if imageClass is defined and imageClass %} {{ imageClass }}{% endif %}"
+        >
+    {% endif %}
+</div>
