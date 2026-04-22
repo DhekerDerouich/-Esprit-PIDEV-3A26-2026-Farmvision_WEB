@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Parcelle {{ parcelle.localisation }} - FarmVision</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'DejaVu Sans', Arial, sans-serif;
+            font-size: 12pt;
+            color: #333;
+            line-height: 1.8;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #4CAF50;
+        }
+        
+        .header h1 {
+            color: #2d6a4f;
+            font-size: 28pt;
+            margin-bottom: 10px;
+        }
+        
+        .header .subtitle {
+            color: #666;
+            font-size: 14pt;
+        }
+        
+        .parcelle-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 30px;
+            border-radius: 10px;
+            border-left: 5px solid #4CAF50;
+            margin-bottom: 30px;
+        }
+        
+        .parcelle-title {
+            font-size: 22pt;
+            color: #2d6a4f;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        
+        .detail-row {
+            display: table;
+            width: 100%;
+            margin-bottom: 15px;
+            padding: 12px;
+            background: white;
+            border-radius: 5px;
+        }
+        
+        .detail-label {
+            display: table-cell;
+            width: 40%;
+            font-weight: 600;
+            color: #2d6a4f;
+            padding-right: 20px;
+        }
+        
+        .detail-value {
+            display: table-cell;
+            color: #333;
+        }
+        
+        .section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+        
+        .section-title {
+            font-size: 16pt;
+            color: #2d6a4f;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #4CAF50;
+        }
+        
+        .map-placeholder {
+            background: #e8f5e9;
+            padding: 40px;
+            text-align: center;
+            border-radius: 8px;
+            color: #2d6a4f;
+            font-size: 14pt;
+        }
+        
+        .coordinates {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+        
+        .coordinates p {
+            margin: 5px 0;
+        }
+        
+        .footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 2px solid #e0e0e0;
+            text-align: center;
+            font-size: 10pt;
+            color: #999;
+        }
+        
+        .info-box {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        
+        .info-box p {
+            margin: 5px 0;
+            font-size: 10pt;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🗺️ FarmVision</h1>
+        <div class="subtitle">Fiche Parcelle</div>
+    </div>
+
+    <div class="parcelle-card">
+        <div class="parcelle-title">{{ parcelle.localisation }}</div>
+        
+        <div class="detail-row">
+            <div class="detail-label">Localisation</div>
+            <div class="detail-value">{{ parcelle.localisation }}</div>
+        </div>
+        
+        <div class="detail-row">
+            <div class="detail-label">Surface</div>
+            <div class="detail-value">{{ parcelle.surface }} hectares</div>
+        </div>
+        
+        {% if parcelle.latitude and parcelle.longitude %}
+        <div class="detail-row">
+            <div class="detail-label">Coordonnées GPS</div>
+            <div class="detail-value">
+                Lat: {{ parcelle.latitude|number_format(6, '.', ',') }}, 
+                Long: {{ parcelle.longitude|number_format(6, '.', ',') }}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if parcelle.latitude and parcelle.longitude %}
+    <div class="section">
+        <div class="section-title">Localisation GPS</div>
+        <div class="map-placeholder">
+            📍 Carte de localisation
+            <div class="coordinates">
+                <p><strong>Latitude:</strong> {{ parcelle.latitude|number_format(6, '.', ',') }}</p>
+                <p><strong>Longitude:</strong> {{ parcelle.longitude|number_format(6, '.', ',') }}</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="info-box">
+        <p><strong>Document généré le :</strong> {{ date|date('d/m/Y à H:i') }}</p>
+        <p><strong>Utilisateur :</strong> {{ user.prenom }} {{ user.nom }}</p>
+    </div>
+
+    <div class="footer">
+        <p>© {{ 'now'|date('Y') }} FarmVision - Agriculture Intelligente</p>
+        <p>Document généré automatiquement</p>
+    </div>
+</body>
+</html>

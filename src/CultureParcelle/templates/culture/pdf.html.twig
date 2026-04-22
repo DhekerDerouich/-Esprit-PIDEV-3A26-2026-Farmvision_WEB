@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Liste des Cultures - FarmVision</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'DejaVu Sans', Arial, sans-serif;
+            font-size: 11pt;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #4CAF50;
+        }
+        
+        .header h1 {
+            color: #2d6a4f;
+            font-size: 24pt;
+            margin-bottom: 5px;
+        }
+        
+        .header .subtitle {
+            color: #666;
+            font-size: 12pt;
+        }
+        
+        .info-section {
+            background: #f5f5f5;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        
+        .info-section p {
+            margin: 5px 0;
+        }
+        
+        .info-section strong {
+            color: #2d6a4f;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        thead {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        th {
+            padding: 12px 8px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 10pt;
+        }
+        
+        td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #ddd;
+            font-size: 10pt;
+        }
+        
+        tbody tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+        
+        tbody tr:hover {
+            background: #f0f0f0;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 9pt;
+            font-weight: 600;
+        }
+        
+        .badge-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .badge-warning {
+            background: #fed7aa;
+            color: #92400e;
+        }
+        
+        .badge-info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #e0e0e0;
+            text-align: center;
+            font-size: 9pt;
+            color: #999;
+        }
+        
+        .summary {
+            background: #e8f5e9;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .summary h3 {
+            color: #2d6a4f;
+            margin-bottom: 10px;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🌾 FarmVision</h1>
+        <div class="subtitle">Liste des Cultures</div>
+    </div>
+
+    <div class="info-section">
+        <p><strong>Généré le :</strong> {{ date|date('d/m/Y à H:i') }}</p>
+        <p><strong>Utilisateur :</strong> {{ user.prenom }} {{ user.nom }}</p>
+        {% if search %}
+            <p><strong>Recherche :</strong> {{ search }}</p>
+        {% endif %}
+        {% if type != 'all' %}
+            <p><strong>Type :</strong> {{ type }}</p>
+        {% endif %}
+    </div>
+
+    <div class="summary">
+        <h3>Résumé</h3>
+        <p><strong>Nombre total de cultures :</strong> {{ cultures|length }}</p>
+    </div>
+
+    {% if cultures|length > 0 %}
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 5%;">#</th>
+                    <th style="width: 25%;">Nom</th>
+                    <th style="width: 20%;">Type</th>
+                    <th style="width: 20%;">Date Semis</th>
+                    <th style="width: 20%;">Date Récolte</th>
+                    <th style="width: 10%;">Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for culture in cultures %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td><strong>{{ culture.nomCulture }}</strong></td>
+                        <td>{{ culture.typeCulture }}</td>
+                        <td>{{ culture.dateSemis|date('d/m/Y') }}</td>
+                        <td>{{ culture.dateRecolte|date('d/m/Y') }}</td>
+                        <td>
+                            {% set now = date() %}
+                            {% set dateRecolte = culture.dateRecolte %}
+                            {% if dateRecolte < now %}
+                                <span class="badge badge-success">Récolté</span>
+                            {% elseif dateRecolte|date_modify('+7 days') > now %}
+                                <span class="badge badge-warning">Bientôt</span>
+                            {% else %}
+                                <span class="badge badge-info">En cours</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="no-data">
+            Aucune culture trouvée
+        </div>
+    {% endif %}
+
+    <div class="footer">
+        <p>© {{ 'now'|date('Y') }} FarmVision - Agriculture Intelligente</p>
+        <p>Document généré automatiquement</p>
+    </div>
+</body>
+</html>
