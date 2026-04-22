@@ -25,6 +25,12 @@ class WeatherService
     public function getWeatherByCoordinates(float $latitude, float $longitude): ?array
     {
         try {
+            $this->logger->info('Fetching weather data', [
+                'lat' => $latitude,
+                'lon' => $longitude,
+                'api_key_set' => !empty($this->apiKey)
+            ]);
+
             $response = $this->httpClient->request('GET', self::API_URL, [
                 'query' => [
                     'lat' => $latitude,
@@ -36,9 +42,15 @@ class WeatherService
                 'timeout' => 5
             ]);
 
-            if ($response->getStatusCode() !== 200) {
+            $statusCode = $response->getStatusCode();
+            $this->logger->info('OpenWeather API response', [
+                'status' => $statusCode
+            ]);
+
+            if ($statusCode !== 200) {
                 $this->logger->error('OpenWeather API returned non-200 status', [
-                    'status' => $response->getStatusCode()
+                    'status' => $statusCode,
+                    'content' => $response->getContent(false)
                 ]);
                 return null;
             }
@@ -63,6 +75,7 @@ class WeatherService
         } catch (\Exception $e) {
             $this->logger->error('Failed to fetch weather data', [
                 'error' => $e->getMessage(),
+                'error_class' => get_class($e),
                 'lat' => $latitude,
                 'lon' => $longitude
             ]);

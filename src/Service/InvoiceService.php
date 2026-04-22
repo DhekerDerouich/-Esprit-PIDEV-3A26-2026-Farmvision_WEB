@@ -11,12 +11,12 @@ use Twig\Environment;
 
 class InvoiceService
 {
-    private Pdf $pdf;
+    private ?Pdf $pdf;
     private Environment $twig;
     private EntityManagerInterface $em;
     private string $invoiceDir;
 
-    public function __construct(Pdf $pdf, Environment $twig, EntityManagerInterface $em, string $invoiceDir)
+    public function __construct(?Pdf $pdf = null, Environment $twig = null, EntityManagerInterface $em = null, string $invoiceDir = '')
     {
         $this->pdf = $pdf;
         $this->twig = $twig;
@@ -73,17 +73,19 @@ class InvoiceService
 
         // PDF generation — optional, skipped if wkhtmltopdf not installed
         try {
-            $html    = $this->twig->render('front/pdf/invoice.html.twig', [
-                'invoice' => $invoice,
-                'items'   => $items,
-                'date'    => new \DateTime(),
-            ]);
-            $pdfPath = $this->invoiceDir . '/' . $invoiceNumber . '.pdf';
-            $this->pdf->generateFromHtml($html, $pdfPath);
-            $invoice->setPdfPath($pdfPath);
-            $this->em->flush();
+            if ($this->pdf !== null) {
+                $html    = $this->twig->render('front/pdf/invoice.html.twig', [
+                    'invoice' => $invoice,
+                    'items'   => $items,
+                    'date'    => new \DateTime(),
+                ]);
+                $pdfPath = $this->invoiceDir . '/' . $invoiceNumber . '.pdf';
+                $this->pdf->generateFromHtml($html, $pdfPath);
+                $invoice->setPdfPath($pdfPath);
+                $this->em->flush();
+            }
         } catch (\Exception $e) {
-            // wkhtmltopdf not installed — continue without PDF
+            // wkhtmltopdf not installed or failed — continue without PDF
         }
 
         return $invoice;

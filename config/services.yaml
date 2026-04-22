@@ -47,6 +47,7 @@ services:
 
     App\Service\InvoiceService:
         arguments:
+            $pdf: '@?knp_snappy.pdf'
             $invoiceDir: '%kernel.project_dir%/var/invoices'
 
     App\Service\StripeService:
