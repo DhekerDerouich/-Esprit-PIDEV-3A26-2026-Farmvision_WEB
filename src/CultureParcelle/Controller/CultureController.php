@@ -178,4 +178,55 @@ class CultureController extends AbstractController
         
         return $this->json(['success' => true, 'message' => 'Date mise à jour avec succès']);
     }
+
+    #[Route('/export/pdf', name: 'front_culture_export_pdf', methods: ['GET'])]
+    public function exportPdf(Request $request, \App\Service\PdfGeneratorService $pdfGenerator): Response
+    {
+        $search = $request->query->get('search', '');
+        $type = $request->query->get('type', 'all');
+        $userId = $this->getUser()?->getId();
+
+        $cultures = $this->cultureService->getUserCultures($search ?: null, $type, $userId);
+
+        $html = $this->renderView('@CultureParcelle/culture/pdf.html.twig', [
+            'cultures' => $cultures,
+            'date' => new \DateTime(),
+            'user' => $this->getUser(),
+            'search' => $search,
+            'type' => $type
+        ]);
+
+        $filename = 'cultures_' . date('Y-m-d_His') . '.pdf';
+        $result = $pdfGenerator->generatePdfResponse($html, $filename);
+
+        return new Response(
+            $result['content'],
+            200,
+            $result['headers']
+        );
+    }
+
+    #[Route('/{idCulture}/export/pdf', name: 'front_culture_export_single_pdf', methods: ['GET'])]
+    public function exportSinglePdf(int $idCulture, \App\Service\PdfGeneratorService $pdfGenerator): Response
+    {
+        $culture = $this->repository->find($idCulture);
+        if (!$culture) {
+            throw $this->createNotFoundException('Culture non trouvée');
+        }
+
+        $html = $this->renderView('@CultureParcelle/culture/pdf_single.html.twig', [
+            'culture' => $culture,
+            'date' => new \DateTime(),
+            'user' => $this->getUser()
+        ]);
+
+        $filename = 'culture_' . $culture->getNomCulture() . '_' . date('Y-m-d') . '.pdf';
+        $result = $pdfGenerator->generatePdfResponse($html, $filename);
+
+        return new Response(
+            $result['content'],
+            200,
+            $result['headers']
+        );
+    }
 }

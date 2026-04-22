@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Test - Harvest Alerts</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #2d6a4f; }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .connected { background: #d1fae5; color: #065f46; }
+        .disconnected { background: #fee2e2; color: #991b1b; }
+        .connecting { background: #fed7aa; color: #92400e; }
+        button {
+            background: #2d6a4f;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #1a3a2a; }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        #log {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 5px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            margin-top: 20px;
+        }
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid #4CAF50;
+            padding-left: 10px;
+        }
+        .log-error { border-left-color: #f44336; }
+        .log-info { border-left-color: #2196F3; }
+        .log-success { border-left-color: #4CAF50; }
+        input {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌾 WebSocket Test - Harvest Alerts</h1>
+        
+        <div id="status" class="status disconnected">
+            ❌ Disconnected
+        </div>
+
+        <div style="margin: 20px 0;">
+            <label>User ID: <input type="number" id="userId" value="1" min="1"></label>
+        </div>
+
+        <div>
+            <button id="connectBtn" onclick="connect()">Connect</button>
+            <button id="disconnectBtn" onclick="disconnect()" disabled>Disconnect</button>
+            <button onclick="sendTestAlert()">Send Test Alert</button>
+            <button onclick="clearLog()">Clear Log</button>
+        </div>
+
+        <div id="log"></div>
+    </div>
+
+    <script>
+        let ws = null;
+        const statusDiv = document.getElementById('status');
+        const logDiv = document.getElementById('log');
+        const connectBtn = document.getElementById('connectBtn');
+        const disconnectBtn = document.getElementById('disconnectBtn');
+
+        function log(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            const timestamp = new Date().toLocaleTimeString();
+            entry.textContent = `[${timestamp}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function updateStatus(status, message) {
+            statusDiv.className = `status ${status}`;
+            statusDiv.textContent = message;
+        }
+
+        function connect() {
+            const userId = document.getElementById('userId').value;
+            
+            if (!userId) {
+                alert('Please enter a User ID');
+                return;
+            }
+
+            log('Connecting to WebSocket server...', 'info');
+            updateStatus('connecting', '🔄 Connecting...');
+
+            try {
+                ws = new WebSocket('ws://localhost:8080');
+
+                ws.onopen = () => {
+                    log('✅ Connected to WebSocket server', 'success');
+                    updateStatus('connected', '✅ Connected');
+                    connectBtn.disabled = true;
+                    disconnectBtn.disabled = false;
+
+                    // Register user
+                    const registerMsg = {
+                        type: 'register',
+                        userId: parseInt(userId)
+                    };
+                    ws.send(JSON.stringify(registerMsg));
+                    log(`Sent registration for User ID: ${userId}`, 'info');
+                };
+
+                ws.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    log(`📨 Received: ${JSON.stringify(data, null, 2)}`, 'success');
+
+                    if (data.type === 'registered') {
+                        log(`✅ Successfully registered as User ${data.userId}`, 'success');
+                    } else if (data.type === 'harvest_alert') {
+                        log(`🌾 HARVEST ALERT: ${data.alert.message}`, 'success');
+                        showNotification(data.alert);
+                    }
+                };
+
+                ws.onerror = (error) => {
+                    log(`❌ WebSocket error: ${error}`, 'error');
+                };
+
+                ws.onclose = () => {
+                    log('❌ Disconnected from WebSocket server', 'error');
+                    updateStatus('disconnected', '❌ Disconnected');
+                    connectBtn.disabled = false;
+                    disconnectBtn.disabled = true;
+                };
+
+            } catch (error) {
+                log(`❌ Connection failed: ${error.message}`, 'error');
+                updateStatus('disconnected', '❌ Connection Failed');
+            }
+        }
+
+        function disconnect() {
+            if (ws) {
+                ws.close();
+                log('Disconnecting...', 'info');
+            }
+        }
+
+        function sendTestAlert() {
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                alert('Not connected! Click Connect first.');
+                return;
+            }
+
+            const userId = document.getElementById('userId').value;
+            
+            // Simulate sending an alert (normally done by backend)
+            const testAlert = {
+                type: 'broadcast_alert',
+                userId: parseInt(userId),
+                alert: {
+                    type: 'harvest_alert',
+                    culture: {
+                        id: 999,
+                        nom: 'Test Tomates',
+                        type: 'Légume',
+                        dateRecolte: '2026-04-22'
+                    },
+                    daysUntilHarvest: 1,
+                    urgency: 'high',
+                    message: '⚠️ Test Alert: Harvest tomorrow!',
+                    timestamp: new Date().toISOString()
+                }
+            };
+
+            ws.send(JSON.stringify(testAlert));
+            log('📤 Sent test alert', 'info');
+        }
+
+        function showNotification(alert) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification('🌾 Harvest Alert', {
+                    body: alert.message,
+                    icon: '🌾'
+                });
+            } else if ('Notification' in window && Notification.permission !== 'denied') {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        showNotification(alert);
+                    }
+                });
+            }
+        }
+
+        function clearLog() {
+            logDiv.innerHTML = '';
+            log('Log cleared', 'info');
+        }
+
+        // Initial log
+        log('WebSocket Test Page Loaded', 'info');
+        log('Make sure WebSocket server is running: php bin/websocket-server.php', 'info');
+    </script>
+</body>
+</html>

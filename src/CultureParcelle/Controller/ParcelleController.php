@@ -160,4 +160,65 @@ class ParcelleController extends AbstractController
 
         return $this->json($weatherData);
     }
+
+    #[Route('/export/pdf', name: 'front_parcelle_export_pdf', methods: ['GET'])]
+    public function exportPdf(Request $request, \App\Service\PdfGeneratorService $pdfGenerator): Response
+    {
+        $localisation = $request->query->get('search', '');
+        $surfaceMinRaw = $request->query->get('surface_min', '');
+        $surfaceMaxRaw = $request->query->get('surface_max', '');
+        $userId = $this->getUser()?->getId();
+
+        $surfaceMin = $surfaceMinRaw !== '' ? (float)$surfaceMinRaw : null;
+        $surfaceMax = $surfaceMaxRaw !== '' ? (float)$surfaceMaxRaw : null;
+
+        $parcelles = $this->parcelleService->searchParcelles(
+            $localisation ?: null,
+            $surfaceMin,
+            $surfaceMax,
+            $userId
+        );
+
+        $html = $this->renderView('@CultureParcelle/parcelle/pdf.html.twig', [
+            'parcelles' => $parcelles,
+            'date' => new \DateTime(),
+            'user' => $this->getUser(),
+            'search' => $localisation,
+            'surfaceMin' => $surfaceMin,
+            'surfaceMax' => $surfaceMax
+        ]);
+
+        $filename = 'parcelles_' . date('Y-m-d_His') . '.pdf';
+        $result = $pdfGenerator->generatePdfResponse($html, $filename);
+
+        return new Response(
+            $result['content'],
+            200,
+            $result['headers']
+        );
+    }
+
+    #[Route('/{idParcelle}/export/pdf', name: 'front_parcelle_export_single_pdf', methods: ['GET'])]
+    public function exportSinglePdf(int $idParcelle, \App\Service\PdfGeneratorService $pdfGenerator): Response
+    {
+        $parcelle = $this->repository->find($idParcelle);
+        if (!$parcelle) {
+            throw $this->createNotFoundException('Parcelle non trouvée');
+        }
+
+        $html = $this->renderView('@CultureParcelle/parcelle/pdf_single.html.twig', [
+            'parcelle' => $parcelle,
+            'date' => new \DateTime(),
+            'user' => $this->getUser()
+        ]);
+
+        $filename = 'parcelle_' . $parcelle->getLocalisation() . '_' . date('Y-m-d') . '.pdf';
+        $result = $pdfGenerator->generatePdfResponse($html, $filename);
+
+        return new Response(
+            $result['content'],
+            200,
+            $result['headers']
+        );
+    }
 }
