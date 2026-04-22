@@ -210,8 +210,8 @@ tr:hover{background:#f8f9fa}
 
 <div id="smsModal" class="modal">
     <div class="modal-box">
-        <div class="modal-header"><h3>📱 Envoyer une alerte SMS</h3><button class="modal-close" onclick="closeModal('smsModal')">&times;</button></div>
-        <div class="form-group"><label>📞 Numéro de téléphone</label><input type="tel" id="smsPhone" class="form-control" placeholder="+216 XX XXX XXX"></div>
+        <div class="modal-header"><h3>📲 Envoyer via WhatsApp</h3><button class="modal-close" onclick="closeModal('smsModal')">&times;</button></div>
+        <div class="form-group"><label>📞 Numéro WhatsApp (avec indicatif)</label><input type="tel" id="smsPhone" class="form-control" placeholder="+216 XX XXX XXX"></div>
         <div class="form-group">
             <label>⚠️ Type d'alerte</label>
             <select id="smsType" class="form-control">
@@ -339,7 +339,15 @@ function sendSms() {
     fetch('/admin/stocks/api/send-sms', { method: 'POST', headers: {'Content-Type':'application/x-www-form-urlencoded'}, body: fd })
         .then(function(r) { return r.json(); })
         .then(function(data) {
-            if (data.success) {
+            if (data.success && data.whatsapp) {
+                result.innerHTML = '<div style="background:#d4edda;color:#155724;padding:.75rem;border-radius:6px;text-align:center">'
+                    + '✅ Message prêt !<br><br>'
+                    + '<a href="' + data.wa_url + '" target="_blank" '
+                    + 'style="background:#25D366;color:white;padding:.6rem 1.2rem;border-radius:6px;text-decoration:none;font-weight:600;display:inline-block">'
+                    + '📲 Ouvrir WhatsApp et envoyer</a>'
+                    + '<br><small style="color:#666;margin-top:.5rem;display:block">Cliquez pour ouvrir WhatsApp avec le message pré-rempli</small>'
+                    + '</div>';
+            } else if (data.success) {
                 result.innerHTML = '<div style="background:#d4edda;color:#155724;padding:.75rem;border-radius:6px">✅ ' + data.message + '</div>';
                 setTimeout(function() { closeModal('smsModal'); }, 2500);
             } else {
